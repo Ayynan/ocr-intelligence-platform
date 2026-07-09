@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DocuScan AI Pro - Ultimate Enterprise Document Suite</title>
@@ -414,26 +415,26 @@
                     <textarea id="output" placeholder="Raw editable text extraction layer will populate inside this viewport framework..." readonly></textarea>
                 </div>
             </div>
-<div class="feedback-card" style="background: var(--bg-surface); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin-top: 24px;">
-    <h3 style="margin-top: 0; font-size: 1.1rem; color: white;"><i class="fa-solid fa-comment-dots" style="color: var(--primary);"></i> Submit System Feedback</h3>
-    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">Encountered a bug or want to request a module? Your submission will route straight to ayynanwaheed2021@gmail.com.</p>
+<div class="feedback-card" style="background: #111827; border: 1px solid #1f2937; padding: 20px; border-radius: 12px; margin-top: 24px;">
+    <h3 style="margin-top: 0; font-size: 1.1rem; color: white;"><i class="fa-solid fa-comment-dots" style="color: #3b82f6;"></i> Submit System Feedback</h3>
+    <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 16px;">Encountered a bug or want to request a feature? Your message will route straight to the developer's inbox.</p>
     
     <form id="feedback-form-element" style="display: flex; flex-direction: column; gap: 12px;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div class="dropdown-input-wrapper">
-                <label>Your Name</label>
-                <input type="text" id="feedback-user-name" class="dropdown-field" required placeholder="John Doe">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 0.75rem; color: #9ca3af;">Your Name</label>
+                <input type="text" id="feedback-user-name" required placeholder="John Doe" style="background: #070a12; border: 1px solid #1f2937; color: white; border-radius: 6px; padding: 10px; font-size: 0.85rem;">
             </div>
-            <div class="dropdown-input-wrapper">
-                <label>Your Verified Email Address</label>
-                <input type="email" id="feedback-user-email" class="dropdown-field" required placeholder="yourname@domain.com">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 0.75rem; color: #9ca3af;">Your Email Address</label>
+                <input type="email" id="feedback-user-email" required placeholder="yourname@domain.com" style="background: #070a12; border: 1px solid #1f2937; color: white; border-radius: 6px; padding: 10px; font-size: 0.85rem;">
             </div>
         </div>
-        <div class="dropdown-input-wrapper">
-            <label>Message Content</label>
-            <textarea id="feedback-message-input" required placeholder="Describe your experience or report an issue..." style="background: #070a12; border: 1px solid var(--border); color: white; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 80px; resize: vertical; width: 100%;"></textarea>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 0.75rem; color: #9ca3af;">Message Content</label>
+            <textarea id="feedback-message-input" required placeholder="Describe your experience or report an issue..." style="background: #070a12; border: 1px solid #1f2937; color: white; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 80px; resize: vertical; width: 100%;"></textarea>
         </div>
-        <button type="submit" style="background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <button type="submit" style="background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
             <i class="fa-solid fa-paper-plane"></i> Dispatch Feedback via Mail Client
         </button>
     </form>
@@ -1046,6 +1047,33 @@ togglePassViewBtn.addEventListener('click', () => {
                 window.location.href = `mailto:${developerTargetEmail}?subject=${emailSubject}&body=${formattedBody}`;
                 
                 alert("Redirecting to your mail provider to compile transmission to ayynanwaheed2021@gmail.com.");
+            });
+        }
+        // --- SECURE USER SYSTEM FEEDBACK ROUTING CHANNEL ---
+        // Listens for the form submission and reliably fires up the local mail application
+        const feedbackFormElement = document.getElementById('feedback-form-element');
+        if (feedbackFormElement) {
+            feedbackFormElement.addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevents the page from brokenly reloading or crashing
+                
+                const senderName = document.getElementById('feedback-user-name').value.trim();
+                const senderEmail = document.getElementById('feedback-user-email').value.trim();
+                const messageBody = document.getElementById('feedback-message-input').value.trim();
+                
+                const developerTargetEmail = "ayynanwaheed2021@gmail.com";
+                const emailSubject = encodeURIComponent("DocuScan AI Pro - System Telemetry Feedback");
+                
+                // Formats the text inside the email perfectly so you know who sent it
+                const formattedBody = encodeURIComponent(
+                    "Sender Profile Name: " + senderName + "\n" +
+                    "Sender Return Contact: " + senderEmail + "\n\n" +
+                    "Report Details:\n" + messageBody
+                );
+                
+                // Launches the user's native device mail app (Mail, Outlook, Gmail) pre-filled with your email
+                window.location.href = `mailto:${developerTargetEmail}?subject=${emailSubject}&body=${formattedBody}`;
+                
+                alert("Redirecting to your mail client framework... Please click send in your application window to deliver to ayynanwaheed2021@gmail.com.");
             });
         }
     </script>
