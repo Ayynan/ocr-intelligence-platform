@@ -122,6 +122,129 @@
         .auth-toggle-link { font-size: 0.8rem; color: var(--text-secondary); }
         .auth-toggle-link span { color: var(--primary); cursor: pointer; font-weight: 600; }
         .auth-toggle-link span:hover { text-decoration: underline; }
+        /* Interactive Password Eye Input Frame Placement */
+.password-wrapper { 
+    position: relative; 
+    width: 100%; 
+}
+.password-wrapper .auth-field { 
+    padding-right: 40px; 
+}
+.toggle-password-visibility { 
+    position: absolute; 
+    right: 12px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    background: transparent; 
+    border: none; 
+    color: var(--text-secondary); 
+    cursor: pointer; 
+    font-size: 0.95rem; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+.toggle-password-visibility:hover { 
+    color: white; 
+}
+/* Premium Telemetry User Dropdown System */
+.user-profile-badge {
+    position: relative; /* Essential for dropdown positioning anchoring */
+}
+.profile-badge-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+.user-settings-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 280px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: none; /* Controlled by JavaScript toggles */
+    text-align: left;
+    flex-direction: column;
+    gap: 14px;
+}
+.user-settings-dropdown.active {
+    display: flex;
+}
+.dropdown-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    margin-bottom: 2px;
+}
+.dropdown-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.dropdown-input-wrapper label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.dropdown-field {
+    background: #070a12;
+    border: 1px solid var(--border);
+    color: white;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    width: 100%;
+}
+.dropdown-field:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+.dropdown-save-btn {
+    background: var(--primary);
+    border: none;
+    color: white;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.dropdown-save-btn:hover {
+    background: #2563eb;
+}
+.dropdown-logout-btn {
+    width: 100%;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    margin-top: 4px;
+}
+.dropdown-logout-btn:hover {
+    background: #ef4444;
+    color: white;
+}
     </style>
 </head>
 <body class="logged-out">
@@ -136,7 +259,13 @@
                 <label>Account Username</label>
                 <input type="text" id="auth-user-field" class="auth-field" placeholder="Username">
                 <label>Secure Password</label>
-                <input type="password" id="auth-pass-field" class="auth-field" placeholder="••••••••">
+<div class="password-wrapper">
+    <input type="password" id="auth-pass-field" class="auth-field" placeholder="••••••••">
+    <button type="button" class="toggle-password-visibility" id="btn-toggle-pass-view" title="Toggle Password Visibility">
+        <i class="fa-regular fa-eye" id="pass-eye-icon"></i>
+    </button>
+</div>
+                
             </div>
 
             <button class="auth-submit-btn" id="btn-action-auth-submit"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
@@ -157,10 +286,46 @@
                     <p>All-in-One Multi-Page Preserver & Raw Text Extraction Terminal</p>
                 </div>
             </div>
-            <div class="user-profile-badge">
-                <span><i class="fa-solid fa-circle-user" style="color: var(--primary); margin-right: 4px;"></i> <span id="lbl-display-username">Guest Account</span></span>
-                <button class="logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit</button>
+            <div class="user-profile-badge" id="profile-container-node">
+    <div class="profile-badge-trigger" id="profile-trigger-btn">
+        <i class="fa-solid fa-circle-user" style="color: var(--primary);"></i> 
+        <span id="lbl-display-username">Guest Account</span>
+        <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; color: var(--text-secondary);"></i>
+    </div>
+    
+    <div class="user-settings-dropdown" id="dropdown-settings-panel">
+        <div class="dropdown-section-title">Account Profiles</div>
+        
+        <div class="dropdown-input-wrapper">
+            <label>Profile Name</label>
+            <input type="text" id="settings-username-field" class="dropdown-field" placeholder="Username">
+        </div>
+        
+        <div class="dropdown-input-wrapper">
+            <label>Access Password</label>
+            <div class="password-wrapper">
+                <input type="password" id="settings-password-field" class="dropdown-field" placeholder="••••••••">
+                <button type="button" class="toggle-password-visibility" id="btn-toggle-settings-pass" style="font-size: 0.8rem;">
+                    <i class="fa-regular fa-eye" id="settings-pass-eye"></i>
+                </button>
             </div>
+        </div>
+
+        <button class="dropdown-save-btn" id="btn-save-settings">Update Configuration</button>
+
+        <div class="dropdown-section-title">Ecosystem Controls</div>
+        
+        <div class="toggle-row" style="padding: 6px 0; background: transparent; border: none;">
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">Core Image Enhancer</span>
+            <label class="switch" style="transform: scale(0.85);">
+                <input type="checkbox" id="dropdown-filter-toggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <button class="dropdown-logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit Workspace</button>
+    </div>
+</div>
         </header>
 
         <div class="main-grid">
@@ -277,7 +442,19 @@
         if (activeCachedUser) { 
             activateAuthenticatedSessionEcosystem(activeCachedUser); 
         }
+const togglePassViewBtn = document.getElementById('btn-toggle-pass-view');
+const passEyeIcon = document.getElementById('pass-eye-icon');
 
+// Interactive Password Visibility Toggle Trigger Routine
+togglePassViewBtn.addEventListener('click', () => {
+    if (passField.type === "password") {
+        passField.type = "text";
+        passEyeIcon.className = "fa-regular fa-eye-slash";
+    } else {
+        passField.type = "password";
+        passEyeIcon.className = "fa-regular fa-eye";
+    }
+});
         authToggleTrigger.addEventListener('click', function toggleModeHandler() {
             isSignUpMode = !isSignUpMode;
             if (isSignUpMode) {
@@ -327,12 +504,106 @@
             activateAuthenticatedSessionEcosystem("Guest Workspace"); 
         });
         
-        btnLogout.addEventListener('click', () => { 
+        // --- USER CONTROL PANEL SETTINGS & DROPDOWN MATRIX ---
+        const profileTrigger = document.getElementById('profile-trigger-btn');
+        const settingsDropdown = document.getElementById('dropdown-settings-panel');
+        const settingsUserField = document.getElementById('settings-username-field');
+        const settingsPassField = document.getElementById('settings-password-field');
+        const btnSaveSettings = document.getElementById('btn-save-settings');
+        const dropdownFilterToggle = document.getElementById('dropdown-filter-toggle');
+        const btnToggleSettingsPass = document.getElementById('btn-toggle-settings-pass');
+        const settingsPassEye = document.getElementById('settings-pass-eye');
+
+        // Open/Close user profile dropdown frame
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsDropdown.classList.toggle('active');
+            
+            // Auto-populate fields based on the currently logged-in account status
+            const currentActiveUser = localStorage.getItem('docuscan_logged_session') || "Guest Workspace";
+            settingsUserField.value = currentActiveUser === "Guest Workspace" ? "Guest" : currentActiveUser;
+            
+            let accountsDb = JSON.parse(localStorage.getItem('docuscan_vault_users') || '[]');
+            let currentAccount = accountsDb.find(acc => acc.username === currentActiveUser);
+            
+            if (currentActiveUser === "admin") {
+                settingsPassField.value = "12345";
+            } else {
+                settingsPassField.value = currentAccount ? currentAccount.password : "";
+            }
+        });
+
+        // Auto-close settings drop panel if user clicks off-bounds
+        document.addEventListener('click', (e) => {
+            if (!settingsDropdown.contains(e.target) && !profileTrigger.contains(e.target)) {
+                settingsDropdown.classList.remove('active');
+            }
+        });
+
+        // Synchronize drop-panel enhancer switches with the layout core toggle seamlessly
+        dropdownFilterToggle.addEventListener('change', (e) => {
+            document.getElementById('filter-toggle').checked = e.target.checked;
+        });
+        document.getElementById('filter-toggle').addEventListener('change', (e) => {
+            dropdownFilterToggle.checked = e.target.checked;
+        });
+
+        // Settings password box structural visibility engine toggle
+        btnToggleSettingsPass.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (settingsPassField.type === "password") {
+                settingsPassField.type = "text";
+                settingsPassEye.className = "fa-regular fa-eye-slash";
+            } else {
+                settingsPassField.type = "password";
+                settingsPassEye.className = "fa-regular fa-eye";
+            }
+        });
+
+        // Update profile parameter registries and database rows
+        btnSaveSettings.addEventListener('click', () => {
+            const newUserValue = settingsUserField.value.trim();
+            const newPassValue = settingsPassField.value.trim();
+            const oldSessionUser = localStorage.getItem('docuscan_logged_session');
+            
+            if (!newUserValue || !newPassValue) {
+                alert("Account values cannot be left empty.");
+                return;
+            }
+            
+            if (oldSessionUser && oldSessionUser !== "Guest Workspace") {
+                let databaseArray = JSON.parse(localStorage.getItem('docuscan_vault_users') || '[]');
+                let userMatchIndex = databaseArray.findIndex(acc => acc.username === oldSessionUser);
+                
+                if (userMatchIndex !== -1) {
+                    databaseArray[userMatchIndex].username = newUserValue;
+                    databaseArray[userMatchIndex].password = newPassValue;
+                    localStorage.setItem('docuscan_vault_users', JSON.stringify(databaseArray));
+                } else if (oldSessionUser === "admin") {
+                    // Seed newly customized admin variants directly into the database structure array
+                    databaseArray.push({ username: newUserValue, password: newPassValue });
+                    localStorage.setItem('docuscan_vault_users', JSON.stringify(databaseArray));
+                }
+                
+                localStorage.setItem('docuscan_logged_session', newUserValue);
+                activateAuthenticatedSessionEcosystem(newUserValue);
+                alert("Account settings saved successfully!");
+                settingsDropdown.classList.remove('active');
+            } else {
+                alert("Guest workspace preferences temporarily cached.");
+                activateAuthenticatedSessionEcosystem(newUserValue);
+                settingsDropdown.classList.remove('active');
+            }
+        });
+
+        // Consolidated exit execution block listener targeting drop element links
+        document.getElementById('btn-action-logout').addEventListener('click', () => { 
             localStorage.removeItem('docuscan_logged_session'); 
             bodyNode.className = "logged-out"; 
             clearActiveStreamEcosystemState(); 
             outputTextarea.value = ""; 
             calculateTelemetryAnalysisMetrics(""); 
+            settingsDropdown.classList.remove('active');
         });
 
         function activateAuthenticatedSessionEcosystem(usernamePayloadString) { 
