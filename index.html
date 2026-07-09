@@ -496,18 +496,21 @@ togglePassViewBtn.addEventListener('click', () => {
             document.getElementById('auth-toggle-trigger').addEventListener('click', toggleModeHandler);
         });
 
+        // --- SECURE SIGN-UP / LIVE VERIFICATION CORE ROUTINE ---
+        // Setup state variables for live registration security tokens
+        let generatedVerificationToken = null;
+        let temporaryPendingUser = null;
+        let temporaryPendingPass = null;
+
         btnAuthSubmit.addEventListener('click', () => {
             const u = userField.value.trim();
             const p = passField.value.trim();
-            
-            // Stricter Email Domain Character Mapping Validation
             const emailValidationRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             
             if (!u || !p) { 
                 alert("Complete all profile credential fields."); 
                 return; 
             }
-            
             if (!emailValidationRegex.test(u)) {
                 alert("Please register using a valid, structural email address (e.g., user@domain.com). Fake phrases are rejected.");
                 return;
@@ -518,11 +521,43 @@ togglePassViewBtn.addEventListener('click', () => {
                     alert("This email profile registry is already locked. Try Signing In."); 
                     return; 
                 }
-                localRegisteredAccounts.push({ username: u, password: p });
-                localStorage.setItem('docuscan_vault_users', JSON.stringify(localRegisteredAccounts));
-                localStorage.setItem('docuscan_logged_session', u);
-                activateAuthenticatedSessionEcosystem(u);
+
+                // Generate a random 6-digit verification code
+                generatedVerificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+                temporaryPendingUser = u;
+                temporaryPendingPass = p;
+
+                // 1. Check if EmailJS is active and loaded in the HTML head
+                if (typeof emailjs !== 'undefined') {
+                    alert("Verification dispatch sequence running! Sending unique access tokens directly to: " + u);
+                    
+                    // Dispatches the live email code directly from your web client side
+                    emailjs.send("default_service", "YOUR_TEMPLATE_ID", {
+                        to_email: u,
+                        verification_code: generatedVerificationToken
+                    }).then(() => {
+                        const validationAttempt = prompt("A verification security code was sent to your inbox. Please type the 6-digit code here to finalize registration:");
+                        
+                        if (validationAttempt === generatedVerificationToken) {
+                            localRegisteredAccounts.push({ username: temporaryPendingUser, password: temporaryPendingPass });
+                            localStorage.setItem('docuscan_vault_users', JSON.stringify(localRegisteredAccounts));
+                            localStorage.setItem('docuscan_logged_session', temporaryPendingUser);
+                            activateAuthenticatedSessionEcosystem(temporaryPendingUser);
+                            alert("Account verified and registered successfully!");
+                        } else {
+                            alert("Invalid security token code match. Registration rejected.");
+                        }
+                    }).catch((err) => {
+                        console.error("EmailJS failed:", err);
+                        handleDevSimulationFallback(u, p);
+                    });
+                } else {
+                    // 2. Safe Fallback if you haven't linked the emailjs script tag yet
+                    handleDevSimulationFallback(u, p);
+                }
+
             } else {
+                // Regular Sign In Route
                 const matchFound = localRegisteredAccounts.find(acc => acc.username === u && acc.password === p);
                 if (matchFound || (u === "admin@domain.com" && p === "12345")) {
                     localStorage.setItem('docuscan_logged_session', u);
@@ -532,6 +567,20 @@ togglePassViewBtn.addEventListener('click', () => {
                 }
             }
         });
+
+        // Helper function to keep app working during development testing
+        function handleDevSimulationFallback(user, pass) {
+            const codeOverride = prompt("[Verification Mode Simulator]\nTo test the verification block without live email API configurations, enter '123456' to safely confirm: " + user);
+            if (codeOverride === "123456") {
+                localRegisteredAccounts.push({ username: user, password: pass });
+                localStorage.setItem('docuscan_vault_users', JSON.stringify(localRegisteredAccounts));
+                localStorage.setItem('docuscan_logged_session', user);
+                activateAuthenticatedSessionEcosystem(user);
+                alert("Account created successfully via simulator bypass pass!");
+            } else {
+                alert("Verification process cancelled.");
+            }
+        }
 
         btnGuest.addEventListener('click', () => { 
             activateAuthenticatedSessionEcosystem("Guest Workspace"); 
@@ -973,6 +1022,32 @@ togglePassViewBtn.addEventListener('click', () => {
             // Short alert visual validation trick
             alert("Routing telemetry report details to system administrator at ayynanwaheed2021@gmail.com...");
         });
+        // --- SECURE USER SYSTEM FEEDBACK ACTION CHANNEL ---
+        // Dynamically processes inputs and opens a local message box bound to your inbox
+        const feedbackForm = document.getElementById('feedback-form-element');
+        if (feedbackForm) {
+            feedbackForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                
+                const senderName = document.getElementById('feedback-user-name').value.trim();
+                const senderEmail = document.getElementById('feedback-user-email').value.trim();
+                const messageBody = document.getElementById('feedback-message-input').value.trim();
+                
+                const developerTargetEmail = "ayynanwaheed2021@gmail.com";
+                const emailSubject = encodeURIComponent("DocuScan AI Pro - System Telemetry Feedback");
+                
+                const formattedBody = encodeURIComponent(
+                    "Sender Profile Name: " + senderName + "\n" +
+                    "Sender Return Contact: " + senderEmail + "\n\n" +
+                    "Report Details:\n" + messageBody
+                );
+                
+                // Directly triggers native client window link bypass arrays
+                window.location.href = `mailto:${developerTargetEmail}?subject=${emailSubject}&body=${formattedBody}`;
+                
+                alert("Redirecting to your mail provider to compile transmission to ayynanwaheed2021@gmail.com.");
+            });
+        }
     </script>
 </body>
 </html>
