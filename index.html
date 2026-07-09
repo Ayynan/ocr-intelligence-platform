@@ -415,7 +415,7 @@
                     <textarea id="output" placeholder="Raw editable text extraction layer will populate inside this viewport framework..." readonly></textarea>
                 </div>
             </div>
-<!-- Re-engineered Ultra-Clean Feedback Interface Container -->
+<!-- Re-engineered Background-Delivery Feedback Container -->
 <div class="feedback-card" style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); padding: 24px; border-radius: 14px; max-width: 500px; margin: 32px auto 20px auto; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); box-sizing: border-box;">
     
     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
@@ -430,24 +430,30 @@
     
     <form id="feedback-form-element" style="display: flex; flex-direction: column; gap: 14px; width: 100%; box-sizing: border-box;">
         
+        <!-- Public Free Key provided by Web3Forms to route to your email safely -->
+        <input type="hidden" name="access_key" value="6f6a735c-7d9a-4c28-98e6-7df089e023ba">
+        <input type="hidden" name="subject" value="DocuScan AI Pro - System Telemetry Feedback">
+
         <div style="display: flex; flex-direction: column; gap: 6px;">
             <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Your Name</label>
-            <input type="text" id="feedback-user-name" required placeholder="John Doe" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none; transition: border 0.2s; width: 100%; box-sizing: border-box;">
+            <input type="text" name="name" id="feedback-user-name" required placeholder="John Doe" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none; transition: border 0.2s; width: 100%; box-sizing: border-box;">
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
             <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Your Email Address</label>
-            <input type="email" id="feedback-user-email" required placeholder="yourname@domain.com" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none; transition: border 0.2s; width: 100%; box-sizing: border-box;">
+            <input type="email" name="email" id="feedback-user-email" required placeholder="yourname@domain.com" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none; transition: border 0.2s; width: 100%; box-sizing: border-box;">
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
             <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Message Details</label>
-            <textarea id="feedback-message-input" required placeholder="Describe your experience or report an issue..." style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 90px; max-height: 200px; resize: vertical; outline: none; transition: border 0.2s; font-family: inherit; width: 100%; box-sizing: border-box;"></textarea>
+            <textarea name="message" id="feedback-message-input" required placeholder="Describe your experience or report an issue..." style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 90px; max-height: 200px; resize: vertical; outline: none; transition: border 0.2s; font-family: inherit; width: 100%; box-sizing: border-box;"></textarea>
         </div>
 
-        <button type="submit" style="background: #3b82f6; color: #ffffff; border: none; padding: 11px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; margin-top: 4px; width: 100%;">
+        <button type="submit" id="feedback-submit-btn" style="background: #3b82f6; color: #ffffff; border: none; padding: 11px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; margin-top: 4px; width: 100%;">
             <i class="fa-solid fa-paper-plane" style="font-size: 0.8rem;"></i> Dispatch Feedback Securely
         </button>
+        
+        <div id="feedback-status-text" style="font-size: 0.8rem; text-align: center; margin-top: 4px; display: none;"></div>
     </form>
 </div>
         </div>
@@ -1062,29 +1068,51 @@ togglePassViewBtn.addEventListener('click', () => {
         }
         // --- SECURE USER SYSTEM FEEDBACK ROUTING CHANNEL ---
         // Listens for the form submission and reliably fires up the local mail application
+        // --- BACKGROUND FEEDBACK TRANSMISSION ENGINE ---
         const feedbackFormElement = document.getElementById('feedback-form-element');
+        const feedbackStatusText = document.getElementById('feedback-status-text');
+        const feedbackSubmitBtn = document.getElementById('feedback-submit-btn');
+
         if (feedbackFormElement) {
             feedbackFormElement.addEventListener('submit', function (event) {
-                event.preventDefault(); // Prevents the page from brokenly reloading or crashing
+                event.preventDefault(); 
                 
-                const senderName = document.getElementById('feedback-user-name').value.trim();
-                const senderEmail = document.getElementById('feedback-user-email').value.trim();
-                const messageBody = document.getElementById('feedback-message-input').value.trim();
+                // Show sending status on screen
+                feedbackStatusText.style.display = "block";
+                feedbackStatusText.style.color = "#3b82f6";
+                feedbackStatusText.textContent = "Transmitting feedback safely to developer inbox...";
+                feedbackSubmitBtn.disabled = true;
+
+                const formData = new FormData(feedbackFormElement);
                 
-                const developerTargetEmail = "ayynanwaheed2021@gmail.com";
-                const emailSubject = encodeURIComponent("DocuScan AI Pro - System Telemetry Feedback");
-                
-                // Formats the text inside the email perfectly so you know who sent it
-                const formattedBody = encodeURIComponent(
-                    "Sender Profile Name: " + senderName + "\n" +
-                    "Sender Return Contact: " + senderEmail + "\n\n" +
-                    "Report Details:\n" + messageBody
-                );
-                
-                // Launches the user's native device mail app (Mail, Outlook, Gmail) pre-filled with your email
-                window.location.href = `mailto:${developerTargetEmail}?subject=${emailSubject}&body=${formattedBody}`;
-                
-                alert("Redirecting to your mail client framework... Please click send in your application window to deliver to ayynanwaheed2021@gmail.com.");
+                // Post data silently to Web3Forms API in the background
+                fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(async (response) => {
+                    let json = await response.json();
+                    if (response.status == 200) {
+                        feedbackStatusText.style.color = "#10b981";
+                        feedbackStatusText.textContent = "Feedback received! Thank you.";
+                        feedbackFormElement.reset(); // Clear inputs
+                    } else {
+                        console.log(response);
+                        feedbackStatusText.style.color = "#ef4444";
+                        feedbackStatusText.textContent = json.message || "Transmission failed.";
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    feedbackStatusText.style.color = "#ef4444";
+                    feedbackStatusText.textContent = "Network error. Please try again later.";
+                })
+                .then(() => {
+                    feedbackSubmitBtn.disabled = false;
+                    setTimeout(() => {
+                        feedbackStatusText.style.display = "none";
+                    }, 4000); // Hide message after 4 seconds
+                });
             });
         }
     </script>
