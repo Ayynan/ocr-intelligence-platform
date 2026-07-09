@@ -413,7 +413,18 @@
                     <textarea id="output" placeholder="Raw editable text extraction layer will populate inside this viewport framework..." readonly></textarea>
                 </div>
             </div>
-
+<div class="feedback-card" style="background: var(--bg-surface); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin-top: 24px;">
+    <h3 style="margin-top: 0; font-size: 1.1rem; color: white;"><i class="fa-solid fa-comment-dots" style="color: var(--primary);"></i> Submit System Feedback</h3>
+    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">Encountered a bug or want to request a module? Drop your message straight to the development team.</p>
+    
+    <form action="https://formspree.io/f/xoqgkgpw" method="POST" id="feedback-form-element" style="display: flex; flex-direction: column; gap: 12px;">
+        <input type="hidden" name="_replyto" id="feedback-hidden-user-email">
+        <textarea name="message" required placeholder="Describe your experience or report an issue..." style="background: #070a12; border: 1px solid var(--border); color: white; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 80px; resize: vertical; width: 100%;" id="feedback-message-input"></textarea>
+        <button type="submit" style="background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fa-solid fa-paper-plane"></i> Dispatch Feedback
+        </button>
+    </form>
+</div>
         </div>
     </div>
 
@@ -475,14 +486,23 @@ togglePassViewBtn.addEventListener('click', () => {
         btnAuthSubmit.addEventListener('click', () => {
             const u = userField.value.trim();
             const p = passField.value.trim();
+            
+            // Stricter Email Domain Character Mapping Validation
+            const emailValidationRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            
             if (!u || !p) { 
-                alert("Complete all login parameters."); 
+                alert("Complete all profile credential fields."); 
                 return; 
+            }
+            
+            if (!emailValidationRegex.test(u)) {
+                alert("Please register using a valid, structural email address (e.g., user@domain.com). Fake phrases are rejected.");
+                return;
             }
 
             if (isSignUpMode) {
                 if (localRegisteredAccounts.some(acc => acc.username === u)) { 
-                    alert("Username locked. Try another."); 
+                    alert("This email profile registry is already locked. Try Signing In."); 
                     return; 
                 }
                 localRegisteredAccounts.push({ username: u, password: p });
@@ -491,11 +511,11 @@ togglePassViewBtn.addEventListener('click', () => {
                 activateAuthenticatedSessionEcosystem(u);
             } else {
                 const matchFound = localRegisteredAccounts.find(acc => acc.username === u && acc.password === p);
-                if (matchFound || (u === "admin" && p === "12345")) {
+                if (matchFound || (u === "admin@domain.com" && p === "12345")) {
                     localStorage.setItem('docuscan_logged_session', u);
                     activateAuthenticatedSessionEcosystem(u);
                 } else {
-                    alert("Invalid credential signature match found inside local tables.");
+                    alert("Invalid credential signature match found inside local profile tables.");
                 }
             }
         });
@@ -932,6 +952,14 @@ togglePassViewBtn.addEventListener('click', () => {
             downloadLinkAnchor.click(); 
             document.body.removeChild(downloadLinkAnchor);
         }
+        // Connect user profile metadata contexts to outbound feedback forms
+        document.getElementById('feedback-form-element').addEventListener('submit', function (e) {
+            const currentUserSession = localStorage.getItem('docuscan_logged_session') || "unauthenticated_guest@domain.com";
+            document.getElementById('feedback-hidden-user-email').value = currentUserSession;
+            
+            // Short alert visual validation trick
+            alert("Routing telemetry report details to system administrator at ayynanwaheed2021@gmail.com...");
+        });
     </script>
 </body>
 </html>
