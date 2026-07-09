@@ -1070,49 +1070,69 @@ togglePassViewBtn.addEventListener('click', () => {
         // Listens for the form submission and reliably fires up the local mail application
         // --- BACKGROUND FEEDBACK TRANSMISSION ENGINE ---
         // --- BULLETPROOF BACKGROUND FEEDBACK DISPATCH MATRIX ---
-        function handleSilentFeedbackDispatch(event) {
-            // Instantly stop the browser and Windows from opening external links
-            event.preventDefault(); 
-            event.stopPropagation();
+        // --- ABSOLUTE BACKGROUND FEEDBACK DISPATCH MATRIX ---
+        const fbButton = document.getElementById('feedback-submit-btn');
+        if (fbButton) {
+            fbButton.addEventListener('click', () => {
+                const nameVal = document.getElementById('feedback-user-name').value.trim();
+                const emailVal = document.getElementById('feedback-user-email').value.trim();
+                const messageVal = document.getElementById('feedback-message-input').value.trim();
+                const statusTxt = document.getElementById('feedback-status-text');
 
-            const feedbackStatusText = document.getElementById('feedback-status-text');
-            const feedbackSubmitBtn = document.getElementById('feedback-submit-btn');
-            const feedbackFormElement = document.getElementById('feedback-form-element');
-
-            // Visual loader feedback updates
-            feedbackStatusText.style.display = "block";
-            feedbackStatusText.style.color = "#3b82f6";
-            feedbackStatusText.textContent = "Transmitting telemetry data quietly to developer inbox...";
-            feedbackSubmitBtn.disabled = true;
-
-            const formData = new FormData(feedbackFormElement);
-
-            // Execute clean background network request bypassing native application protocols
-            fetch('https://api.web3forms.com/submit', {
-                method: 'POST',
-                body: formData
-            })
-            .then(async (response) => {
-                if (response.status === 200) {
-                    feedbackStatusText.style.color = "#10b981";
-                    feedbackStatusText.textContent = "Feedback received seamlessly! Thank you.";
-                    feedbackFormElement.reset();
-                } else {
-                    let json = await response.json();
-                    feedbackStatusText.style.color = "#ef4444";
-                    feedbackStatusText.textContent = json.message || "Transmission error encountered.";
+                // Simple Field Verification
+                if (!nameVal || !emailVal || !messageVal) {
+                    alert("Please fill in all feedback fields before dispatching.");
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error("Network error:", error);
-                feedbackStatusText.style.color = "#ef4444";
-                feedbackStatusText.textContent = "Unable to connect. Check internet access hooks.";
-            })
-            .then(() => {
-                feedbackSubmitBtn.disabled = false;
-                setTimeout(() => {
-                    feedbackStatusText.style.display = "none";
-                }, 4000);
+
+                // Show status layout text
+                statusTxt.style.display = "block";
+                statusTxt.style.color = "#3b82f6";
+                statusTxt.textContent = "Transmitting feedback quietly to developer inbox...";
+                fbButton.disabled = true;
+
+                // Build a manual object to submit directly via AJAX/Fetch
+                const payload = {
+                    access_key: "6f6a735c-7d9a-4c28-98e6-7df089e023ba",
+                    subject: "DocuScan AI Pro - System Telemetry Feedback",
+                    name: nameVal,
+                    email: emailVal,
+                    message: messageVal
+                };
+
+                fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(async (response) => {
+                    if (response.status === 200) {
+                        statusTxt.style.color = "#10b981";
+                        statusTxt.textContent = "Feedback received seamlessly! Thank you.";
+                        // Reset input values manually
+                        document.getElementById('feedback-user-name').value = "";
+                        document.getElementById('feedback-user-email').value = "";
+                        document.getElementById('feedback-message-input').value = "";
+                    } else {
+                        let json = await response.json();
+                        statusTxt.style.color = "#ef4444";
+                        statusTxt.textContent = json.message || "Transmission error encountered.";
+                    }
+                })
+                .catch(error => {
+                    console.error("Network issue:", error);
+                    statusTxt.style.color = "#ef4444";
+                    statusTxt.textContent = "Unable to connect. Check internet access.";
+                })
+                .then(() => {
+                    fbButton.disabled = false;
+                    setTimeout(() => {
+                        statusTxt.style.display = "none";
+                    }, 4000);
+                });
             });
         }
     </script>
