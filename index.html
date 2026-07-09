@@ -428,7 +428,7 @@
         </div>
     </div>
     
-    <form id="feedback-form-element" style="display: flex; flex-direction: column; gap: 14px; width: 100%; box-sizing: border-box;">
+    <form id="feedback-form-element" onsubmit="handleSilentFeedbackDispatch(event)" style="display: flex; flex-direction: column; gap: 14px; width: 100%; box-sizing: border-box;">
         
         <!-- Public Free Key provided by Web3Forms to route to your email safely -->
         <input type="hidden" name="access_key" value="6f6a735c-7d9a-4c28-98e6-7df089e023ba">
@@ -1069,50 +1069,50 @@ togglePassViewBtn.addEventListener('click', () => {
         // --- SECURE USER SYSTEM FEEDBACK ROUTING CHANNEL ---
         // Listens for the form submission and reliably fires up the local mail application
         // --- BACKGROUND FEEDBACK TRANSMISSION ENGINE ---
-        const feedbackFormElement = document.getElementById('feedback-form-element');
-        const feedbackStatusText = document.getElementById('feedback-status-text');
-        const feedbackSubmitBtn = document.getElementById('feedback-submit-btn');
+        // --- BULLETPROOF BACKGROUND FEEDBACK DISPATCH MATRIX ---
+        function handleSilentFeedbackDispatch(event) {
+            // Instantly stop the browser and Windows from opening external links
+            event.preventDefault(); 
+            event.stopPropagation();
 
-        if (feedbackFormElement) {
-            feedbackFormElement.addEventListener('submit', function (event) {
-                event.preventDefault(); 
-                
-                // Show sending status on screen
-                feedbackStatusText.style.display = "block";
-                feedbackStatusText.style.color = "#3b82f6";
-                feedbackStatusText.textContent = "Transmitting feedback safely to developer inbox...";
-                feedbackSubmitBtn.disabled = true;
+            const feedbackStatusText = document.getElementById('feedback-status-text');
+            const feedbackSubmitBtn = document.getElementById('feedback-submit-btn');
+            const feedbackFormElement = document.getElementById('feedback-form-element');
 
-                const formData = new FormData(feedbackFormElement);
-                
-                // Post data silently to Web3Forms API in the background
-                fetch('https://api.web3forms.com/submit', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(async (response) => {
+            // Visual loader feedback updates
+            feedbackStatusText.style.display = "block";
+            feedbackStatusText.style.color = "#3b82f6";
+            feedbackStatusText.textContent = "Transmitting telemetry data quietly to developer inbox...";
+            feedbackSubmitBtn.disabled = true;
+
+            const formData = new FormData(feedbackFormElement);
+
+            // Execute clean background network request bypassing native application protocols
+            fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async (response) => {
+                if (response.status === 200) {
+                    feedbackStatusText.style.color = "#10b981";
+                    feedbackStatusText.textContent = "Feedback received seamlessly! Thank you.";
+                    feedbackFormElement.reset();
+                } else {
                     let json = await response.json();
-                    if (response.status == 200) {
-                        feedbackStatusText.style.color = "#10b981";
-                        feedbackStatusText.textContent = "Feedback received! Thank you.";
-                        feedbackFormElement.reset(); // Clear inputs
-                    } else {
-                        console.log(response);
-                        feedbackStatusText.style.color = "#ef4444";
-                        feedbackStatusText.textContent = json.message || "Transmission failed.";
-                    }
-                })
-                .catch(error => {
-                    console.log(error);
                     feedbackStatusText.style.color = "#ef4444";
-                    feedbackStatusText.textContent = "Network error. Please try again later.";
-                })
-                .then(() => {
-                    feedbackSubmitBtn.disabled = false;
-                    setTimeout(() => {
-                        feedbackStatusText.style.display = "none";
-                    }, 4000); // Hide message after 4 seconds
-                });
+                    feedbackStatusText.textContent = json.message || "Transmission error encountered.";
+                }
+            })
+            .catch(error => {
+                console.error("Network error:", error);
+                feedbackStatusText.style.color = "#ef4444";
+                feedbackStatusText.textContent = "Unable to connect. Check internet access hooks.";
+            })
+            .then(() => {
+                feedbackSubmitBtn.disabled = false;
+                setTimeout(() => {
+                    feedbackStatusText.style.display = "none";
+                }, 4000);
             });
         }
     </script>
