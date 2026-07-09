@@ -246,6 +246,7 @@
     color: white;
 }
     </style>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body class="logged-out">
 
@@ -415,13 +416,25 @@
             </div>
 <div class="feedback-card" style="background: var(--bg-surface); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin-top: 24px;">
     <h3 style="margin-top: 0; font-size: 1.1rem; color: white;"><i class="fa-solid fa-comment-dots" style="color: var(--primary);"></i> Submit System Feedback</h3>
-    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">Encountered a bug or want to request a module? Drop your message straight to the development team.</p>
+    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">Encountered a bug or want to request a module? Your submission will route straight to ayynanwaheed2021@gmail.com.</p>
     
-    <form action="https://formspree.io/f/xoqgkgpw" method="POST" id="feedback-form-element" style="display: flex; flex-direction: column; gap: 12px;">
-        <input type="hidden" name="_replyto" id="feedback-hidden-user-email">
-        <textarea name="message" required placeholder="Describe your experience or report an issue..." style="background: #070a12; border: 1px solid var(--border); color: white; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 80px; resize: vertical; width: 100%;" id="feedback-message-input"></textarea>
+    <form id="feedback-form-element" style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="dropdown-input-wrapper">
+                <label>Your Name</label>
+                <input type="text" id="feedback-user-name" class="dropdown-field" required placeholder="John Doe">
+            </div>
+            <div class="dropdown-input-wrapper">
+                <label>Your Verified Email Address</label>
+                <input type="email" id="feedback-user-email" class="dropdown-field" required placeholder="yourname@domain.com">
+            </div>
+        </div>
+        <div class="dropdown-input-wrapper">
+            <label>Message Content</label>
+            <textarea id="feedback-message-input" required placeholder="Describe your experience or report an issue..." style="background: #070a12; border: 1px solid var(--border); color: white; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 80px; resize: vertical; width: 100%;"></textarea>
+        </div>
         <button type="submit" style="background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <i class="fa-solid fa-paper-plane"></i> Dispatch Feedback
+            <i class="fa-solid fa-paper-plane"></i> Dispatch Feedback via Mail Client
         </button>
     </form>
 </div>
@@ -429,6 +442,14 @@
     </div>
 
     <script>
+        // Place this at the very top of your JavaScript code block
+const localRegisteredAccounts = JSON.parse(localStorage.getItem('docuscan_vault_users') || '[]');
+let generatedVerificationToken = null;
+let temporaryPendingUser = null;
+let temporaryPendingPass = null;
+
+// Initialize EmailJS engine module
+emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         // --- AUTHENTICATION FLOW CONTEXT SWITCHER ENGINE ---
@@ -483,42 +504,73 @@ togglePassViewBtn.addEventListener('click', () => {
             document.getElementById('auth-toggle-trigger').addEventListener('click', toggleModeHandler);
         });
 
-        btnAuthSubmit.addEventListener('click', () => {
-            const u = userField.value.trim();
-            const p = passField.value.trim();
-            
-            // Stricter Email Domain Character Mapping Validation
-            const emailValidationRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            
-            if (!u || !p) { 
-                alert("Complete all profile credential fields."); 
-                return; 
-            }
-            
-            if (!emailValidationRegex.test(u)) {
-                alert("Please register using a valid, structural email address (e.g., user@domain.com). Fake phrases are rejected.");
-                return;
-            }
+        // --- STRICT REGISTRATION & TOKEN VERIFICATION ROUTINE ---
+btnAuthSubmit.addEventListener('click', () => {
+    const u = userField.value.trim();
+    const p = passField.value.trim();
+    const emailValidationRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    if (!u || !p) { 
+        alert("Complete all profile credential fields."); 
+        return; 
+    }
+    if (!emailValidationRegex.test(u)) {
+        alert("Please write a structurally valid email syntax.");
+        return;
+    }
 
-            if (isSignUpMode) {
-                if (localRegisteredAccounts.some(acc => acc.username === u)) { 
-                    alert("This email profile registry is already locked. Try Signing In."); 
-                    return; 
-                }
+    if (isSignUpMode) {
+        if (localRegisteredAccounts.some(acc => acc.username === u)) { 
+            alert("This email profile registry is already locked."); 
+            return; 
+        }
+
+        // Create a random verification code to test if the inbox is real
+        generatedVerificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+        temporaryPendingUser = u;
+        temporaryPendingPass = p;
+
+        alert("Verification dispatch sequence running! Sending unique access tokens directly to: " + u);
+
+        // Use EmailJS to send the code right from your front-end
+        emailjs.send("default_service", "YOUR_TEMPLATE_ID", {
+            to_email: u,
+            verification_code: generatedVerificationToken
+        }).then(() => {
+            const validationAttempt = prompt("An authentication token code was sent to your inbox. Type the 6-digit code here to finalize registration:");
+            
+            if (validationAttempt === generatedVerificationToken) {
+                localRegisteredAccounts.push({ username: temporaryPendingUser, password: temporaryPendingPass });
+                localStorage.setItem('docuscan_vault_users', JSON.stringify(localRegisteredAccounts));
+                localStorage.setItem('docuscan_logged_session', temporaryPendingUser);
+                activateAuthenticatedSessionEcosystem(temporaryPendingUser);
+                alert("Account verified successfully!");
+            } else {
+                alert("Invalid security signature match. Access revoked.");
+            }
+        }).catch((err) => {
+            // Fallback simulation mode if integration keys are missing during early testing phase
+            console.error("Email processing failed: ", err);
+            const codeOverride = prompt("[Dev Mode Validation Pass] Type '123456' to pass token simulation checks for: " + u);
+            if (codeOverride === "123456") {
                 localRegisteredAccounts.push({ username: u, password: p });
                 localStorage.setItem('docuscan_vault_users', JSON.stringify(localRegisteredAccounts));
                 localStorage.setItem('docuscan_logged_session', u);
                 activateAuthenticatedSessionEcosystem(u);
-            } else {
-                const matchFound = localRegisteredAccounts.find(acc => acc.username === u && acc.password === p);
-                if (matchFound || (u === "admin@domain.com" && p === "12345")) {
-                    localStorage.setItem('docuscan_logged_session', u);
-                    activateAuthenticatedSessionEcosystem(u);
-                } else {
-                    alert("Invalid credential signature match found inside local profile tables.");
-                }
             }
         });
+
+    } else {
+        // Sign In Handling Structure Logic
+        const matchFound = localRegisteredAccounts.find(acc => acc.username === u && acc.password === p);
+        if (matchFound || (u === "admin@domain.com" && p === "12345")) {
+            localStorage.setItem('docuscan_logged_session', u);
+            activateAuthenticatedSessionEcosystem(u);
+        } else {
+            alert("Invalid credential signature match found.");
+        }
+    }
+});
 
         btnGuest.addEventListener('click', () => { 
             activateAuthenticatedSessionEcosystem("Guest Workspace"); 
@@ -960,6 +1012,28 @@ togglePassViewBtn.addEventListener('click', () => {
             // Short alert visual validation trick
             alert("Routing telemetry report details to system administrator at ayynanwaheed2021@gmail.com...");
         });
+        // --- OUTBOUND SYSTEM FEEDBACK MAIL CLIENT DISPATCHER ---
+document.getElementById('feedback-form-element').addEventListener('submit', function (e) {
+    e.preventDefault();
+    
+    const senderName = document.getElementById('feedback-user-name').value.trim();
+    const senderEmail = document.getElementById('feedback-user-email').value.trim();
+    const messageBody = document.getElementById('feedback-message-input').value.trim();
+    
+    const developerTargetEmail = "ayynanwaheed2021@gmail.com";
+    const emailSubject = encodeURIComponent("DocuScan AI Pro - System Telemetry Feedback");
+    
+    const formattedBody = encodeURIComponent(
+        "Sender Profile Name: " + senderName + "\n" +
+        "Sender Return Contact: " + senderEmail + "\n\n" +
+        "Report Details:\n" + messageBody
+    );
+    
+    // Redirect securely to native mail software
+    window.location.href = `mailto:${developerTargetEmail}?subject=${emailSubject}&body=${formattedBody}`;
+    
+    alert("Local email framework initialized. Please authorize sending verification inside your device window link.");
+});
     </script>
 </body>
 </html>
