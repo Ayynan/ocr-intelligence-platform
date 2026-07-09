@@ -415,27 +415,38 @@
                     <textarea id="output" placeholder="Raw editable text extraction layer will populate inside this viewport framework..." readonly></textarea>
                 </div>
             </div>
-<div class="feedback-card" style="background: #111827; border: 1px solid #1f2937; padding: 20px; border-radius: 12px; margin-top: 24px;">
-    <h3 style="margin-top: 0; font-size: 1.1rem; color: white;"><i class="fa-solid fa-comment-dots" style="color: #3b82f6;"></i> Submit System Feedback</h3>
-    <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 16px;">Encountered a bug or want to request a feature? Your message will route straight to the developer's inbox.</p>
+<!-- Re-engineered Ultra-Clean Feedback Interface Container -->
+<div class="feedback-card" style="background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); padding: 24px; border-radius: 14px; max-width: 500px; margin: 32px auto 20px auto; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); box-sizing: border-box;">
     
-    <form id="feedback-form-element" style="display: flex; flex-direction: column; gap: 12px;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 0.75rem; color: #9ca3af;">Your Name</label>
-                <input type="text" id="feedback-user-name" required placeholder="John Doe" style="background: #070a12; border: 1px solid #1f2937; color: white; border-radius: 6px; padding: 10px; font-size: 0.85rem;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 0.75rem; color: #9ca3af;">Your Email Address</label>
-                <input type="email" id="feedback-user-email" required placeholder="yourname@domain.com" style="background: #070a12; border: 1px solid #1f2937; color: white; border-radius: 6px; padding: 10px; font-size: 0.85rem;">
-            </div>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <div style="background: rgba(59, 130, 246, 0.15); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-comment-dots" style="color: #3b82f6; font-size: 0.95rem;"></i>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 0.75rem; color: #9ca3af;">Message Content</label>
-            <textarea id="feedback-message-input" required placeholder="Describe your experience or report an issue..." style="background: #070a12; border: 1px solid #1f2937; color: white; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 80px; resize: vertical; width: 100%;"></textarea>
+        <div>
+            <h3 style="margin: 0; font-size: 1rem; font-weight: 600; color: #ffffff; letter-spacing: -0.01em;">Submit System Feedback</h3>
+            <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #9ca3af;">Report bugs or suggest new features</p>
         </div>
-        <button type="submit" style="background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-            <i class="fa-solid fa-paper-plane"></i> Dispatch Feedback via Mail Client
+    </div>
+    
+    <form id="feedback-form-element" style="display: flex; flex-direction: column; gap: 14px; width: 100%; box-sizing: border-box;">
+        
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Your Name</label>
+            <input type="text" id="feedback-user-name" required placeholder="John Doe" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none; transition: border 0.2s; width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Your Email Address</label>
+            <input type="email" id="feedback-user-email" required placeholder="yourname@domain.com" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none; transition: border 0.2s; width: 100%; box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Message Details</label>
+            <textarea id="feedback-message-input" required placeholder="Describe your experience or report an issue..." style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 90px; max-height: 200px; resize: vertical; outline: none; transition: border 0.2s; font-family: inherit; width: 100%; box-sizing: border-box;"></textarea>
+        </div>
+
+        <button type="submit" style="background: #3b82f6; color: #ffffff; border: none; padding: 11px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; margin-top: 4px; width: 100%;">
+            <i class="fa-solid fa-paper-plane" style="font-size: 0.8rem;"></i> Dispatch Feedback Securely
         </button>
     </form>
 </div>
