@@ -258,59 +258,53 @@
     max-width: 320px !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
 }
-/* GLOBAL LIGHT MODE TEXT READABILITY FIXES */
+/* THE ULTIMATE LIGHT MODE CONTRAST OVERRIDE */
 body.light-mode {
-    background-color: #f1f5f9 !important; /* Premium crisp slate backdrop */
+    background-color: #f1f5f9 !important;
+    background-image: none !important; /* Clears dark background gradients */
     color: #0f172a !important;
 }
 
-/* 1. Force all dashboard glass panels to turn crisp white with dark text */
-body.light-mode .history-card,
-body.light-mode .feedback-card,
-body.light-mode div[style*="background: rgba(30, 41, 59"],
-body.light-mode div[style*="background:rgba(30,41,59"] {
+/* 1. Force all containers with dark inline backgrounds to turn clean white */
+body.light-mode div[style*="background"], 
+body.light-mode section[style*="background"] {
     background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
+    border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+/* 2. Target any inline gray/white text colors and flip them to dark slate */
+body.light-mode [style*="color: #9ca3af"],
+body.light-mode [style*="color:#9ca3af"],
+body.light-mode [style*="color: #cbd5e1"],
+body.light-mode [style*="color:#cbd5e1"],
+body.light-mode [style*="color: #ffffff"],
+body.light-mode [style*="color:#ffffff"],
+body.light-mode [style*="color: white"] {
     color: #0f172a !important;
 }
 
-/* 2. Fix all text inside the panels (Headers, Paragraphs, Labels, Status percentages) */
-body.light-mode h3, 
-body.light-mode h2,
+/* 3. Specific fix for muted paragraph/description text labels */
+body.light-mode p, 
 body.light-mode label,
-body.light-mode span,
-body.light-mode p,
-body.light-mode div {
-    /* If the element is an icon or button, don't break its color, otherwise make it dark text */
-    color: inherit; 
+body.light-mode .history-card div {
+    color: #334155 !important;
 }
 
-/* Target plain text strings directly so they become crisp dark blue */
-body.light-mode h3, body.light-mode h2 { color: #0f172a !important; }
-body.light-mode p, body.light-mode label { color: #334155 !important; }
-body.light-mode div[id*="status"], body.light-mode span[id*="percent"] { color: #1e293b !important; }
-
-/* 3. Fix the "No logged workspace files..." empty message */
-body.light-mode .history-card div, 
-body.light-mode div[style*="color: #9ca3af"] {
-    color: #475569 !important;
-}
-
-/* 4. Fix Inputs and Textareas so you can read typed data */
-body.light-mode input,
-body.light-mode textarea {
+/* 4. Fix account profile drop-down panel fields so inputs aren't blind white-on-white */
+body.light-mode input[style*="background"], 
+body.light-mode textarea[style*="background"] {
     background: #f8fafc !important;
-    border: 1px solid #cbd5e1 !important;
     color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
 }
-body.light-mode input::placeholder,
+body.light-mode input::placeholder, 
 body.light-mode textarea::placeholder {
     color: #64748b !important;
 }
 
-/* 5. Keep your primary action buttons looking premium in light mode */
-body.light-mode button:not(#theme-toggle-btn):not(#feedback-submit-btn) {
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+/* 5. Keep icons looking sharp but allow your custom blue brand icons to stay colorful */
+body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
+    color: #475569 !important;
 }
     </style>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
