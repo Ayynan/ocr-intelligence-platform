@@ -249,10 +249,14 @@
     color: white;
 }
 /* Paste this into your CSS for the feedback container id/class */
-.left-column-class {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+/* Fixes the feedback box to the bottom right corner of the screen */
+#feedback-card { 
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    z-index: 1000 !important;
+    max-width: 320px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
 }
     </style>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
