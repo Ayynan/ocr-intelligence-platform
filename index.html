@@ -371,10 +371,13 @@ body.light-mode textarea::placeholder {
                 <span class="slider"></span>
             </label>
         </div>
-<!-- Theme Toggle Button -->
-<button id="theme-toggle-btn" onclick="toggleThemePipeline()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
-    <i id="theme-icon" class="fa-solid fa-sun" style="color: #ffffff; font-size: 0.95rem;"></i>
-</button>
+<div style="display: flex; align-items: center; gap: 10px; user-select: none;">
+    <i id="theme-status-icon" class="fa-solid fa-moon" style="color: #94a3b8; font-size: 0.9rem; transition: color 0.2s;"></i>
+    
+    <div id="theme-toggle-track" onclick="toggleThemePipeline()" style="width: 44px; height: 22px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s ease;">
+        <div id="theme-toggle-knob" style="width: 14px; height: 14px; background: #ffffff; border-radius: 50%; position: absolute; top: 3px; left: 4px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>
+    </div>
+</div>
         <button class="dropdown-logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit Workspace</button>
     </div>
 </div>
@@ -1206,29 +1209,34 @@ function toggleFeedbackWidget() {
 }
 function toggleThemePipeline() {
     const body = document.body;
-    const icon = document.getElementById('theme-icon');
-    const btn = document.getElementById('theme-toggle-btn');
+    const track = document.getElementById('theme-toggle-track');
+    const knob = document.getElementById('theme-toggle-knob');
+    const statusIcon = document.getElementById('theme-status-icon');
     
     body.classList.toggle('light-mode');
     
     if (body.classList.contains('light-mode')) {
-        // Shift button UI to Dark Mode switcher state
-        icon.className = 'fa-solid fa-moon';
-        icon.style.color = '#1e293b';
-        btn.style.background = 'rgba(15, 23, 42, 0.08)';
-        btn.style.borderColor = 'rgba(15, 23, 42, 0.15)';
+        // LIGHT MODE ACTIVE STATE
+        knob.style.transform = 'translateX(20px)'; // Slide knob to the right
+        track.style.background = '#3b82f6';        // Bright blue track background
+        track.style.borderColor = '#2563eb';
+        statusIcon.className = 'fa-solid fa-sun'; // Swap status icon to Sun
+        statusIcon.style.color = '#eab308';       // Glowing bright gold color
+        
         localStorage.setItem('docuscan-theme', 'light');
     } else {
-        // Shift button UI back to Light Mode switcher state
-        icon.className = 'fa-solid fa-sun';
-        icon.style.color = '#ffffff';
-        btn.style.background = 'rgba(255, 255, 255, 0.08)';
-        btn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        // DARK MODE ACTIVE STATE (DEFAULT)
+        knob.style.transform = 'translateX(0px)';  // Slide knob back to left
+        track.style.background = 'rgba(255, 255, 255, 0.1)';
+        track.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        statusIcon.className = 'fa-solid fa-moon'; // Swap status icon to Moon
+        statusIcon.style.color = '#94a3b8';       // Soft muted interface slate
+        
         localStorage.setItem('docuscan-theme', 'dark');
     }
 }
 
-// Automatically apply the saved theme configuration instantly on page load
+// Keep theme persistent on hard reloads
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('docuscan-theme');
     if (savedTheme === 'light') {
