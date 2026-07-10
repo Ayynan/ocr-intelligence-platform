@@ -258,40 +258,59 @@
     max-width: 320px !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
 }
-/* LIGHT THEME CONSTANTS */
+/* GLOBAL LIGHT MODE TEXT READABILITY FIXES */
 body.light-mode {
-    background-color: #f8fafc !important; /* Soft premium slate white */
-    color: #0f172a !important; /* Deep dark text for crisp contrast */
-}
-
-/* Switches the translucent dashboard glass cards to light profile panels */
-body.light-mode .history-card,
-body.light-mode .feedback-card,
-body.light-mode div[style*="background: rgba(30, 41, 59"] {
-    background: rgba(255, 255, 255, 0.75) !important;
-    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    background-color: #f1f5f9 !important; /* Premium crisp slate backdrop */
     color: #0f172a !important;
 }
 
-/* Flips the workspace typography labels to legible colors */
-body.light-mode h3, 
-body.light-mode label {
-    color: #1e293b !important;
+/* 1. Force all dashboard glass panels to turn crisp white with dark text */
+body.light-mode .history-card,
+body.light-mode .feedback-card,
+body.light-mode div[style*="background: rgba(30, 41, 59"],
+body.light-mode div[style*="background:rgba(30,41,59"] {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
 }
-body.light-mode p {
+
+/* 2. Fix all text inside the panels (Headers, Paragraphs, Labels, Status percentages) */
+body.light-mode h3, 
+body.light-mode h2,
+body.light-mode label,
+body.light-mode span,
+body.light-mode p,
+body.light-mode div {
+    /* If the element is an icon or button, don't break its color, otherwise make it dark text */
+    color: inherit; 
+}
+
+/* Target plain text strings directly so they become crisp dark blue */
+body.light-mode h3, body.light-mode h2 { color: #0f172a !important; }
+body.light-mode p, body.light-mode label { color: #334155 !important; }
+body.light-mode div[id*="status"], body.light-mode span[id*="percent"] { color: #1e293b !important; }
+
+/* 3. Fix the "No logged workspace files..." empty message */
+body.light-mode .history-card div, 
+body.light-mode div[style*="color: #9ca3af"] {
     color: #475569 !important;
 }
 
-/* Adjusts data terminal inputs for light mode viewports */
+/* 4. Fix Inputs and Textareas so you can read typed data */
 body.light-mode input,
 body.light-mode textarea {
-    background: #ffffff !important;
+    background: #f8fafc !important;
     border: 1px solid #cbd5e1 !important;
     color: #0f172a !important;
 }
 body.light-mode input::placeholder,
 body.light-mode textarea::placeholder {
-    color: #94a3b8 !important;
+    color: #64748b !important;
+}
+
+/* 5. Keep your primary action buttons looking premium in light mode */
+body.light-mode button:not(#theme-toggle-btn):not(#feedback-submit-btn) {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
     </style>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
