@@ -258,6 +258,41 @@
     max-width: 320px !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
 }
+/* LIGHT THEME CONSTANTS */
+body.light-mode {
+    background-color: #f8fafc !important; /* Soft premium slate white */
+    color: #0f172a !important; /* Deep dark text for crisp contrast */
+}
+
+/* Switches the translucent dashboard glass cards to light profile panels */
+body.light-mode .history-card,
+body.light-mode .feedback-card,
+body.light-mode div[style*="background: rgba(30, 41, 59"] {
+    background: rgba(255, 255, 255, 0.75) !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    color: #0f172a !important;
+}
+
+/* Flips the workspace typography labels to legible colors */
+body.light-mode h3, 
+body.light-mode label {
+    color: #1e293b !important;
+}
+body.light-mode p {
+    color: #475569 !important;
+}
+
+/* Adjusts data terminal inputs for light mode viewports */
+body.light-mode input,
+body.light-mode textarea {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+body.light-mode input::placeholder,
+body.light-mode textarea::placeholder {
+    color: #94a3b8 !important;
+}
     </style>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
@@ -336,7 +371,10 @@
                 <span class="slider"></span>
             </label>
         </div>
-
+<!-- Theme Toggle Button -->
+<button id="theme-toggle-btn" onclick="toggleThemePipeline()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+    <i id="theme-icon" class="fa-solid fa-sun" style="color: #ffffff; font-size: 0.95rem;"></i>
+</button>
         <button class="dropdown-logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit Workspace</button>
     </div>
 </div>
@@ -1166,6 +1204,37 @@ function toggleFeedbackWidget() {
         card.style.display = 'none';
     }
 }
+function toggleThemePipeline() {
+    const body = document.body;
+    const icon = document.getElementById('theme-icon');
+    const btn = document.getElementById('theme-toggle-btn');
+    
+    body.classList.toggle('light-mode');
+    
+    if (body.classList.contains('light-mode')) {
+        // Shift button UI to Dark Mode switcher state
+        icon.className = 'fa-solid fa-moon';
+        icon.style.color = '#1e293b';
+        btn.style.background = 'rgba(15, 23, 42, 0.08)';
+        btn.style.borderColor = 'rgba(15, 23, 42, 0.15)';
+        localStorage.setItem('docuscan-theme', 'light');
+    } else {
+        // Shift button UI back to Light Mode switcher state
+        icon.className = 'fa-solid fa-sun';
+        icon.style.color = '#ffffff';
+        btn.style.background = 'rgba(255, 255, 255, 0.08)';
+        btn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        localStorage.setItem('docuscan-theme', 'dark');
+    }
+}
+
+// Automatically apply the saved theme configuration instantly on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('docuscan-theme');
+    if (savedTheme === 'light') {
+        toggleThemePipeline();
+    }
+});
     </script>
 </body>
 </html>
