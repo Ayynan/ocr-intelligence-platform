@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DocuScan AI Pro - Ultimate Enterprise Document Suite</title>
+    <!-- This line places your custom logo right onto the browser tab -->
+    <link rel="icon" type="image/png" href="logo.png?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&family=JetBrains+Mono:wght=400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -978,7 +980,7 @@ togglePassViewBtn.addEventListener('click', () => {
                         renderHistoryItemsList(); 
                         return; 
                     }
-                    outputTextarea.value = item.text; 
+                    outputTextarea.value = cleanExtractedText(item.text); 
                     calculateTelemetryAnalysisMetrics(item.text);
                     if (item.pdfUrl) { 
                         searchablePdfBlobUrl = item.pdfUrl; 
@@ -1132,6 +1134,19 @@ togglePassViewBtn.addEventListener('click', () => {
                 });
             });
         }
+// --- ADVANCED OCR TEXT SANITIZATION FILTER ---
+function cleanExtractedText(rawText) {
+    if (!rawText) return "";
+    
+    return rawText
+        // 1. Strips out weird system symbols and unreadable character blocks
+        .replace(/[^\x20-\x7E\t\n\r]/g, "") 
+        // 2. Cleans up massive accidental spaces or layout gaps
+        .replace(/ {3,}/g, " ")
+        // 3. Removes empty, useless line breaks
+        .replace(/\n\s*\n/g, '\n')
+        .trim();
+}
     </script>
 </body>
 </html>
