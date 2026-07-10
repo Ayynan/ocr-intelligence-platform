@@ -385,6 +385,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
             </label>
         </div>
 <!-- Matching Theme Switch Row Container -->
+<!-- Matching Theme Switch Row Container -->
 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 14px; user-select: none; box-sizing: border-box;">
     
     <!-- Dynamic Label & Icon on the Left -->
@@ -1237,33 +1238,65 @@ function toggleThemePipeline() {
     const textLabel = document.getElementById('theme-text-label');
     
     body.classList.toggle('light-mode');
+    const isLight = body.classList.contains('light-mode');
     
-    if (body.classList.contains('light-mode')) {
-        // LIGHT MODE STATE
-        knob.style.transform = 'translateX(18px)'; // Perfect sliding bounds
-        track.style.background = '#3b82f6';        // Exact blue track accent color
+    // 1. Update the Toggle Switch Graphics State
+    if (isLight) {
+        knob.style.transform = 'translateX(18px)';
+        track.style.background = '#3b82f6';
         track.style.borderColor = '#2563eb';
         statusIcon.className = 'fa-solid fa-sun'; 
         statusIcon.style.color = '#eab308';       
-        textLabel.textContent = 'Light Mode';      // Swaps the text label dynamically
+        textLabel.textContent = 'Light Mode';
         textLabel.style.color = '#1e293b';
-        
+        body.style.background = '#f1f5f9';
         localStorage.setItem('docuscan-theme', 'light');
     } else {
-        // DARK MODE STATE
         knob.style.transform = 'translateX(0px)';  
         track.style.background = 'rgba(255, 255, 255, 0.1)';
         track.style.borderColor = 'rgba(255, 255, 255, 0.15)';
         statusIcon.className = 'fa-solid fa-moon'; 
         statusIcon.style.color = '#94a3b8';       
-        textLabel.textContent = 'Dark Mode';       // Swaps the text label back
+        textLabel.textContent = 'Dark Mode';
         textLabel.style.color = '#cbd5e1';
-        
+        body.style.background = ''; // Reverts to default dark background style
         localStorage.setItem('docuscan-theme', 'dark');
     }
+
+    // 2. Scan and fix all main terminal layout panels
+    const targetCards = document.querySelectorAll('.history-card, .feedback-card, div[style*="background"]');
+    targetCards.forEach(card => {
+        // Skip updating buttons or tiny interaction items
+        if(card.tagName === 'BUTTON' || card.id === 'theme-toggle-track' || card.id === 'theme-toggle-knob') return;
+        
+        card.style.background = isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.4)';
+        card.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255, 255, 255, 0.08)';
+    });
+
+    // 3. Scan and rewrite text labels, titles, and inner descriptive elements
+    const allTextElements = document.querySelectorAll('h1, h2, h3, p, label, span');
+    allTextElements.forEach(el => {
+        // Leave main branding or special buttons alone
+        if (el.style.color === 'rgb(59, 130, 246)' || el.closest('#theme-toggle-track') || el.classList.contains('btn')) return;
+        
+        if (el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'H3') {
+            el.style.color = isLight ? '#0f172a' : '#ffffff';
+        } else {
+            el.style.color = isLight ? '#334155' : '#cbd5e1';
+        }
+    });
+
+    // 4. Update text area viewports and inputs
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        if(input.type === 'hidden') return;
+        input.style.background = isLight ? '#f8fafc' : 'rgba(15, 23, 42, 0.6)';
+        input.style.color = isLight ? '#0f172a' : '#ffffff';
+        input.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255, 255, 255, 0.1)';
+    });
 }
 
-// Keep theme persistent across sessions
+// Ensure settings persist on browser reloads
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('docuscan-theme');
     if (savedTheme === 'light') {
