@@ -371,12 +371,21 @@ body.light-mode textarea::placeholder {
                 <span class="slider"></span>
             </label>
         </div>
-<div style="display: flex; align-items: center; gap: 10px; user-select: none;">
-    <i id="theme-status-icon" class="fa-solid fa-moon" style="color: #94a3b8; font-size: 0.9rem; transition: color 0.2s;"></i>
+<!-- Matching Theme Switch Row Container -->
+<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 14px; user-select: none; box-sizing: border-box;">
     
-    <div id="theme-toggle-track" onclick="toggleThemePipeline()" style="width: 44px; height: 22px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s ease;">
-        <div id="theme-toggle-knob" style="width: 14px; height: 14px; background: #ffffff; border-radius: 50%; position: absolute; top: 3px; left: 4px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>
+    <!-- Dynamic Label & Icon on the Left -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <span id="theme-text-label" style="font-size: 0.85rem; font-weight: 500; color: #cbd5e1; transition: color 0.2s;">Dark Mode</span>
+        <i id="theme-status-icon" class="fa-solid fa-moon" style="color: #94a3b8; font-size: 0.9rem; transition: color 0.2s;"></i>
     </div>
+    
+    <!-- Identical Sized Toggle Switch Track on the Right -->
+    <div id="theme-toggle-track" onclick="toggleThemePipeline()" style="width: 40px; height: 20px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 999px; position: relative; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0;">
+        <!-- Matching Sized Inner Sliding Knob -->
+        <div id="theme-toggle-knob" style="width: 14px; height: 14px; background: #ffffff; border-radius: 50%; position: absolute; top: 2px; left: 3px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.4);"></div>
+    </div>
+
 </div>
         <button class="dropdown-logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit Workspace</button>
     </div>
@@ -1212,31 +1221,36 @@ function toggleThemePipeline() {
     const track = document.getElementById('theme-toggle-track');
     const knob = document.getElementById('theme-toggle-knob');
     const statusIcon = document.getElementById('theme-status-icon');
+    const textLabel = document.getElementById('theme-text-label');
     
     body.classList.toggle('light-mode');
     
     if (body.classList.contains('light-mode')) {
-        // LIGHT MODE ACTIVE STATE
-        knob.style.transform = 'translateX(20px)'; // Slide knob to the right
-        track.style.background = '#3b82f6';        // Bright blue track background
+        // LIGHT MODE STATE
+        knob.style.transform = 'translateX(18px)'; // Perfect sliding bounds
+        track.style.background = '#3b82f6';        // Exact blue track accent color
         track.style.borderColor = '#2563eb';
-        statusIcon.className = 'fa-solid fa-sun'; // Swap status icon to Sun
-        statusIcon.style.color = '#eab308';       // Glowing bright gold color
+        statusIcon.className = 'fa-solid fa-sun'; 
+        statusIcon.style.color = '#eab308';       
+        textLabel.textContent = 'Light Mode';      // Swaps the text label dynamically
+        textLabel.style.color = '#1e293b';
         
         localStorage.setItem('docuscan-theme', 'light');
     } else {
-        // DARK MODE ACTIVE STATE (DEFAULT)
-        knob.style.transform = 'translateX(0px)';  // Slide knob back to left
+        // DARK MODE STATE
+        knob.style.transform = 'translateX(0px)';  
         track.style.background = 'rgba(255, 255, 255, 0.1)';
         track.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-        statusIcon.className = 'fa-solid fa-moon'; // Swap status icon to Moon
-        statusIcon.style.color = '#94a3b8';       // Soft muted interface slate
+        statusIcon.className = 'fa-solid fa-moon'; 
+        statusIcon.style.color = '#94a3b8';       
+        textLabel.textContent = 'Dark Mode';       // Swaps the text label back
+        textLabel.style.color = '#cbd5e1';
         
         localStorage.setItem('docuscan-theme', 'dark');
     }
 }
 
-// Keep theme persistent on hard reloads
+// Keep theme persistent across sessions
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('docuscan-theme');
     if (savedTheme === 'light') {
