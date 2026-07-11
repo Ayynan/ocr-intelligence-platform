@@ -384,21 +384,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
                 <span class="slider"></span>
             </label>
         </div>
-<!-- Matching Theme Switch Row Container -->
-<!-- Re-engineered Theme Switch Row (Matches Core Image Enhancer Perfectly) -->
-<!-- Light Mode Toggle Row (Perfect Match) -->
-<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 6px 0; user-select: none; box-sizing: border-box;">
-    
-    <!-- Left Side Label -->
-    <span id="theme-text-label" style="font-size: 0.85rem; font-weight: 500; color: #cbd5e1;">Light Mode</span>
-    
-    <!-- Right Side Switch Track (Matches Upper Switch Dimensions Exactly) -->
-    <div id="theme-toggle-track" onclick="toggleThemePipeline()" style="width: 36px; height: 20px; background: rgba(255, 255, 255, 0.15); border-radius: 999px; position: relative; cursor: pointer; transition: background 0.2s ease; flex-shrink: 0;">
-        <!-- Inner Sliding Knob -->
-        <div id="theme-toggle-knob" style="width: 14px; height: 14px; background: #ffff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(13, 12, 15, 0.4);"></div>
-    </div>
 
-</div>
         <button class="dropdown-logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit Workspace</button>
     </div>
 </div>
@@ -1228,29 +1214,6 @@ function toggleFeedbackWidget() {
         card.style.display = 'none';
     }
 }
-function toggleThemePipeline() {
-    const body = document.body;
-    const track = document.getElementById('theme-toggle-track');
-    const knob = document.getElementById('theme-toggle-knob');
-    
-    body.classList.toggle('light-mode');
-    const isLight = body.classList.contains('light-mode');
-    
-    if (isLight) {
-        // WHEN PRESSED / TURNED ON (Matches your blue active switch)
-        knob.style.transform = 'translateX(16px)'; 
-        track.style.background = '#3b82f6'; 
-        body.style.background = '#f1f5f9'; // Changes only the main page background
-        localStorage.setItem('docuscan-theme', 'light');
-    } else {
-        // DEFAULT / UNPRESSED STATE (Matches your default dark switch color)
-        knob.style.transform = 'translateX(0px)';  
-        track.style.background = 'rgba(255, 255, 255, 0.15)'; 
-        body.style.background = ''; // Reverts back to your default dark layout background
-        localStorage.setItem('docuscan-theme', 'dark');
-    }
-}
-
 // Keep theme state persistent on refresh
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('docuscan-theme');
