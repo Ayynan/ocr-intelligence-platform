@@ -386,18 +386,16 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
         </div>
 <!-- Matching Theme Switch Row Container -->
 <!-- Re-engineered Theme Switch Row (Matches Core Image Enhancer Perfectly) -->
-<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 14px; user-select: none; box-sizing: border-box;">
+<!-- Light Mode Toggle Row (Perfect Match) -->
+<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 6px 0; user-select: none; box-sizing: border-box;">
     
-    <!-- Left Side Label and Icon -->
-    <div style="display: flex; align-items: center; gap: 8px;">
-        <span id="theme-text-label" style="font-size: 0.85rem; font-weight: 500; color: #cbd5e1; transition: color 0.2s;">Dark Mode</span>
-        <i id="theme-status-icon" class="fa-solid fa-moon" style="color: #94a3b8; font-size: 0.9rem; transition: color 0.2s;"></i>
-    </div>
+    <!-- Left Side Label -->
+    <span id="theme-text-label" style="font-size: 0.85rem; font-weight: 500; color: #cbd5e1;">Light Mode</span>
     
-    <!-- Right Side Track (Identical to Upper Button) -->
-    <div id="theme-toggle-track" onclick="toggleThemePipeline()" style="width: 44px; height: 24px; background: #3b82f6; border-radius: 999px; position: relative; cursor: pointer; transition: background 0.2s ease; flex-shrink: 0;">
-        <!-- Right Side Knob (Identical to Upper Button) -->
-        <div id="theme-toggle-knob" style="width: 18px; height: 18px; background: #ffffff; border-radius: 50%; position: absolute; top: 3px; left: 23px; transition: transform 0.2s ease, left 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.4);"></div>
+    <!-- Right Side Switch Track (Matches Upper Switch Dimensions Exactly) -->
+    <div id="theme-toggle-track" onclick="toggleThemePipeline()" style="width: 36px; height: 20px; background: rgba(255, 255, 255, 0.15); border-radius: 999px; position: relative; cursor: pointer; transition: background 0.2s ease; flex-shrink: 0;">
+        <!-- Inner Sliding Knob -->
+        <div id="theme-toggle-knob" style="width: 14px; height: 14px; background: #ffffff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.4);"></div>
     </div>
 
 </div>
@@ -1234,63 +1232,26 @@ function toggleThemePipeline() {
     const body = document.body;
     const track = document.getElementById('theme-toggle-track');
     const knob = document.getElementById('theme-toggle-knob');
-    const statusIcon = document.getElementById('theme-status-icon');
-    const textLabel = document.getElementById('theme-text-label');
     
     body.classList.toggle('light-mode');
     const isLight = body.classList.contains('light-mode');
     
-    // 1. Update the Toggle Switch Graphics State (Matches Upper Switch States)
     if (isLight) {
-        knob.style.transform = 'translateX(0px)'; // Keeps knob on the right side
-        track.style.background = '#3b82f6';        // Active Blue
-        statusIcon.className = 'fa-solid fa-sun'; 
-        statusIcon.style.color = '#eab308';       
-        textLabel.textContent = 'Light Mode';
-        textLabel.style.color = '#1e293b';
-        body.style.background = '#f1f5f9';
+        // WHEN PRESSED / TURNED ON (Matches your blue active switch)
+        knob.style.transform = 'translateX(16px)'; 
+        track.style.background = '#3b82f6'; 
+        body.style.background = '#f1f5f9'; // Changes only the main page background
         localStorage.setItem('docuscan-theme', 'light');
     } else {
-        knob.style.transform = 'translateX(-19px)'; // Slides knob to the left side smoothly
-        track.style.background = 'rgba(255, 255, 255, 0.15)'; // Muted dark track background
-        statusIcon.className = 'fa-solid fa-moon'; 
-        statusIcon.style.color = '#94a3b8';       
-        textLabel.textContent = 'Dark Mode';
-        textLabel.style.color = '#cbd5e1';
-        body.style.background = ''; 
+        // DEFAULT / UNPRESSED STATE (Matches your default dark switch color)
+        knob.style.transform = 'translateX(0px)';  
+        track.style.background = 'rgba(255, 255, 255, 0.15)'; 
+        body.style.background = ''; // Reverts back to your default dark layout background
         localStorage.setItem('docuscan-theme', 'dark');
     }
-
-    // 2. Scan and fix all main terminal layout panels
-    const targetCards = document.querySelectorAll('.history-card, .feedback-card, div[style*="background"]');
-    targetCards.forEach(card => {
-        if(card.tagName === 'BUTTON' || card.id === 'theme-toggle-track' || card.id === 'theme-toggle-knob') return;
-        card.style.background = isLight ? '#ffffff' : 'rgba(30, 41, 59, 0.4)';
-        card.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255, 255, 255, 0.08)';
-    });
-
-    // 3. Scan and rewrite text labels
-    const allTextElements = document.querySelectorAll('h1, h2, h3, p, label, span');
-    allTextElements.forEach(el => {
-        if (el.style.color === 'rgb(59, 130, 246)' || el.closest('#theme-toggle-track') || el.classList.contains('btn')) return;
-        if (el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'H3') {
-            el.style.color = isLight ? '#0f172a' : '#ffffff';
-        } else {
-            el.style.color = isLight ? '#334155' : '#cbd5e1';
-        }
-    });
-
-    // 4. Update inputs
-    const inputs = document.querySelectorAll('input, textarea');
-    inputs.forEach(input => {
-        if(input.type === 'hidden') return;
-        input.style.background = isLight ? '#f8fafc' : 'rgba(15, 23, 42, 0.6)';
-        input.style.color = isLight ? '#0f172a' : '#ffffff';
-        input.style.borderColor = isLight ? '#cbd5e1' : 'rgba(255, 255, 255, 0.1)';
-    });
 }
 
-// Persist selection
+// Keep theme state persistent on refresh
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('docuscan-theme');
     if (savedTheme === 'light') {
