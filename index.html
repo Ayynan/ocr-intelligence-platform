@@ -402,31 +402,19 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
 
             <div class="panel">
                 <div class="panel-heading">
-    <span><i class="fa-solid fa-file-import"></i> Document Intake</span>
-</div>
+                    <span><i class="fa-solid fa-file-import"></i> Document Intake</span>
+                </div>
+                
+                <div class="drop-zone" onclick="document.getElementById('file-input').click()">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <h3>Upload local document</h3>
+                    <p>Supports PNG, JPEG, or multi-page PDF files</p>
+                    <input type="file" id="file-input" accept="image/*,application/pdf" style="display:none">
+                </div>
 
-<div class="drop-zone" onclick="document.getElementById('file-input').click()">
-    <i class="fa-solid fa-cloud-arrow-up"></i>
-    <h3>Upload local document</h3>
-    <p>Supports PNG, JPEG, or multi-page PDF files</p>
-    <input type="file" id="file-input" accept="image/*,application/pdf" style="display:none">
-</div>
-
-<div class="preview-container" id="preview-wrapper">
-    <button class="clear-file-btn" id="btn-clear-stream" title="Discard"><i class="fa-solid fa-xmark"></i></button>
-</div>
-
-<div style="display: flex; gap: 12px; width: 100%; margin-top: 14px; box-sizing: border-box;">
-    
-    <button type="button" id="run-pipeline-btn" onclick="processFilesEngine()" style="background: #3b82f6; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; flex-grow: 2; transition: background 0.2s;">
-        <i class="fa-solid fa-play" style="font-size: 0.8rem;"></i> Run Multi-Page OCR Pipeline
-    </button>
-
-    <button type="button" id="cancel-pipeline-btn" onclick="abortOcrOperation()" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; flex-shrink: 0;">
-        <i class="fa-solid fa-xmark"></i> Cancel
-    </button>
-
-</div>
+                <div class="preview-container" id="preview-wrapper">
+                    <button class="clear-file-btn" id="btn-clear-stream" title="Discard"><i class="fa-solid fa-xmark"></i></button>
+                </div>
 
                 <div class="config-group">
                     <div class="toggle-row">
@@ -441,7 +429,9 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
                     </div>
                 </div>
 
-                
+                <button id="convert-btn" class="action-btn" disabled>
+                    <i class="fa-solid fa-arrows-spin"></i> Run Multi-Page OCR Pipeline
+                </button>
 
                 <div class="status-wrapper">
                     <div class="status-details">
@@ -1239,24 +1229,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleThemePipeline();
     }
 });
-function abortOcrOperation() {
-    // 1. Log the cancellation request to the terminal status bar
-    const statusText = document.getElementById('status-text-element') || document.querySelector('[style*="Status:"]');
-    const percentBar = document.querySelector('[style*="width:"]'); // Finds your progress bar container
-    
-    if (statusText) {
-        statusText.textContent = "Status: Operation aborted by user";
-    }
-    
-    // 2. Clear out ongoing file queues or processing placeholders
-    const outputViewport = document.querySelector('textarea');
-    if (outputViewport && outputViewport.placeholder.includes('populating')) {
-        outputViewport.value = "";
-    }
-    
-    // 3. Reset processing markers back to zero instantly
-    alert("OCR Pipeline halted successfully.");
-}
     </script>
 </body>
 </html>
