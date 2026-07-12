@@ -429,9 +429,17 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
                     </div>
                 </div>
 
-                <button id="convert-btn" class="action-btn" disabled>
-                    <i class="fa-solid fa-arrows-spin"></i> Run Multi-Page OCR Pipeline
-                </button>
+                <div style="display: flex; gap: 12px; width: 100%; margin-top: 14px; box-sizing: border-box;">
+    
+    <button id="convert-btn" class="action-btn" disabled style="flex-grow: 2;">
+        <i class="fa-solid fa-arrows-spin"></i> Run Multi-Page OCR Pipeline
+    </button>
+
+    <button type="button" id="cancel-pipeline-btn" onclick="abortOcrOperation()" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; flex-shrink: 0;">
+        <i class="fa-solid fa-xmark"></i> Cancel
+    </button>
+
+</div>
 
                 <div class="status-wrapper">
                     <div class="status-details">
@@ -1229,6 +1237,25 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleThemePipeline();
     }
 });
+function abortOcrOperation() {
+    // 1. Check if your built-in clear/discard button exists and click it to reset the workspace
+    const clearBtn = document.getElementById('btn-clear-stream');
+    if (clearBtn) {
+        clearBtn.click(); // Automatically cleans your previews and resets file inputs safely
+    }
+
+    // 2. Make sure the run button gets safely disabled again since the pipeline is cleared
+    const convertBtn = document.getElementById('convert-btn');
+    if (convertBtn) {
+        convertBtn.disabled = true;
+    }
+    
+    // 3. Reset status text if your template uses it
+    const statusText = document.getElementById('status-text-element');
+    if (statusText) {
+        statusText.textContent = "Status: Operation aborted by user";
+    }
+}
     </script>
 </body>
 </html>
