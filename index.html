@@ -909,8 +909,14 @@ togglePassViewBtn.addEventListener('click', () => {
                     // Native looping system grid to iterate across all PDF document blocks
                     for (let targetPageIndex = 1; targetPageIndex <= totalPagesCount; targetPageIndex++) {
                         if (isOcrCancelled) {
-                        console.log("Loop execution broken successfully.");
-                        return; // Stops the function completely so it cannot update the status bar anymore
+                        console.log("OCR Loop stopped by user request.");
+        
+                        // Force the layout numbers and bars back to their original startup values
+                        statusText.textContent = "Status: Systems initialized";
+                        progressBar.style.width = "0%";
+                        progressPercent.textContent = "0%";
+        
+                        break; // Exits the loop safely
                         }
                         statusText.textContent = `Status: Compiling data maps for Page ${targetPageIndex} of ${totalPagesCount}...`;
                         const currentLoopPct = Math.round(((targetPageIndex - 1) / totalPagesCount) * 100);
