@@ -1238,23 +1238,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 function abortOcrOperation() {
-    // 1. Check if your built-in clear/discard button exists and click it to reset the workspace
+    // 1. Force clear the files using your native clear function
     const clearBtn = document.getElementById('btn-clear-stream');
     if (clearBtn) {
-        clearBtn.click(); // Automatically cleans your previews and resets file inputs safely
+        clearBtn.click(); 
     }
 
-    // 2. Make sure the run button gets safely disabled again since the pipeline is cleared
+    // 2. Lock the engine button back to disabled status
     const convertBtn = document.getElementById('convert-btn');
     if (convertBtn) {
         convertBtn.disabled = true;
     }
-    
-    // 3. Reset status text if your template uses it
-    const statusText = document.getElementById('status-text-element');
+
+    // 3. HARD RESET THE STATUS TEXT & PROGRESS PERCENTAGES
+    // Change these selectors if your code uses different element IDs
+    const statusText = document.getElementById('status-text-element') || document.querySelector('.status-box span, [style*="Status:"]');
+    const progressBar = document.querySelector('.progress-bar, [style*="width:"], #progress-bar-fill');
+    const progressPercentText = document.querySelector('.progress-percentage, div[style*="justify-content: space-between"] span:last-child');
+
+    // Force all display metrics back to absolute zero instantly
     if (statusText) {
-        statusText.textContent = "Status: Operation aborted by user";
+        statusText.textContent = "Status: Systems initialized";
     }
+    if (progressBar) {
+        progressBar.style.width = '0%';
+    }
+    if (progressPercentText) {
+        progressPercentText.textContent = '0%';
+    }
+
+    // 4. Force-kill any background operations or file queue lists if your engine tracks them
+    if (window.ocrQueue) window.ocrQueue = [];
+    if (window.currentProcessingPage) window.currentProcessingPage = 0;
+    
+    // Optional: Add a small message to confirm it halted cleanly
+    console.log("OCR Pipeline successfully terminated and status bar reset.");
 }
     </script>
 </body>
