@@ -529,6 +529,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     </form>
 </div>
     <script>
+        let isOcrCancelled = false;
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         // --- AUTHENTICATION FLOW CONTEXT SWITCHER ENGINE ---
@@ -879,6 +880,7 @@ togglePassViewBtn.addEventListener('click', () => {
         }
 
         async function runOcrProcessingPipelineSystemMatrix() {
+            isOcrCancelled = false;
             if (!activeFileStream) return;
             
             convertBtn.disabled = true;
@@ -906,6 +908,10 @@ togglePassViewBtn.addEventListener('click', () => {
                     
                     // Native looping system grid to iterate across all PDF document blocks
                     for (let targetPageIndex = 1; targetPageIndex <= totalPagesCount; targetPageIndex++) {
+                        if (isOcrCancelled) {
+                        console.log("Loop execution broken successfully.");
+                        return; // Stops the function completely so it cannot update the status bar anymore
+                        }
                         statusText.textContent = `Status: Compiling data maps for Page ${targetPageIndex} of ${totalPagesCount}...`;
                         const currentLoopPct = Math.round(((targetPageIndex - 1) / totalPagesCount) * 100);
                         progressBar.style.width = `${currentLoopPct}%`;
@@ -1238,41 +1244,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 function abortOcrOperation() {
-    // 1. Force clear the files using your native clear function
+    // 1. Set the global flag to true to immediately kill background loop calculations
+    isOcrCancelled = true;
+
+    // 2. Click your native clear button to discard file stream memory registries
     const clearBtn = document.getElementById('btn-clear-stream');
     if (clearBtn) {
         clearBtn.click(); 
     }
 
-    // 2. Lock the engine button back to disabled status
+    // 3. Re-lock the execution button back to disabled status
     const convertBtn = document.getElementById('convert-btn');
     if (convertBtn) {
         convertBtn.disabled = true;
     }
 
-    // 3. HARD RESET THE STATUS TEXT & PROGRESS PERCENTAGES
-    // Change these selectors if your code uses different element IDs
-    const statusText = document.getElementById('status-text-element') || document.querySelector('.status-box span, [style*="Status:"]');
-    const progressBar = document.querySelector('.progress-bar, [style*="width:"], #progress-bar-fill');
-    const progressPercentText = document.querySelector('.progress-percentage, div[style*="justify-content: space-between"] span:last-child');
+    // 4. Force override all visual elements using your exact class names from the screenshot
+    // (Targeting the status bar wrapper text and the blue moving bar)
+    const statusText = document.querySelector('[style*="Status:"]') || document.getElementById('status-text-element') || document.querySelector('.document-intake-column div[style*="justify-content"] span:first-child');
+    const progressPercentText = document.querySelector('.document-intake-column div[style*="justify-content"] span:last-child');
+    const progressBar = document.querySelector('div[style*="width: 46%"]') || document.querySelector('.document-intake-column div[style*="background"] div');
 
-    // Force all display metrics back to absolute zero instantly
+    // Hard reset UI elements back to default initialization settings
     if (statusText) {
         statusText.textContent = "Status: Systems initialized";
     }
-    if (progressBar) {
-        progressBar.style.width = '0%';
-    }
     if (progressPercentText) {
-        progressPercentText.textContent = '0%';
+        progressPercentText.textContent = "0%";
     }
-
-    // 4. Force-kill any background operations or file queue lists if your engine tracks them
-    if (window.ocrQueue) window.ocrQueue = [];
-    if (window.currentProcessingPage) window.currentProcessingPage = 0;
-    
-    // Optional: Add a small message to confirm it halted cleanly
-    console.log("OCR Pipeline successfully terminated and status bar reset.");
+    if (progressBar) {
+        progressBar.style.width = "0%";
+    }
 }
     </script>
 </body>
