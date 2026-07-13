@@ -977,7 +977,6 @@ togglePassViewBtn.addEventListener('click', () => {
             } finally {
                 convertBtn.disabled = false;
             }
-            
         }
 
         function applyContrastEnhancementFilterMatrix(sourceData, isCanvas = false) {
@@ -1288,40 +1287,42 @@ function abortOcrOperation() {
     }
 }
 function clearOutputMatrixField() {
-    // 1. Clear out the textarea text content
+    // 1. Clear out the textarea
     const outputTextarea = document.querySelector('.output-matrix-container textarea') || document.querySelector('textarea');
     if (outputTextarea) {
         outputTextarea.value = "";
     }
 
-    // 2. Find your counter text elements and force them back to baseline
-    // This targets elements inside your Output Matrix Tools stat display grid
-    const statsContainer = document.querySelector('.output-matrix-container') || document.body;
+    // 2. Locate your metric indicator containers and reset them instantly
+    // (Targeting the value rows inside your three card metrics grids)
+    const metricWordsCard = document.querySelector('.output-matrix-container div:nth-child(1) h3') || document.querySelectorAll('[class*="card"] h3, div style*="flex"] div div:first-child')[0];
     
-    // Select all small metric value text elements inside the stats panel grid
-    const metricValues = document.querySelectorAll('.output-matrix-container div div h3, .output-matrix-container div span, [class*="stats"] div');
+    // Let's sweep through and find the cards by checking their labels or DOM position
+    const summaryCards = document.querySelectorAll('.output-matrix-container div, .right-column div');
     
-    // Direct selector sweep to look for boxes containing metric text patterns
-    const cards = document.querySelectorAll('div');
-    cards.forEach(card => {
-        if (card.textContent.includes('WORDS')) {
-            const wordNum = card.querySelector('div, span, h3, p') || card;
-            if(wordNum) wordNum.firstChild.textContent = "0 "; 
-        }
-        if (card.textContent.includes('CHARACTERS')) {
-            const charNum = card.querySelector('div, span, h3, p') || card;
-            if(charNum) charNum.firstChild.textContent = "0 ";
-        }
-        if (card.textContent.includes('READ TIME')) {
-            const timeNum = card.querySelector('div, span, h3, p') || card;
-            if(timeNum) timeNum.firstChild.textContent = "0s";
+    // A robust way is to find elements containing the numeric metrics and reset them
+    // Let's target the exact text nodes or update via your app's native updater if you have one:
+    updateOutputMatrixMetricsCounterBlock(""); 
+}
+
+// Add or combine this helper if your code uses custom tracker variables:
+function updateOutputMatrixMetricsCounterBlock(currentTextString) {
+    // If your code has a native update function for word count, call it with ""
+    // Otherwise, we force reset the specific text nodes on the dashboard:
+    
+    // Find the wrapper holding your numeric highlights (0, 0, 0s)
+    const panels = document.querySelectorAll('div');
+    panels.forEach(panel => {
+        if (panel.textContent.includes('WORDS') && panel.textContent.includes('CHARACTERS')) {
+            const numbers = panel.querySelectorAll('div, span, h3, p');
+            // Force values to absolute base values
+            if (numbers.length >= 3) {
+                numbers[0].textContent = "0";
+                numbers[1].textContent = "0";
+                numbers[2].textContent = "0s";
+            }
         }
     });
-
-    // Alternatively, if your app runs a native tracking script on keystrokes, simulate an input event:
-    if (outputTextarea) {
-        outputTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-    }
 }
     </script>
 </body>
