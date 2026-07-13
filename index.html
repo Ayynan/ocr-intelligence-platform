@@ -429,7 +429,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
                     </div>
                 </div>
 <div style="margin-top: 14px; margin-bottom: 14px; background: rgba(30, 41, 59, 0.25); padding: 14px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
         <label style="color: #ffffff; font-size: 0.85rem; font-weight: 500;">Page Range Config</label>
         <select id="page-range-selector" onchange="handlePageRangeSelectionChange()" style="background: #0f172a; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; outline: none; font-family: inherit;">
             <option value="all">All Pages</option>
@@ -439,13 +439,21 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
         </select>
     </div>
 
-    <div id="custom-range-input-container" style="display: none; margin-bottom: 10px;">
+    <div id="custom-range-input-container" style="display: none; margin-bottom: 12px;">
         <input type="text" id="custom-page-string" placeholder="e.g., 1-3, 5" style="width: 100%; background: #0f172a; color: #ffffff; border: 1px solid rgba(59, 130, 246, 0.4); padding: 8px; border-radius: 6px; font-size: 0.8rem; box-sizing: border-box; outline: none;">
     </div>
 
-    <div style="color: #64748b; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px;">Target Selection Queue Preview:</div>
-    <div id="pipeline-thumbnail-strip" style="display: flex; gap: 10px; overflow-x: auto; background: rgba(15, 23, 42, 0.4); padding: 10px; border-radius: 6px; min-height: 60px; align-items: center;">
-        <span id="thumbnail-strip-placeholder" style="color: #475569; font-size: 0.75rem; margin: auto;">No loaded rendering queue pipelines ready</span>
+    <div style="color: #64748b; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px;">Document Preview Queue:</div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 6px;">
+        <div id="preview-viewport-box" style="display: flex; align-items: center; justify-content: center; min-height: 80px; width: 100%;">
+            <span id="thumbnail-strip-placeholder" style="color: #475569; font-size: 0.75rem;">No loaded rendering queue pipelines ready</span>
+        </div>
+        
+        <div id="preview-nav-controls" style="display: none; align-items: center; gap: 14px; margin-top: 4px;">
+            <button type="button" id="btn-prev-preview" onclick="navigatePreviewPage(-1)" style="background: #1e293b; color: #ffffff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;"><i class="fa-solid fa-chevron-left"></i></button>
+            <span id="lbl-preview-page-counter" style="color: #94a3b8; font-size: 0.75rem; font-weight: 600; min-width: 60px; text-align: center;">Page 0 / 0</span>
+            <button type="button" id="btn-next-preview" onclick="navigatePreviewPage(1)" style="background: #1e293b; color: #ffffff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
     </div>
 </div>
                 <div style="display: flex; gap: 12px; width: 100%; margin-top: 14px; box-sizing: border-box; align-items: stretch;">
@@ -865,7 +873,7 @@ togglePassViewBtn.addEventListener('click', () => {
                 imgElement.src = URL.createObjectURL(file);
                 previewWrapper.appendChild(imgElement);
             }
-            generatePipelineThumbnailStripPreviews(file);
+            initializeDocumentPreviewEngine(file);
         }
 
         async function processAndRenderPdfFirstPageThumbnailInstance(file) {
@@ -887,25 +895,38 @@ togglePassViewBtn.addEventListener('click', () => {
         }
 
         function clearActiveStreamEcosystemState() {
-            fileInput.value = ""; 
-            activeFileStream = null; 
-            activeFileType = null; 
-            searchablePdfBlobUrl = null;
-            convertBtn.disabled = true; 
-            btnDownloadPdf.disabled = true; 
-            previewWrapper.style.display = 'none';
-            
-            const existingRender = previewWrapper.querySelector('img, canvas'); 
-            if (existingRender) existingRender.remove();
-            
-            statusText.textContent = "Status: Buffer targets reset"; 
-            progressBar.style.width = "0%"; 
-            progressPercent.textContent = "0%";
-            const stripPlaceholder = document.getElementById('pipeline-thumbnail-strip');
-if (stripPlaceholder) {
-    stripPlaceholder.innerHTML = `<span id="thumbnail-strip-placeholder" style="color: #475569; font-size: 0.75rem; margin: auto;">No loaded rendering queue pipelines ready</span>`;
+    fileInput.value = ""; 
+    activeFileStream = null; 
+    activeFileType = null; 
+    searchablePdfBlobUrl = null;
+    convertBtn.disabled = true; 
+    btnDownloadPdf.disabled = true; 
+    previewWrapper.style.display = 'none';
+    
+    const existingRender = previewWrapper.querySelector('img, canvas'); 
+    if (existingRender) existingRender.remove();
+    
+    statusText.textContent = "Status: Buffer targets reset"; 
+    progressBar.style.width = "0%"; 
+    progressPercent.textContent = "0%";
+
+    // --- FEATURE 2 STATE CLEANUP ---
+    loadedPdfDocumentInstance = null;
+    totalPreviewPages = 0;
+    currentPreviewIndex = 1;
+
+    // Hide navigation arrow buttons
+    const navControls = document.getElementById('preview-nav-controls');
+    if (navControls) {
+        navControls.style.display = "none";
+    }
+
+    // Reset preview box back to original placeholder text
+    const viewportBox = document.getElementById('preview-viewport-box');
+    if (viewportBox) {
+        viewportBox.innerHTML = `<span id="thumbnail-strip-placeholder" style="color: #475569; font-size: 0.75rem;">No loaded rendering queue pipelines ready</span>`;
+    }
 }
-        }
 
         async function runOcrProcessingPipelineSystemMatrix() {
             isOcrCancelled = false;
@@ -1378,52 +1399,86 @@ function handlePageRangeSelectionChange() {
 }
 
 // Generates structural scrollable image thumbnails for your page previews inside the strip viewport
-async function generatePipelineThumbnailStripPreviews(file) {
-    const stripContainer = document.getElementById('pipeline-thumbnail-strip');
-    if (!stripContainer) return;
-    
-    stripContainer.innerHTML = ""; // Wipe placeholder status
-    
+let currentPreviewIndex = 1;
+let totalPreviewPages = 0;
+let loadedPdfDocumentInstance = null; // Caches PDF instance for speedy flips
+let currentLoadedImageFile = null;
+
+function handlePageRangeSelectionChange() {
+    const selector = document.getElementById('page-range-selector');
+    const customInput = document.getElementById('custom-range-input-container');
+    if (customInput) {
+        customInput.style.display = selector.value === 'custom' ? 'block' : 'none';
+    }
+}
+
+// Main logic routing entry for previews
+async function initializeDocumentPreviewEngine(file) {
+    const viewportBox = document.getElementById('preview-viewport-box');
+    const navControls = document.getElementById('preview-nav-controls');
+    if (!viewportBox) return;
+
+    viewportBox.innerHTML = "";
+    currentPreviewIndex = 1;
+
     if (file.type === "application/pdf") {
         try {
             const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            loadedPdfDocumentInstance = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            totalPreviewPages = loadedPdfDocumentInstance.numPages;
             
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const viewport = page.getViewport({ scale: 0.2 }); // Small visual scale rendering
-                
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-                
-                // Wrap in preview div with badge indicators
-                const thumbWrapper = document.createElement('div');
-                thumbWrapper.style.cssText = "position: relative; flex-shrink: 0; background: #0f172a; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);";
-                
-                const badge = document.createElement('div');
-                badge.style.cssText = "position: absolute; top: 2px; left: 2px; background: rgba(15,23,42,0.75); color: #3b82f6; font-size: 0.6rem; padding: 1px 4px; border-radius: 2px; font-weight: bold;";
-                badge.textContent = `P. ${pageNum}`;
-                
-                thumbWrapper.appendChild(canvas);
-                thumbWrapper.appendChild(badge);
-                stripContainer.appendChild(thumbWrapper);
-            }
+            navControls.style.display = "flex";
+            renderSinglePdfPagePreview(currentPreviewIndex);
         } catch (err) {
-            console.error("Thumbnail strip processing failure:", err);
+            console.error("Preview configuration failed:", err);
         }
     } else if (file.type.startsWith("image/")) {
-        const thumbWrapper = document.createElement('div');
-        thumbWrapper.style.cssText = "position: relative; flex-shrink: 0; max-height: 55px; background: #0f172a; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);";
+        loadedPdfDocumentInstance = null;
+        totalPreviewPages = 1;
+        navControls.style.display = "flex";
         
         const img = document.createElement('img');
         img.src = URL.createObjectURL(file);
-        img.style.cssText = "max-height: 55px; display: block;";
+        img.style.cssText = "max-height: 120px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);";
+        viewportBox.appendChild(img);
         
-        thumbWrapper.appendChild(img);
-        stripContainer.appendChild(thumbWrapper);
+        document.getElementById('lbl-preview-page-counter').textContent = "Page 1 / 1";
+    }
+}
+
+// Renders the chosen single page canvas viewport cleanly
+async function renderSinglePdfPagePreview(pageNum) {
+    if (!loadedPdfDocumentInstance) return;
+    const viewportBox = document.getElementById('preview-viewport-box');
+    viewportBox.innerHTML = ""; // Clear current canvas rendering
+
+    try {
+        const page = await loadedPdfDocumentInstance.getPage(pageNum);
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const viewport = page.getViewport({ scale: 0.4 }); // Scale down for sidebar sizing
+        
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        canvas.style.cssText = "border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);";
+        
+        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+        viewportBox.appendChild(canvas);
+
+        document.getElementById('lbl-preview-page-counter').textContent = `Page ${pageNum} / ${totalPreviewPages}`;
+    } catch (err) {
+        console.error("Single page render target crash:", err);
+    }
+}
+
+// Handles turning page indexes forward/backward securely
+function navigatePreviewPage(direction) {
+    if (!loadedPdfDocumentInstance) return;
+    
+    let targetPage = currentPreviewIndex + direction;
+    if (targetPage >= 1 && targetPage <= totalPreviewPages) {
+        currentPreviewIndex = targetPage;
+        renderSinglePdfPagePreview(currentPreviewIndex);
     }
 }
     </script>
