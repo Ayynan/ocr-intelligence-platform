@@ -924,137 +924,151 @@ togglePassViewBtn.addEventListener('click', () => {
 }
 
         async function runOcrProcessingPipelineSystemMatrix() {
-            isOcrCancelled = false;
-            if (!activeFileStream) return;
+    isOcrCancelled = false;
+    if (!activeFileStream) return;
+    
+    convertBtn.disabled = true;
+    outputTextarea.value = "";
+    let comprehensiveTextCompilation = "";
+    
+    try {
+        const worker = await Tesseract.createWorker('eng', 1, {
+            logger: m => {
+                if (m.status === 'recognizing text' && activeFileType !== "application/pdf") {
+                    const pct = Math.round(m.progress * 100);
+                    progressBar.style.width = `${pct}%`;
+                    progressPercent.textContent = `${pct}%`;
+                    statusText.textContent = `Status: Processing matrix segments (${pct}%)`;
+                }
+            }
+        });
+
+        if (activeFileType === "application/pdf") {
+            const arrayBuffer = await activeFileStream.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            const totalPagesCount = pdf.numPages;
             
-            convertBtn.disabled = true;
-            outputTextarea.value = "";
-            let comprehensiveTextCompilation = "";
-            
-            try {
-                const worker = await Tesseract.createWorker('eng', 1, {
-                    logger: m => {
-                        if (m.status === 'recognizing text' && activeFileType !== "application/pdf") {
-                            const pct = Math.round(m.progress * 100);
-                            progressBar.style.width = `${pct}%`;
-                            progressPercent.textContent = `${pct}%`;
-                            statusText.textContent = `Status: Processing matrix segments (${pct}%)`;
-                        }
+            // --- PARSE USER PAGE TARGET SELECTION QUEUE ---
+            let targetedPagesArray = [];
+            const executionSelectionMode = document.getElementById('page-range-selector').value;
+
+            if (executionSelectionMode === 'all') {
+                for (let p = 1; p <= totalPagesCount; p++) targetedPagesArray.push(p);
+            } else if (executionSelectionMode === 'odd') {
+                for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 !== 0) targetedPagesArray.push(p); }
+            } else if (executionSelectionMode === 'even') {
+                for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 === 0) targetedPagesArray.push(p); }
+            } else if (executionSelectionMode === 'custom') {
+                const rawInputStr = document.getElementById('custom-page-string').value;
+                rawInputStr.split(',').forEach(part => {
+                    if (part.includes('-')) {
+                        const [start, end] = part.split('-').map(Number);
+                        for (let p = start; p <= end; p++) { if (p >= 1 && p <= totalPagesCount) targetedPagesArray.push(p); }
+                    } else {
+                        const num = Number(part.trim());
+                        if (num && num >= 1 && num <= totalPagesCount) targetedPagesArray.push(num);
                     }
                 });
-                    if (activeFileType === "application/pdf") {
-                    const arrayBuffer = await activeFileStream.arrayBuffer();
-                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    const totalPagesCount = pdf.numPages;
-                    
-                    // --- PARSE USER PAGE TARGET SELECTION QUEUE ---
-                    let targetedPagesArray = [];
-                    const executionSelectionMode = document.getElementById('page-range-selector').value;
-
-                    if (executionSelectionMode === 'all') {
-                        for (let p = 1; p <= totalPagesCount; p++) targetedPagesArray.push(p);
-                    } else if (executionSelectionMode === 'odd') {
-                        for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 !== 0) targetedPagesArray.push(p); }
-                    } else if (executionSelectionMode === 'even') {
-                        for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 === 0) targetedPagesArray.push(p); }
-                    } else if (executionSelectionMode === 'custom') {
-                        const rawInputStr = document.getElementById('custom-page-string').value;
-                        rawInputStr.split(',').forEach(part => {
-                            if (part.includes('-')) {
-                                const [start, end] = part.split('-').map(Number);
-                                for (let p = start; p <= end; p++) { if (p >= 1 && p <= totalPagesCount) targetedPagesArray.push(p); }
-                            } else {
-                                const num = Number(part.trim());
-                                if (num && num >= 1 && num <= totalPagesCount) targetedPagesArray.push(num);
-                            }
-                        });
-                    }
-
-                    // Fallback to all pages if custom input evaluates to empty arrays
-                    if (targetedPagesArray.length === 0) {
-                        for (let p = 1; p <= totalPagesCount; p++) targetedPagesArray.push(p);
-                    }
-                    
-                    statusText.textContent = `Status: Deep scanning multi-page architecture (0/${targetedPagesArray.length})`;
-                    
-                    // Native looping system grid to iterate across all targeted document blocks
-                    for (let i = 0; i < targetedPagesArray.length; i++) {
-                        let targetPageIndex = targetedPagesArray[i];
-                        
-                        if (isOcrCancelled) {
-                            console.log("OCR Loop stopped by user request.");
-            
-                            // Force the layout numbers and bars back to their original startup values
-                            statusText.textContent = "Status: Systems initialized";
-                            progressBar.style.width = "0%";
-                            progressPercent.textContent = "0%";
-            
-                            break; // Exits the loop safely
-                        }
-                        
-                        // Smart layout check: if the selection count equals the whole book, keep it clean
-                        if (targetedPagesArray.length === totalPagesCount) {
-                            statusText.textContent = `Status: Compiling data maps for Page ${targetPageIndex}...`;
-                        } else {
-                            // Only show the complex batch layout if you're processing a custom chunk (like 8-26)
-                            statusText.textContent = `Status: Compiling data maps (${i + 1}/${targetedPagesArray.length}) [Doc Page ${targetPageIndex}]...`;
-                        }
-                        // Calculate progress percentage accurately based on pages processed
-                        const currentLoopPct = Math.round(((i + 1) / targetedPagesArray.length) * 100);
-                        progressBar.style.width = `${currentLoopPct}%`;
-                        progressPercent.textContent = `${currentLoopPct}%`;
-
-                        const page = await pdf.getPage(targetPageIndex);
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const viewport = page.getViewport({ scale: 2.0 });
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-                        
-                        let processingSource = canvas;
-                        if (filterToggle.checked) {
-                            processingSource = await applyContrastEnhancementFilterMatrix(canvas, true);
-                        }
-                        
-                        const dataImgUrl = processingSource.toDataURL('image/jpeg');
-                        const { data: { text } } = await worker.recognize(dataImgUrl);
-                        comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n` + text + "\n\n";
-                    }
-                    
-                    statusText.textContent = "Status: Generating final index layouts...";
-                    const mockBlob = new Blob([comprehensiveTextCompilation], { type: 'application/pdf' });
-                    searchablePdfBlobUrl = URL.createObjectURL(mockBlob);
-
-                } else {
-                    let sourceAsset = activeFileStream;
-                    if (filterToggle.checked) { 
-                        sourceAsset = await applyContrastEnhancementFilterMatrix(activeFileStream); 
-                    }
-                    const { data: { text, pdf: pdfBytes } } = await worker.recognize(sourceAsset, { pdfTitle: 'Searchable Vault Document' }, { pdf: true });
-                    comprehensiveTextCompilation = text;
-                    const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
-                    searchablePdfBlobUrl = URL.createObjectURL(blob);
-                }
-
-                await worker.terminate();
-
-                outputTextarea.value = comprehensiveTextCompilation;
-                calculateTelemetryAnalysisMetrics(comprehensiveTextCompilation);
-                appendEntryToSessionHistory(activeFileStream.name, comprehensiveTextCompilation, searchablePdfBlobUrl);
-                
-                btnDownloadPdf.disabled = false;
-                statusText.textContent = "Status: Pipeline processing successful!";
-                progressBar.style.width = "100%";
-                progressPercent.textContent = "100%";
-
-            } catch (error) {
-                console.error(error);
-                statusText.textContent = "Status: Matrix pipeline execution crash";
-            } finally {
-                convertBtn.disabled = false;
             }
+
+            // Fallback to all pages if custom input evaluates to empty arrays
+            if (targetedPagesArray.length === 0) {
+                for (let p = 1; p <= totalPagesCount; p++) targetedPagesArray.push(p);
+            }
+            
+            statusText.textContent = `Status: Deep scanning multi-page architecture (0/${targetedPagesArray.length})`;
+            
+            // Native looping system grid to iterate across all targeted document blocks
+            for (let i = 0; i < targetedPagesArray.length; i++) {
+                let targetPageIndex = targetedPagesArray[i];
+                
+                if (isOcrCancelled) {
+                    console.log("OCR Loop stopped by user request.");
+    
+                    // Force the layout numbers and bars back to their original startup values
+                    statusText.textContent = "Status: Systems initialized";
+                    progressBar.style.width = "0%";
+                    progressPercent.textContent = "0%";
+    
+                    break; // Exits the loop safely
+                }
+                
+                // Smart layout check: if the selection count equals the whole book, keep it clean
+                if (targetedPagesArray.length === totalPagesCount) {
+                    statusText.textContent = `Status: Compiling data maps for Page ${targetPageIndex}...`;
+                } else {
+                    // Only show the complex batch layout if you're processing a custom chunk (like 8-26)
+                    statusText.textContent = `Status: Compiling data maps (${i + 1}/${targetedPagesArray.length}) [Doc Page ${targetPageIndex}]...`;
+                }
+                // Calculate progress percentage accurately based on pages processed
+                const currentLoopPct = Math.round(((i + 1) / targetedPagesArray.length) * 100);
+                progressBar.style.width = `${currentLoopPct}%`;
+                progressPercent.textContent = `${currentLoopPct}%`;
+
+                const page = await pdf.getPage(targetPageIndex);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: 2.0 });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                
+                let processingSource = canvas;
+                if (filterToggle.checked) {
+                    processingSource = await applyContrastEnhancementFilterMatrix(canvas, true);
+                }
+                
+                const dataImgUrl = processingSource.toDataURL('image/jpeg');
+                
+                // --- FIXED PROBLEM 1: GIBBERISH/EMPTY GRAPHICS FILTERING ---
+                const { data: { text, confidence } } = await worker.recognize(dataImgUrl);
+                const cleanText = text.trim();
+                const hasAlphaNumeric = /[a-zA-Z0-9]/.test(cleanText);
+
+                if (cleanText.length > 0 && confidence > 15 && hasAlphaNumeric) {
+                    comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n` + text + "\n\n";
+                } else {
+                    // Cleaner format for images/figures/blank spaces
+                    comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n[Image / Visual Content Block]\n\n`;
+                }
+            }
+            
+            statusText.textContent = "Status: Generating final index layouts...";
+            // --- FIXED PROBLEM 2: CONVERTED MULTI-PAGE OUTPUT TO VALID PLAIN TEXT ---
+            const mockBlob = new Blob([comprehensiveTextCompilation], { type: 'text/plain' });
+            searchablePdfBlobUrl = URL.createObjectURL(mockBlob);
+
+        } else {
+            let sourceAsset = activeFileStream;
+            if (filterToggle.checked) { 
+                sourceAsset = await applyContrastEnhancementFilterMatrix(activeFileStream); 
+            }
+            const { data: { text } } = await worker.recognize(sourceAsset);
+            comprehensiveTextCompilation = text;
+            
+            // --- FIXED PROBLEM 2: CONVERTED SINGLE IMAGE BLOB AS WELL ---
+            const blob = new Blob([comprehensiveTextCompilation], { type: 'text/plain' });
+            searchablePdfBlobUrl = URL.createObjectURL(blob);
         }
+
+        await worker.terminate();
+
+        outputTextarea.value = comprehensiveTextCompilation;
+        calculateTelemetryAnalysisMetrics(comprehensiveTextCompilation);
+        appendEntryToSessionHistory(activeFileStream.name, comprehensiveTextCompilation, searchablePdfBlobUrl);
+        
+        btnDownloadPdf.disabled = false;
+        statusText.textContent = "Status: Pipeline processing successful!";
+        progressBar.style.width = "100%";
+        progressPercent.textContent = "100%";
+
+    } catch (error) {
+        console.error(error);
+        statusText.textContent = "Status: Matrix pipeline execution crash";
+    } finally {
+        convertBtn.disabled = false;
+    }
+}
 
         function applyContrastEnhancementFilterMatrix(sourceData, isCanvas = false) {
             return new Promise((resolve) => {
