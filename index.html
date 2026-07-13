@@ -1287,11 +1287,42 @@ function abortOcrOperation() {
     }
 }
 function clearOutputMatrixField() {
-    // Looks for your primary textarea element on the screen and cleans it out
+    // 1. Clear out the textarea
     const outputTextarea = document.querySelector('.output-matrix-container textarea') || document.querySelector('textarea');
     if (outputTextarea) {
         outputTextarea.value = "";
     }
+
+    // 2. Locate your metric indicator containers and reset them instantly
+    // (Targeting the value rows inside your three card metrics grids)
+    const metricWordsCard = document.querySelector('.output-matrix-container div:nth-child(1) h3') || document.querySelectorAll('[class*="card"] h3, div style*="flex"] div div:first-child')[0];
+    
+    // Let's sweep through and find the cards by checking their labels or DOM position
+    const summaryCards = document.querySelectorAll('.output-matrix-container div, .right-column div');
+    
+    // A robust way is to find elements containing the numeric metrics and reset them
+    // Let's target the exact text nodes or update via your app's native updater if you have one:
+    updateOutputMatrixMetricsCounterBlock(""); 
+}
+
+// Add or combine this helper if your code uses custom tracker variables:
+function updateOutputMatrixMetricsCounterBlock(currentTextString) {
+    // If your code has a native update function for word count, call it with ""
+    // Otherwise, we force reset the specific text nodes on the dashboard:
+    
+    // Find the wrapper holding your numeric highlights (0, 0, 0s)
+    const panels = document.querySelectorAll('div');
+    panels.forEach(panel => {
+        if (panel.textContent.includes('WORDS') && panel.textContent.includes('CHARACTERS')) {
+            const numbers = panel.querySelectorAll('div, span, h3, p');
+            // Force values to absolute base values
+            if (numbers.length >= 3) {
+                numbers[0].textContent = "0";
+                numbers[1].textContent = "0";
+                numbers[2].textContent = "0s";
+            }
+        }
+    });
 }
     </script>
 </body>
