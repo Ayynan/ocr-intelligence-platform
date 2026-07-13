@@ -472,12 +472,16 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
                     </div>
                 </div>
 
-                <div class="toolbar">
-                    <button class="tool-btn primary-action" id="btn-utility-download-pdf" disabled><i class="fa-solid fa-file-shield"></i> Searchable PDF (Keep Format)</button>
-                    <button class="tool-btn" id="btn-utility-download-doc"><i class="fa-solid fa-file-word"></i> Word Doc</button>
-                    <button class="tool-btn" id="btn-utility-download-txt"><i class="fa-solid fa-file-lines"></i> .TXT</button>
-                    <button class="tool-btn" id="btn-utility-copy"><i class="fa-regular fa-copy"></i> Copy</button>
-                </div>
+                <div class="toolbar" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+    <button class="tool-btn primary-action" id="btn-utility-download-pdf" disabled><i class="fa-solid fa-file-shield"></i> Searchable PDF (Keep Format)</button>
+    <button class="tool-btn" id="btn-utility-download-doc"><i class="fa-solid fa-file-word"></i> Word Doc</button>
+    <button class="tool-btn" id="btn-utility-download-txt"><i class="fa-solid fa-file-lines"></i> .TXT</button>
+    <button class="tool-btn" id="btn-utility-copy"><i class="fa-regular fa-copy"></i> Copy</button>
+    
+    <button type="button" id="btn-utility-clear" onclick="clearOutputMatrixField()" class="tool-btn" style="background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.25); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; margin-left: auto;">
+        <i class="fa-solid fa-trash-can"></i> Clear Text
+    </button>
+</div>
 
                 <div class="text-editor-container">
                     <textarea id="output" placeholder="Raw editable text extraction layer will populate inside this viewport framework..." readonly></textarea>
@@ -1280,6 +1284,13 @@ function abortOcrOperation() {
     }
     if (progressBar) {
         progressBar.style.width = "0%";
+    }
+}
+function clearOutputMatrixField() {
+    // Looks for your primary textarea element on the screen and cleans it out
+    const outputTextarea = document.querySelector('.output-matrix-container textarea') || document.querySelector('textarea');
+    if (outputTextarea) {
+        outputTextarea.value = "";
     }
 }
     </script>
