@@ -1532,23 +1532,14 @@ async function renderSinglePdfPagePreview(pageNum) {
 
 // Flips forward and backward within the restricted collection limits securely
 function navigatePreviewPage(direction) {
-    if (!loadedPdfDocumentInstance || targetedPreviewPagesArray.length === 0) return;
+    if (!loadedPdfDocumentInstance || !targetedPreviewPagesArray || targetedPreviewPagesArray.length === 0) {
+        return;
+    }
     
     let targetIndex = currentPreviewQueueIndex + direction;
     if (targetIndex >= 0 && targetIndex < targetedPreviewPagesArray.length) {
         currentPreviewQueueIndex = targetIndex;
         renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
-    }
-}
-
-// Handles turning page indexes forward/backward securely
-function navigatePreviewPage(direction) {
-    if (!loadedPdfDocumentInstance) return;
-    
-    let targetPage = currentPreviewIndex + direction;
-    if (targetPage >= 1 && targetPage <= totalPreviewPages) {
-        currentPreviewIndex = targetPage;
-        renderSinglePdfPagePreview(currentPreviewIndex);
     }
 }
 document.getElementById('custom-page-string').addEventListener('input', () => {
