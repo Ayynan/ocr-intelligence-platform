@@ -13,7 +13,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --bg-base: #090d16;
@@ -852,22 +852,7 @@ togglePassViewBtn.addEventListener('click', () => {
         document.getElementById('btn-utility-copy').addEventListener('click', copyTextToClipboardEcosystem);
         document.getElementById('btn-utility-download-txt').addEventListener('click', () => downloadTextDataStreamFile('txt'));
         document.getElementById('btn-utility-download-doc').addEventListener('click', () => downloadTextDataStreamFile('doc'));
-        btnDownloadPdf.addEventListener('click', () => {
-    // Target the element holding your structured OCR text output
-    const elementToPrint = document.getElementById('outputTextarea'); 
-    
-    // Configure the PDF settings to preserve strict A4 layout formatting
-    const printOptions = {
-        margin:       15,
-        filename:     `${activeFileStream ? activeFileStream.name.split('.')[0] : 'Document'}_Scanned.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    // Run the direct structural conversion and prompt the user to save it instantly
-    html2pdf().set(printOptions).from(elementToPrint).save();
-});
+        btnDownloadPdf.addEventListener('click', executePdfDownloadAction);
 
         function handleFileStreamIngestion(e) {
     const file = e.target.files[0];
