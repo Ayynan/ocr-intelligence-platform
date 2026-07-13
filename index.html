@@ -1287,45 +1287,60 @@ function abortOcrOperation() {
     }
 }
 function clearOutputMatrixField() {
-    // 1. Clear out the raw text values inside the viewport text box
+    // 1. Clear out the raw text values inside the text box
     const outputTextarea = document.querySelector('.output-matrix-container textarea') || document.querySelector('textarea');
     if (outputTextarea) {
         outputTextarea.value = "";
     }
 
-    // 2. Clear out the metric word counter boxes manually 
-    // Go through every div on the right side panel and match metric texts
-    const allRightPanelDivs = document.querySelectorAll('.output-matrix-container div, [class*="Output"] div, [class*="Tools"] div, div');
+    // 2. Bruteforce find and clear out the 3 stat numbers (Words, Characters, Read Time)
+    // We look for any element that has "WORDS", "CHARACTERS", or "READ TIME" as text,
+    // then find its neighboring or parent numbers and reset them.
+    const allElements = document.querySelectorAll('div, span, h1, h2, h3, p, slot');
     
-    allRightPanelDivs.forEach(div => {
-        // If this specific element container is the "WORDS" tracking box
-        if (div.textContent.trim().endsWith("WORDS")) {
-            // Find any inner number labels or heading tags inside it and clear them
-            const targetNum = div.querySelector('h1, h2, h3, div, span, p');
-            if (targetNum) targetNum.textContent = "0";
-            else div.innerHTML = "0<br><small style='color: #64748b; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;'>WORDS</small>";
+    allElements.forEach(el => {
+        const text = el.textContent.trim().toUpperCase();
+        
+        // Target the WORDS box
+        if (text === "WORDS" || text.includes("WORDS")) {
+            // Find any numbers inside this element or its parent container
+            const numbers = el.parentElement ? el.parentElement.querySelectorAll('div, span, h3, h1, h2') : [el];
+            numbers.forEach(num => {
+                if (num !== el && !isNaN(parseInt(num.textContent))) {
+                    num.textContent = "0";
+                }
+            });
         }
         
-        // If this specific element container is the "CHARACTERS" tracking box
-        if (div.textContent.trim().endsWith("CHARACTERS")) {
-            const targetNum = div.querySelector('h1, h2, h3, div, span, p');
-            if (targetNum) targetNum.textContent = "0";
-            else div.innerHTML = "0<br><small style='color: #64748b; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;'>CHARACTERS</small>";
+        // Target the CHARACTERS box
+        if (text === "CHARACTERS" || text.includes("CHARACTERS")) {
+            const numbers = el.parentElement ? el.parentElement.querySelectorAll('div, span, h3, h1, h2') : [el];
+            numbers.forEach(num => {
+                if (num !== el && !isNaN(parseInt(num.textContent))) {
+                    num.textContent = "0";
+                }
+            });
         }
         
-        // If this specific element container is the "READ TIME" tracking box
-        if (div.textContent.trim().endsWith("READ TIME")) {
-            const targetNum = div.querySelector('h1, h2, h3, div, span, p');
-            if (targetNum) targetNum.textContent = "0s";
-            else div.innerHTML = "0s<br><small style='color: #64748b; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;'>READ TIME</small>";
+        // Target the READ TIME box
+        if (text === "READ TIME" || text.includes("READ TIME")) {
+            const numbers = el.parentElement ? el.parentElement.querySelectorAll('div, span, h3, h1, h2') : [el];
+            numbers.forEach(num => {
+                if (num !== el && (num.textContent.includes('s') || !isNaN(parseInt(num.textContent)))) {
+                    num.textContent = "0s";
+                }
+            });
         }
     });
 
-    // 3. Force-trigger your app's native keystroke listener to clean out any cached state
-    if (outputTextarea) {
-        outputTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-        outputTextarea.dispatchEvent(new Event('keyup', { bubbles: true }));
-    }
+    // 3. Look for common generic count element IDs just in case your engine uses them
+    const commonIds = ['word-count', 'words-count', 'char-count', 'character-count', 'read-time', 'reading-time'];
+    commonIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = id.includes('time') ? "0s" : "0";
+        }
+    });
 }
 // Add or combine this helper if your code uses custom tracker variables:
 function updateOutputMatrixMetricsCounterBlock(currentTextString) {
