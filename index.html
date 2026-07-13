@@ -1247,22 +1247,14 @@ togglePassViewBtn.addEventListener('click', () => {
         }
 
         function executePdfDownloadAction() {
-    // 1. Target the textarea holding your formatted text
-    const elementToPrint = document.getElementById('outputTextarea'); 
-    if (!elementToPrint || !elementToPrint.value.trim()) return;
-    
-    // 2. Configure options to preserve text formatting and spacing perfectly
-    const printOptions = {
-        margin:       15,
-        filename:     `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, logging: false, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    // 3. Capture the exact layout view and download a working PDF asset instantly
-    html2pdf().set(printOptions).from(elementToPrint).save();
-}
+            if (!searchablePdfBlobUrl) return;
+            const dlAnchor = document.createElement('a'); 
+            dlAnchor.href = searchablePdfBlobUrl;
+            dlAnchor.download = `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`;
+            document.body.appendChild(dlAnchor); 
+            dlAnchor.click(); 
+            document.body.removeChild(dlAnchor);
+        }
 
         function downloadTextDataStreamFile(formatType) {
             const outputTextPayload = outputTextarea.value; 
