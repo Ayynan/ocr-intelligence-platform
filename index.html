@@ -1287,35 +1287,14 @@ function abortOcrOperation() {
     }
 }
 function clearOutputMatrixField() {
-    // 1. Clear out the textarea text content
-    const outputTextarea = document.querySelector('textarea');
+    // 1. Target your exact text box using its script variable
     if (outputTextarea) {
         outputTextarea.value = "";
     }
 
-    // 2. Direct Index Reset: Target the exact counter cards by their order in the panel
-    // This looks inside your Output Tools column and grabs the green counter headings
-    const statNumbers = document.querySelectorAll('.output-matrix-container h1, .output-matrix-container h2, .output-matrix-container h3, [class*="Tools"] h3, [class*="Tools"] div div div:first-child');
-    
-    if (statNumbers && statNumbers.length >= 3) {
-        // Direct assignment to the actual nodes visible on your screen
-        statNumbers[0].textContent = "0";   // Resets Words
-        statNumbers[1].textContent = "0";   // Resets Characters
-        statNumbers[2].textContent = "0s";  // Resets Read Time
-    } else {
-        // Fallback: If they are generic nested divs, find the ones containing green text styling
-        const greenNumbers = document.querySelectorAll('div[style*="color: rgb(16,"], div[style*="color:#"], span[style*="color"]');
-        greenNumbers.forEach(num => {
-            if (!isNaN(parseInt(num.textContent))) {
-                num.textContent = num.textContent.includes('s') ? "0s" : "0";
-            }
-        });
-    }
-
-    // 3. Clear any internal tracking variables your script uses to hold counts
-    // (We will verify these exact names once you paste your code)
-    if (window.wordCount) window.wordCount = 0;
-    if (window.charCount) window.charCount = 0;
+    // 2. Call your native calculation function with empty text!
+    // This instantly forces mWords to "0", mChars to "0", and mTime to "0s" safely.
+    calculateTelemetryAnalysisMetrics("");
 }
 // Add or combine this helper if your code uses custom tracker variables:
 function updateOutputMatrixMetricsCounterBlock(currentTextString) {
