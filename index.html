@@ -13,7 +13,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --bg-base: #090d16;
@@ -852,7 +852,22 @@ togglePassViewBtn.addEventListener('click', () => {
         document.getElementById('btn-utility-copy').addEventListener('click', copyTextToClipboardEcosystem);
         document.getElementById('btn-utility-download-txt').addEventListener('click', () => downloadTextDataStreamFile('txt'));
         document.getElementById('btn-utility-download-doc').addEventListener('click', () => downloadTextDataStreamFile('doc'));
-        btnDownloadPdf.addEventListener('click', executePdfDownloadAction);
+        btnDownloadPdf.addEventListener('click', () => {
+    // Target the element holding your structured OCR text output
+    const elementToPrint = document.getElementById('outputTextarea'); 
+    
+    // Configure the PDF settings to preserve strict A4 layout formatting
+    const printOptions = {
+        margin:       15,
+        filename:     `${activeFileStream ? activeFileStream.name.split('.')[0] : 'Document'}_Scanned.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Run the direct structural conversion and prompt the user to save it instantly
+    html2pdf().set(printOptions).from(elementToPrint).save();
+});
 
         function handleFileStreamIngestion(e) {
     const file = e.target.files[0];
@@ -1064,10 +1079,7 @@ togglePassViewBtn.addEventListener('click', () => {
                 } else {
                     comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n[Image / Visual Content Block]\n\n`;
                 }
-            }
-            
-            statusText.textContent = "Status: Building valid PDF architecture...";
-                    
+            }                    
                     // 1. Initialize a genuine, structural jsPDF container
                     const doc = new jsPDF({
                         orientation: "portrait",
@@ -1232,14 +1244,22 @@ togglePassViewBtn.addEventListener('click', () => {
         }
 
         function executePdfDownloadAction() {
-            if (!searchablePdfBlobUrl) return;
-            const dlAnchor = document.createElement('a'); 
-            dlAnchor.href = searchablePdfBlobUrl;
-            dlAnchor.download = `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`;
-            document.body.appendChild(dlAnchor); 
-            dlAnchor.click(); 
-            document.body.removeChild(dlAnchor);
-        }
+    // 1. Target the textarea holding your formatted text
+    const elementToPrint = document.getElementById('outputTextarea'); 
+    if (!elementToPrint || !elementToPrint.value.trim()) return;
+    
+    // 2. Configure options to preserve text formatting and spacing perfectly
+    const printOptions = {
+        margin:       15,
+        filename:     `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, logging: false, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // 3. Capture the exact layout view and download a working PDF asset instantly
+    html2pdf().set(printOptions).from(elementToPrint).save();
+}
 
         function downloadTextDataStreamFile(formatType) {
             const outputTextPayload = outputTextarea.value; 
