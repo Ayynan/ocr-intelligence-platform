@@ -977,13 +977,7 @@ togglePassViewBtn.addEventListener('click', () => {
             } finally {
                 convertBtn.disabled = false;
             }
-            const clearFileBtn = document.getElementById('btn-clear-stream') || document.querySelector('.preview-container button');
-        if (clearFileBtn) {
-            clearFileBtn.click(); // Clears out the image preview component layout automatically
-        }
-        catch (error) {
-        console.error("Pipeline failure:", error);
-        }
+            
         }
 
         function applyContrastEnhancementFilterMatrix(sourceData, isCanvas = false) {
