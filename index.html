@@ -5,14 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DocuScan AI Pro - Ultimate Enterprise Document Suite</title>
-    <!-- This line places your custom logo right onto the browser tab -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='7' fill='%233b82f6'/><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' transform='scale(0.6) translate(8, 8)'/><path d='M14 2v6h6M16 13H8M16 17H8M10 9H8' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' transform='scale(0.6) translate(8, 8)'/></svg>">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+PHJlY3Qgd2lkdGg9JzI0JyBoZWlnaHQ9JzI0JyByeD0nNycgZmlsbD0nIzNiODJmNicvPjxwYXRoIGQ9J00xNCAySDZhMiAyIDAgMCAwLTIgMnYxNmEyIDIgMCAwIDAgMiAyaDEyYTIgMiAwIDAgMCAyLTJWOHonIGZpbGw9J25vbmUnIHN0cm9rZT0nI2ZmZmZmZicgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS1saW5lam9pbj0ncm91bmQnIHRyYW5zZm9ybT0nc2NhbGUoMC42KSB0cmFuc2xhdGUoOCwgOCknLz48cGF0aCBkPSdNMTQgMnY2aDZNMTYgMTNIOE0xNiAxN0g4TTEwIDlIOCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjZmZmZmZmJyBzdHJva2Utd2lkdGg9JzInIHRyYW5zZm9ybT0nc2NhbGUoMC42KSB0cmFuc2xhdGUoOCwgOCknLz48L3N2Zz4=">
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&family=JetBrains+Mono:wght=400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --bg-base: #090d16;
@@ -560,6 +561,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     </form>
 </div>
     <script>
+        const { jsPDF } = window.jspdf;
         let isOcrCancelled = false;
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -1064,10 +1066,33 @@ togglePassViewBtn.addEventListener('click', () => {
                 }
             }
             
-            statusText.textContent = "Status: Generating final index layouts...";
-            // --- FIXED PROBLEM 2: CONVERTED MULTI-PAGE OUTPUT TO VALID PLAIN TEXT ---
-            const mockBlob = new Blob([comprehensiveTextCompilation], { type: 'text/plain' });
-            searchablePdfBlobUrl = URL.createObjectURL(mockBlob);
+            statusText.textContent = "Status: Building valid PDF architecture...";
+                    
+                    // 1. Initialize a genuine, structural jsPDF container
+                    const doc = new jsPDF({
+                        orientation: "portrait",
+                        unit: "mm",
+                        format: "a4"
+                    });
+
+                    // 2. Wrap your extracted text so it folds clean inside a structural A4 layout
+                    const splitText = doc.splitTextToSize(comprehensiveTextCompilation, 180);
+                    let yAxisPos = 20;
+                    const pageHeight = doc.internal.pageSize.height;
+
+                    // 3. Systematically stamp the strings page by page
+                    for (let lineIndex = 0; lineIndex < splitText.length; lineIndex++) {
+                        if (yAxisPos > pageHeight - 20) {
+                            doc.addPage();
+                            yAxisPos = 20; // Re-align cursor height to the top margin of the new page
+                        }
+                        doc.text(splitText[lineIndex], 15, yAxisPos);
+                        yAxisPos += 7; // Line grid height spacing
+                    }
+
+                    // 4. Output a completely valid binary file asset
+                    const realPdfBlob = doc.output('blob');
+                    searchablePdfBlobUrl = URL.createObjectURL(realPdfBlob);
 
         } else {
             let sourceAsset = activeFileStream;
