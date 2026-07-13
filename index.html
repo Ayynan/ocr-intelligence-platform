@@ -992,8 +992,11 @@ togglePassViewBtn.addEventListener('click', () => {
                             break; // Exits the loop safely
                         }
                         
-                        statusText.textContent = `Status: Compiling data maps for Page ${targetPageIndex} of ${totalPagesCount}...`;
-                        const currentLoopPct = Math.round((i / targetedPagesArray.length) * 100);
+                        // Shows the exact position in your filtered selection run (e.g. processing page 5 of your 18 selected pages)
+                        statusText.textContent = `Status: Compiling data maps (${i + 1}/${targetedPagesArray.length}) [Doc Page ${targetPageIndex}]...`;
+
+                        // Calculate progress percentage accurately based on pages processed
+                        const currentLoopPct = Math.round(((i + 1) / targetedPagesArray.length) * 100);
                         progressBar.style.width = `${currentLoopPct}%`;
                         progressPercent.textContent = `${currentLoopPct}%`;
 
