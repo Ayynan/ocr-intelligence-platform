@@ -901,6 +901,10 @@ togglePassViewBtn.addEventListener('click', () => {
             statusText.textContent = "Status: Buffer targets reset"; 
             progressBar.style.width = "0%"; 
             progressPercent.textContent = "0%";
+            const stripPlaceholder = document.getElementById('pipeline-thumbnail-strip');
+if (stripPlaceholder) {
+    stripPlaceholder.innerHTML = `<span id="thumbnail-strip-placeholder" style="color: #475569; font-size: 0.75rem; margin: auto;">No loaded rendering queue pipelines ready</span>`;
+}
         }
 
         async function runOcrProcessingPipelineSystemMatrix() {
@@ -922,28 +926,58 @@ togglePassViewBtn.addEventListener('click', () => {
                         }
                     }
                 });
-
-                if (activeFileType === "application/pdf") {
+                    if (activeFileType === "application/pdf") {
                     const arrayBuffer = await activeFileStream.arrayBuffer();
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                     const totalPagesCount = pdf.numPages;
                     
-                    statusText.textContent = `Status: Deep scanning multi-page architecture (0/${totalPagesCount})`;
+                    // --- PARSE USER PAGE TARGET SELECTION QUEUE ---
+                    let targetedPagesArray = [];
+                    const executionSelectionMode = document.getElementById('page-range-selector').value;
+
+                    if (executionSelectionMode === 'all') {
+                        for (let p = 1; p <= totalPagesCount; p++) targetedPagesArray.push(p);
+                    } else if (executionSelectionMode === 'odd') {
+                        for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 !== 0) targetedPagesArray.push(p); }
+                    } else if (executionSelectionMode === 'even') {
+                        for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 === 0) targetedPagesArray.push(p); }
+                    } else if (executionSelectionMode === 'custom') {
+                        const rawInputStr = document.getElementById('custom-page-string').value;
+                        rawInputStr.split(',').forEach(part => {
+                            if (part.includes('-')) {
+                                const [start, end] = part.split('-').map(Number);
+                                for (let p = start; p <= end; p++) { if (p >= 1 && p <= totalPagesCount) targetedPagesArray.push(p); }
+                            } else {
+                                const num = Number(part.trim());
+                                if (num && num >= 1 && num <= totalPagesCount) targetedPagesArray.push(num);
+                            }
+                        });
+                    }
+
+                    // Fallback to all pages if custom input evaluates to empty arrays
+                    if (targetedPagesArray.length === 0) {
+                        for (let p = 1; p <= totalPagesCount; p++) targetedPagesArray.push(p);
+                    }
                     
-                    // Native looping system grid to iterate across all PDF document blocks
-                    for (let targetPageIndex = 1; targetPageIndex <= totalPagesCount; targetPageIndex++) {
+                    statusText.textContent = `Status: Deep scanning multi-page architecture (0/${targetedPagesArray.length})`;
+                    
+                    // Native looping system grid to iterate across all targeted document blocks
+                    for (let i = 0; i < targetedPagesArray.length; i++) {
+                        let targetPageIndex = targetedPagesArray[i];
+                        
                         if (isOcrCancelled) {
-                        console.log("OCR Loop stopped by user request.");
-        
-                        // Force the layout numbers and bars back to their original startup values
-                        statusText.textContent = "Status: Systems initialized";
-                        progressBar.style.width = "0%";
-                        progressPercent.textContent = "0%";
-        
-                        break; // Exits the loop safely
+                            console.log("OCR Loop stopped by user request.");
+            
+                            // Force the layout numbers and bars back to their original startup values
+                            statusText.textContent = "Status: Systems initialized";
+                            progressBar.style.width = "0%";
+                            progressPercent.textContent = "0%";
+            
+                            break; // Exits the loop safely
                         }
+                        
                         statusText.textContent = `Status: Compiling data maps for Page ${targetPageIndex} of ${totalPagesCount}...`;
-                        const currentLoopPct = Math.round(((targetPageIndex - 1) / totalPagesCount) * 100);
+                        const currentLoopPct = Math.round((i / targetedPagesArray.length) * 100);
                         progressBar.style.width = `${currentLoopPct}%`;
                         progressPercent.textContent = `${currentLoopPct}%`;
 
