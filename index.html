@@ -1020,15 +1020,39 @@ togglePassViewBtn.addEventListener('click', () => {
                 
                 const dataImgUrl = processingSource.toDataURL('image/jpeg');
                 
-                // --- FIXED PROBLEM 1: GIBBERISH/EMPTY GRAPHICS FILTERING ---
-                const { data: { text, confidence } } = await worker.recognize(dataImgUrl);
-                const cleanText = text.trim();
-                const hasAlphaNumeric = /[a-zA-Z0-9]/.test(cleanText);
+                // --- PROBLEM 1 REFINED: LINE-BY-LINE MATRIX SCRUBBING ---
+                const { data } = await worker.recognize(dataImgUrl);
+                
+                let cleanedPageText = "";
+                
+                // Break the extracted text into individual lines to inspect them separately
+                const lines = data.text.split('\n');
+                
+                lines.forEach(line => {
+                    const trimmedLine = line.trim();
+                    if (trimmedLine.length === 0) return;
 
-                if (cleanText.length > 0 && confidence > 15 && hasAlphaNumeric) {
-                    comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n` + text + "\n\n";
+                    // Count how many normal letters/numbers are in this specific line
+                    const alphaNumericCount = (trimmedLine.match(/[a-zA-Z0-9]/g) || []).length;
+                    // Count total symbols/spaces/garbage characters
+                    const totalLength = trimmedLine.length;
+                    
+                    // Calculate the ratio of real text to symbols
+                    const textRatio = alphaNumericCount / totalLength;
+
+                    // Filter: If a line is mostly random characters or symbols (less than 45% readable words), skip it
+                    if (textRatio > 0.45 && alphaNumericCount > 2) {
+                        cleanedPageText += line + "\n";
+                    } else {
+                        // Optional: log or drop garbage lines silently to keep output clean
+                        console.log(`Scrubbed noise line: "${trimmedLine}"`);
+                    }
+                });
+
+                // If the page ended up containing content, append it cleanly
+                if (cleanedPageText.trim().length > 0) {
+                    comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n` + cleanedPageText + "\n\n";
                 } else {
-                    // Cleaner format for images/figures/blank spaces
                     comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n[Image / Visual Content Block]\n\n`;
                 }
             }
