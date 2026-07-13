@@ -1287,60 +1287,35 @@ function abortOcrOperation() {
     }
 }
 function clearOutputMatrixField() {
-    // 1. Clear out the raw text values inside the text box
-    const outputTextarea = document.querySelector('.output-matrix-container textarea') || document.querySelector('textarea');
+    // 1. Clear out the textarea text content
+    const outputTextarea = document.querySelector('textarea');
     if (outputTextarea) {
         outputTextarea.value = "";
     }
 
-    // 2. Bruteforce find and clear out the 3 stat numbers (Words, Characters, Read Time)
-    // We look for any element that has "WORDS", "CHARACTERS", or "READ TIME" as text,
-    // then find its neighboring or parent numbers and reset them.
-    const allElements = document.querySelectorAll('div, span, h1, h2, h3, p, slot');
+    // 2. Direct Index Reset: Target the exact counter cards by their order in the panel
+    // This looks inside your Output Tools column and grabs the green counter headings
+    const statNumbers = document.querySelectorAll('.output-matrix-container h1, .output-matrix-container h2, .output-matrix-container h3, [class*="Tools"] h3, [class*="Tools"] div div div:first-child');
     
-    allElements.forEach(el => {
-        const text = el.textContent.trim().toUpperCase();
-        
-        // Target the WORDS box
-        if (text === "WORDS" || text.includes("WORDS")) {
-            // Find any numbers inside this element or its parent container
-            const numbers = el.parentElement ? el.parentElement.querySelectorAll('div, span, h3, h1, h2') : [el];
-            numbers.forEach(num => {
-                if (num !== el && !isNaN(parseInt(num.textContent))) {
-                    num.textContent = "0";
-                }
-            });
-        }
-        
-        // Target the CHARACTERS box
-        if (text === "CHARACTERS" || text.includes("CHARACTERS")) {
-            const numbers = el.parentElement ? el.parentElement.querySelectorAll('div, span, h3, h1, h2') : [el];
-            numbers.forEach(num => {
-                if (num !== el && !isNaN(parseInt(num.textContent))) {
-                    num.textContent = "0";
-                }
-            });
-        }
-        
-        // Target the READ TIME box
-        if (text === "READ TIME" || text.includes("READ TIME")) {
-            const numbers = el.parentElement ? el.parentElement.querySelectorAll('div, span, h3, h1, h2') : [el];
-            numbers.forEach(num => {
-                if (num !== el && (num.textContent.includes('s') || !isNaN(parseInt(num.textContent)))) {
-                    num.textContent = "0s";
-                }
-            });
-        }
-    });
+    if (statNumbers && statNumbers.length >= 3) {
+        // Direct assignment to the actual nodes visible on your screen
+        statNumbers[0].textContent = "0";   // Resets Words
+        statNumbers[1].textContent = "0";   // Resets Characters
+        statNumbers[2].textContent = "0s";  // Resets Read Time
+    } else {
+        // Fallback: If they are generic nested divs, find the ones containing green text styling
+        const greenNumbers = document.querySelectorAll('div[style*="color: rgb(16,"], div[style*="color:#"], span[style*="color"]');
+        greenNumbers.forEach(num => {
+            if (!isNaN(parseInt(num.textContent))) {
+                num.textContent = num.textContent.includes('s') ? "0s" : "0";
+            }
+        });
+    }
 
-    // 3. Look for common generic count element IDs just in case your engine uses them
-    const commonIds = ['word-count', 'words-count', 'char-count', 'character-count', 'read-time', 'reading-time'];
-    commonIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.textContent = id.includes('time') ? "0s" : "0";
-        }
-    });
+    // 3. Clear any internal tracking variables your script uses to hold counts
+    // (We will verify these exact names once you paste your code)
+    if (window.wordCount) window.wordCount = 0;
+    if (window.charCount) window.charCount = 0;
 }
 // Add or combine this helper if your code uses custom tracker variables:
 function updateOutputMatrixMetricsCounterBlock(currentTextString) {
