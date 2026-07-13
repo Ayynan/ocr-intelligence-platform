@@ -853,28 +853,23 @@ togglePassViewBtn.addEventListener('click', () => {
         btnDownloadPdf.addEventListener('click', executePdfDownloadAction);
 
         function handleFileStreamIngestion(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-            activeFileStream = file;
-            activeFileType = file.type;
-            convertBtn.disabled = false;
-            btnDownloadPdf.disabled = true;
-            statusText.textContent = "Status: File loaded successfully";
+    activeFileStream = file;
+    activeFileType = file.type;
+    convertBtn.disabled = false;
+    btnDownloadPdf.disabled = true;
+    statusText.textContent = "Status: File loaded successfully";
 
-            const existingRender = previewWrapper.querySelector('img, canvas');
-            if (existingRender) existingRender.remove();
-            previewWrapper.style.display = 'flex';
+    // Hide old dual preview layout wrappers to keep space pristine
+    if (previewWrapper) {
+        previewWrapper.style.display = 'none';
+    }
 
-            if (file.type === "application/pdf") {
-                processAndRenderPdfFirstPageThumbnailInstance(file);
-            } else if (file.type.startsWith("image/")) {
-                const imgElement = document.createElement('img');
-                imgElement.src = URL.createObjectURL(file);
-                previewWrapper.appendChild(imgElement);
-            }
-            initializeDocumentPreviewEngine(file);
-        }
+    // Launch the updated interactive selection preview engine
+    initializeDocumentPreviewEngine(file);
+}
 
         async function processAndRenderPdfFirstPageThumbnailInstance(file) {
             try {
@@ -1413,28 +1408,91 @@ function handlePageRangeSelectionChange() {
 }
 
 // Main logic routing entry for previews
+let targetedPreviewPagesArray = []; // Stores only the pages matching your dropdown/input configuration
+let currentPreviewQueueIndex = 0;   // Keeps track of where we are inside the matching array sequence
+loadedPdfDocumentInstance = null;
+
+// Helper function to calculate matching page targets based on filter dropdown structures
+function calculateTargetedPagesArray() {
+    if (!loadedPdfDocumentInstance) return [];
+    
+    const totalPagesCount = loadedPdfDocumentInstance.numPages;
+    let list = [];
+    const executionSelectionMode = document.getElementById('page-range-selector').value;
+
+    if (executionSelectionMode === 'all') {
+        for (let p = 1; p <= totalPagesCount; p++) list.push(p);
+    } else if (executionSelectionMode === 'odd') {
+        for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 !== 0) list.push(p); }
+    } else if (executionSelectionMode === 'even') {
+        for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 === 0) list.push(p); }
+    } else if (executionSelectionMode === 'custom') {
+        const rawInputStr = document.getElementById('custom-page-string').value;
+        if (rawInputStr.trim()) {
+            rawInputStr.split(',').forEach(part => {
+                if (part.includes('-')) {
+                    const [start, end] = part.split('-').map(Number);
+                    for (let p = start; p <= end; p++) { if (p >= 1 && p <= totalPagesCount) list.push(p); }
+                } else {
+                    const num = Number(part.trim());
+                    if (num && num >= 1 && num <= totalPagesCount) list.push(num);
+                }
+            });
+        }
+    }
+
+    // Fallback block: default to all pages if selection arrays evaluate empty
+    if (list.length === 0) {
+        for (let p = 1; p <= totalPagesCount; p++) list.push(p);
+    }
+    return list;
+}
+
+// Re-evaluates configuration boundaries whenever you toggle dropdown parameters
+function handlePageRangeSelectionChange() {
+    const selector = document.getElementById('page-range-selector');
+    const customInput = document.getElementById('custom-range-input-container');
+    if (customInput) {
+        customInput.style.display = selector.value === 'custom' ? 'block' : 'none';
+    }
+
+    // Re-render and limit preview window constraints instantly if a file is active
+    if (activeFileStream && activeFileType === "application/pdf") {
+        targetedPreviewPagesArray = calculateTargetedPagesArray();
+        currentPreviewQueueIndex = 0; // Reset focus to first page in the valid subset
+        if (targetedPreviewPagesArray.length > 0) {
+            renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
+        }
+    }
+}
+
+// Setup primary container frameworks upon direct ingestion sequences
 async function initializeDocumentPreviewEngine(file) {
     const viewportBox = document.getElementById('preview-viewport-box');
     const navControls = document.getElementById('preview-nav-controls');
     if (!viewportBox) return;
 
     viewportBox.innerHTML = "";
-    currentPreviewIndex = 1;
+    currentPreviewQueueIndex = 0;
 
     if (file.type === "application/pdf") {
         try {
             const arrayBuffer = await file.arrayBuffer();
             loadedPdfDocumentInstance = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            totalPreviewPages = loadedPdfDocumentInstance.numPages;
+            
+            // Build the initial filtered target array pool mapping structure
+            targetedPreviewPagesArray = calculateTargetedPagesArray();
             
             navControls.style.display = "flex";
-            renderSinglePdfPagePreview(currentPreviewIndex);
+            if (targetedPreviewPagesArray.length > 0) {
+                renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
+            }
         } catch (err) {
             console.error("Preview configuration failed:", err);
         }
     } else if (file.type.startsWith("image/")) {
         loadedPdfDocumentInstance = null;
-        totalPreviewPages = 1;
+        targetedPreviewPagesArray = [1];
         navControls.style.display = "flex";
         
         const img = document.createElement('img');
@@ -1446,17 +1504,17 @@ async function initializeDocumentPreviewEngine(file) {
     }
 }
 
-// Renders the chosen single page canvas viewport cleanly
+// Renders page previews visually inside the framework canvas
 async function renderSinglePdfPagePreview(pageNum) {
     if (!loadedPdfDocumentInstance) return;
     const viewportBox = document.getElementById('preview-viewport-box');
-    viewportBox.innerHTML = ""; // Clear current canvas rendering
+    viewportBox.innerHTML = ""; 
 
     try {
         const page = await loadedPdfDocumentInstance.getPage(pageNum);
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        const viewport = page.getViewport({ scale: 0.4 }); // Scale down for sidebar sizing
+        const viewport = page.getViewport({ scale: 0.4 }); 
         
         canvas.height = viewport.height;
         canvas.width = viewport.width;
@@ -1465,9 +1523,21 @@ async function renderSinglePdfPagePreview(pageNum) {
         await page.render({ canvasContext: ctx, viewport: viewport }).promise;
         viewportBox.appendChild(canvas);
 
-        document.getElementById('lbl-preview-page-counter').textContent = `Page ${pageNum} / ${totalPreviewPages}`;
+        // Displays actual Document Page index vs where it ranks in the selection pipeline array length context
+        document.getElementById('lbl-preview-page-counter').textContent = `Page ${pageNum} (Queue: ${currentPreviewQueueIndex + 1}/${targetedPreviewPagesArray.length})`;
     } catch (err) {
         console.error("Single page render target crash:", err);
+    }
+}
+
+// Flips forward and backward within the restricted collection limits securely
+function navigatePreviewPage(direction) {
+    if (!loadedPdfDocumentInstance || targetedPreviewPagesArray.length === 0) return;
+    
+    let targetIndex = currentPreviewQueueIndex + direction;
+    if (targetIndex >= 0 && targetIndex < targetedPreviewPagesArray.length) {
+        currentPreviewQueueIndex = targetIndex;
+        renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
     }
 }
 
@@ -1481,6 +1551,15 @@ function navigatePreviewPage(direction) {
         renderSinglePdfPagePreview(currentPreviewIndex);
     }
 }
+document.getElementById('custom-page-string').addEventListener('input', () => {
+    if (activeFileStream && activeFileType === "application/pdf") {
+        targetedPreviewPagesArray = calculateTargetedPagesArray();
+        currentPreviewQueueIndex = 0;
+        if (targetedPreviewPagesArray.length > 0) {
+            renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
+        }
+    }
+});
     </script>
 </body>
 </html>
