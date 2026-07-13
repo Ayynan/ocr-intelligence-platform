@@ -1079,7 +1079,10 @@ togglePassViewBtn.addEventListener('click', () => {
                 } else {
                     comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n[Image / Visual Content Block]\n\n`;
                 }
-            }                    
+            }
+            
+            statusText.textContent = "Status: Building valid PDF architecture...";
+                    
                     // 1. Initialize a genuine, structural jsPDF container
                     const doc = new jsPDF({
                         orientation: "portrait",
