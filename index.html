@@ -1032,20 +1032,27 @@ togglePassViewBtn.addEventListener('click', () => {
                     const trimmedLine = line.trim();
                     if (trimmedLine.length === 0) return;
 
-                    // Count how many normal letters/numbers are in this specific line
-                    const alphaNumericCount = (trimmedLine.match(/[a-zA-Z0-9]/g) || []).length;
-                    // Count total symbols/spaces/garbage characters
-                    const totalLength = trimmedLine.length;
-                    
-                    // Calculate the ratio of real text to symbols
-                    const textRatio = alphaNumericCount / totalLength;
+                    // 1. Remove obvious stray symbol noise lines
+                    if (/^[|~_\-—=\s+:]+$/.test(trimmedLine)) return;
 
-                    // Filter: If a line is mostly random characters or symbols (less than 45% readable words), skip it
-                    if (textRatio > 0.45 && alphaNumericCount > 2) {
+                    // 2. Count words that look like real language (at least 2 letters together)
+                    const words = trimmedLine.split(/\s+/);
+                    const realWordCount = words.filter(word => /[a-zA-Z]{2,}/.test(word)).length;
+                    
+                    // 3. Count isolated single characters (e.g., "y", "K", "p", "t")
+                    const singleCharCount = words.filter(word => word.length === 1 && /[a-zA-Z0-9]/.test(word)).length;
+
+                    // 4. Calculate uppercase density to catch diagram noise like "EWC ‘XN }"
+                    const upperCaseCount = (trimmedLine.match(/[A-Z]/g) || []).length;
+                    const lowerCaseCount = (trimmedLine.match(/[a-z]/g) || []).length;
+
+                    // FILTER LOGIC: 
+                    // - A real sentence line must have real word clusters (more words than isolated single letters).
+                    // - It shouldn't be dominated by random capital blocks (caps shouldn't outnumber lowercase lines significantly in prose).
+                    if (realWordCount >= singleCharCount && (upperCaseCount <= lowerCaseCount || lowerCaseCount > 5)) {
                         cleanedPageText += line + "\n";
                     } else {
-                        // Optional: log or drop garbage lines silently to keep output clean
-                        console.log(`Scrubbed noise line: "${trimmedLine}"`);
+                        console.log(`Scrubbed diagram noise: "${trimmedLine}"`);
                     }
                 });
 
