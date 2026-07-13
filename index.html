@@ -1287,24 +1287,46 @@ function abortOcrOperation() {
     }
 }
 function clearOutputMatrixField() {
-    // 1. Clear out the textarea
+    // 1. Clear out the raw text values inside the viewport text box
     const outputTextarea = document.querySelector('.output-matrix-container textarea') || document.querySelector('textarea');
     if (outputTextarea) {
         outputTextarea.value = "";
     }
 
-    // 2. Locate your metric indicator containers and reset them instantly
-    // (Targeting the value rows inside your three card metrics grids)
-    const metricWordsCard = document.querySelector('.output-matrix-container div:nth-child(1) h3') || document.querySelectorAll('[class*="card"] h3, div style*="flex"] div div:first-child')[0];
+    // 2. Clear out the metric word counter boxes manually 
+    // Go through every div on the right side panel and match metric texts
+    const allRightPanelDivs = document.querySelectorAll('.output-matrix-container div, [class*="Output"] div, [class*="Tools"] div, div');
     
-    // Let's sweep through and find the cards by checking their labels or DOM position
-    const summaryCards = document.querySelectorAll('.output-matrix-container div, .right-column div');
-    
-    // A robust way is to find elements containing the numeric metrics and reset them
-    // Let's target the exact text nodes or update via your app's native updater if you have one:
-    updateOutputMatrixMetricsCounterBlock(""); 
-}
+    allRightPanelDivs.forEach(div => {
+        // If this specific element container is the "WORDS" tracking box
+        if (div.textContent.trim().endsWith("WORDS")) {
+            // Find any inner number labels or heading tags inside it and clear them
+            const targetNum = div.querySelector('h1, h2, h3, div, span, p');
+            if (targetNum) targetNum.textContent = "0";
+            else div.innerHTML = "0<br><small style='color: #64748b; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;'>WORDS</small>";
+        }
+        
+        // If this specific element container is the "CHARACTERS" tracking box
+        if (div.textContent.trim().endsWith("CHARACTERS")) {
+            const targetNum = div.querySelector('h1, h2, h3, div, span, p');
+            if (targetNum) targetNum.textContent = "0";
+            else div.innerHTML = "0<br><small style='color: #64748b; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;'>CHARACTERS</small>";
+        }
+        
+        // If this specific element container is the "READ TIME" tracking box
+        if (div.textContent.trim().endsWith("READ TIME")) {
+            const targetNum = div.querySelector('h1, h2, h3, div, span, p');
+            if (targetNum) targetNum.textContent = "0s";
+            else div.innerHTML = "0s<br><small style='color: #64748b; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;'>READ TIME</small>";
+        }
+    });
 
+    // 3. Force-trigger your app's native keystroke listener to clean out any cached state
+    if (outputTextarea) {
+        outputTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+        outputTextarea.dispatchEvent(new Event('keyup', { bubbles: true }));
+    }
+}
 // Add or combine this helper if your code uses custom tracker variables:
 function updateOutputMatrixMetricsCounterBlock(currentTextString) {
     // If your code has a native update function for word count, call it with ""
