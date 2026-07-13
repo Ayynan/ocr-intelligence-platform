@@ -428,7 +428,26 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
                         </label>
                     </div>
                 </div>
+<div style="margin-top: 14px; margin-bottom: 14px; background: rgba(30, 41, 59, 0.25); padding: 14px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+        <label style="color: #ffffff; font-size: 0.85rem; font-weight: 500;">Page Range Config</label>
+        <select id="page-range-selector" onchange="handlePageRangeSelectionChange()" style="background: #0f172a; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; outline: none; font-family: inherit;">
+            <option value="all">All Pages</option>
+            <option value="odd">Odd Pages Only</option>
+            <option value="even">Even Pages Only</option>
+            <option value="custom">Custom Range</option>
+        </select>
+    </div>
 
+    <div id="custom-range-input-container" style="display: none; margin-bottom: 10px;">
+        <input type="text" id="custom-page-string" placeholder="e.g., 1-3, 5" style="width: 100%; background: #0f172a; color: #ffffff; border: 1px solid rgba(59, 130, 246, 0.4); padding: 8px; border-radius: 6px; font-size: 0.8rem; box-sizing: border-box; outline: none;">
+    </div>
+
+    <div style="color: #64748b; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px;">Target Selection Queue Preview:</div>
+    <div id="pipeline-thumbnail-strip" style="display: flex; gap: 10px; overflow-x: auto; background: rgba(15, 23, 42, 0.4); padding: 10px; border-radius: 6px; min-height: 60px; align-items: center;">
+        <span id="thumbnail-strip-placeholder" style="color: #475569; font-size: 0.75rem; margin: auto;">No loaded rendering queue pipelines ready</span>
+    </div>
+</div>
                 <div style="display: flex; gap: 12px; width: 100%; margin-top: 14px; box-sizing: border-box; align-items: stretch;">
     
     <button id="convert-btn" class="action-btn" disabled style="flex-grow: 2; margin: 0;">
@@ -846,6 +865,7 @@ togglePassViewBtn.addEventListener('click', () => {
                 imgElement.src = URL.createObjectURL(file);
                 previewWrapper.appendChild(imgElement);
             }
+            generatePipelineThumbnailStripPreviews(file);
         }
 
         async function processAndRenderPdfFirstPageThumbnailInstance(file) {
@@ -1314,6 +1334,63 @@ function updateOutputMatrixMetricsCounterBlock(currentTextString) {
             }
         }
     });
+}
+function handlePageRangeSelectionChange() {
+    const selector = document.getElementById('page-range-selector');
+    const customInput = document.getElementById('custom-range-input-container');
+    if (customInput) {
+        customInput.style.display = selector.value === 'custom' ? 'block' : 'none';
+    }
+}
+
+// Generates structural scrollable image thumbnails for your page previews inside the strip viewport
+async function generatePipelineThumbnailStripPreviews(file) {
+    const stripContainer = document.getElementById('pipeline-thumbnail-strip');
+    if (!stripContainer) return;
+    
+    stripContainer.innerHTML = ""; // Wipe placeholder status
+    
+    if (file.type === "application/pdf") {
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: 0.2 }); // Small visual scale rendering
+                
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                
+                // Wrap in preview div with badge indicators
+                const thumbWrapper = document.createElement('div');
+                thumbWrapper.style.cssText = "position: relative; flex-shrink: 0; background: #0f172a; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);";
+                
+                const badge = document.createElement('div');
+                badge.style.cssText = "position: absolute; top: 2px; left: 2px; background: rgba(15,23,42,0.75); color: #3b82f6; font-size: 0.6rem; padding: 1px 4px; border-radius: 2px; font-weight: bold;";
+                badge.textContent = `P. ${pageNum}`;
+                
+                thumbWrapper.appendChild(canvas);
+                thumbWrapper.appendChild(badge);
+                stripContainer.appendChild(thumbWrapper);
+            }
+        } catch (err) {
+            console.error("Thumbnail strip processing failure:", err);
+        }
+    } else if (file.type.startsWith("image/")) {
+        const thumbWrapper = document.createElement('div');
+        thumbWrapper.style.cssText = "position: relative; flex-shrink: 0; max-height: 55px; background: #0f172a; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);";
+        
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.style.cssText = "max-height: 55px; display: block;";
+        
+        thumbWrapper.appendChild(img);
+        stripContainer.appendChild(thumbWrapper);
+    }
 }
     </script>
 </body>
