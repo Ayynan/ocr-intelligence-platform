@@ -1202,14 +1202,21 @@ togglePassViewBtn.addEventListener('click', () => {
                 div.className = "history-item";
                 div.innerHTML = `<h4>${item.title}</h4><span>Compiled structure layout architecture at ${item.timestamp}</span><button class="delete-history-btn" data-id="${item.id}"><i class="fa-solid fa-trash-can"></i></button>`;
                 div.addEventListener('click', (e) => {
-                    if (e.target.closest('.delete-history-btn')) { 
-                        e.stopPropagation(); 
-                        const targetId = parseInt(e.target.closest('.delete-history-btn').getAttribute('data-id')); 
-                        sessionHistoryData = sessionHistoryData.filter(i => i.id !== targetId); 
-                        saveHistoryState(); 
-                        renderHistoryItemsList(); 
-                        return; 
-                    }
+                if (e.target.closest('.delete-history-btn')) { 
+                e.stopPropagation(); 
+                const targetId = parseInt(e.target.closest('.delete-history-btn').getAttribute('data-id')); 
+    
+                // Clean up allocated browser memory before deleting
+                const itemToDelete = sessionHistoryData.find(i => i.id === targetId);
+                if (itemToDelete && itemToDelete.pdfUrl) {
+                URL.revokeObjectURL(itemToDelete.pdfUrl);
+                }
+
+                sessionHistoryData = sessionHistoryData.filter(i => i.id !== targetId); 
+                saveHistoryState(); 
+                renderHistoryItemsList(); 
+                return; 
+                }
                     outputTextarea.value = cleanExtractedText(item.text); 
                     calculateTelemetryAnalysisMetrics(item.text);
                     if (item.pdfUrl) { 
@@ -1234,13 +1241,14 @@ togglePassViewBtn.addEventListener('click', () => {
        function executePdfDownloadAction() {
     console.log("Download button clicked!");
 
-    // FIX: Using the correct, globally declared outputTextarea variable
-    if (!outputTextarea) {
-        console.error("Error: Could not find outputTextarea element!");
+    // FIX: Changed from 'outputTextarea' to 'output' to match your HTML
+    const textarea = document.getElementById('output');
+    if (!textarea) {
+        console.error("Error: Could not find output textarea element!");
         return;
     }
 
-    const textToPrint = outputTextarea.value.trim();
+    const textToPrint = textarea.value.trim();
     if (!textToPrint) {
         alert("There is no text to download yet. Please run OCR first!");
         return;
@@ -1283,7 +1291,6 @@ togglePassViewBtn.addEventListener('click', () => {
         console.error("PDF Generation failed with error:", error);
     }
 }
-
         function downloadTextDataStreamFile(formatType) {
             const outputTextPayload = outputTextarea.value; 
             if (!outputTextPayload.trim()) return;
@@ -1435,14 +1442,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleThemePipeline();
     }
 });
-
-// Ensure settings persist on browser reloads
-document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('docuscan-theme');
-    if (savedTheme === 'light') {
-        toggleThemePipeline();
-    }
-});
 function abortOcrOperation() {
     // 1. Set the global flag to true to immediately kill background loop calculations
     isOcrCancelled = true;
@@ -1505,13 +1504,6 @@ function updateOutputMatrixMetricsCounterBlock(currentTextString) {
         }
     });
 }
-function handlePageRangeSelectionChange() {
-    const selector = document.getElementById('page-range-selector');
-    const customInput = document.getElementById('custom-range-input-container');
-    if (customInput) {
-        customInput.style.display = selector.value === 'custom' ? 'block' : 'none';
-    }
-}
 
 // Generates structural scrollable image thumbnails for your page previews inside the strip viewport
 let currentPreviewIndex = 1;
@@ -1558,8 +1550,6 @@ function calculateTargetedPagesArray() {
     }
     return list;
 }
-
-// Handles dropdown selections and dynamically limits preview window constraints
 function handlePageRangeSelectionChange() {
     const selector = document.getElementById('page-range-selector');
     const customInput = document.getElementById('custom-range-input-container');
@@ -1567,10 +1557,10 @@ function handlePageRangeSelectionChange() {
         customInput.style.display = selector.value === 'custom' ? 'block' : 'none';
     }
 
-    // Re-render and adjust preview windows instantly if a PDF is active
+    // Re-render and limit preview window constraints instantly if a file is active
     if (activeFileStream && activeFileType === "application/pdf") {
         targetedPreviewPagesArray = calculateTargetedPagesArray();
-        currentPreviewQueueIndex = 0; // Reset focus to the first page in the valid subset
+        currentPreviewQueueIndex = 0; // Reset focus to first page in the valid subset
         if (targetedPreviewPagesArray.length > 0) {
             renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
         }
