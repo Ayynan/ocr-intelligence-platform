@@ -1238,73 +1238,106 @@ togglePassViewBtn.addEventListener('click', () => {
             setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
         }
 
-       function executePdfDownloadAction() {
-    console.log("Download button clicked!");
-
-    // FALLBACK check: Look for 'output' first, then try 'outputTextarea'
-    let textarea = document.getElementById('output') || document.getElementById('outputTextarea');
-    
-    if (!textarea) {
-        console.error("Error: Could not find any output textarea element with ID 'output' or 'outputTextarea'!");
-        alert("Development Error: Text box element could not be found on this page.");
-        return;
-    }
-
-    const textToPrint = textarea.value.trim();
-    if (!textToPrint) {
-        alert("There is no text to download yet. Please run OCR first!");
-        return;
-    }
-
-    console.log("Text found, initializing jsPDF...");
+       async function executePdfDownloadAction() {
+    console.log("Generating Searchable (Sandwich) PDF...");
 
     try {
-        // FALLBACK check: Handle different ways jsPDF registers on the window object
-        let PDFClass;
-        if (window.jspdf && window.jspdf.jsPDF) {
-            PDFClass = window.jspdf.jsPDF;
-        } else if (window.jsPDF) {
-            PDFClass = window.jsPDF;
-        } else if (typeof jsPDF !== 'undefined') {
-            PDFClass = jsPDF;
+        // 1. Ensure jsPDF is loaded
+        let PDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF || jsPDF;
+        if (!PDFClass) {
+            throw new Error("jsPDF library is not loaded.");
         }
 
-        if (!PDFClass) {
-            throw new Error("jsPDF library is not loaded on this page. Check your HTML script tags.");
+        // 2. We need the original page images (saved as canvases during upload/preview processing)
+        // Ensure you have a global reference to your page canvases (e.g., loaded during the preview rendering)
+        if (!activeFileStream) {
+            alert("Please upload a document and run OCR first!");
+            return;
         }
 
         const doc = new PDFClass({
             orientation: "portrait",
-            unit: "mm",
+            unit: "pt", // Points make scaling coordinate overlays much more accurate
             format: "a4"
         });
 
-        const splitText = doc.splitTextToSize(textToPrint, 180);
-        let yAxisPos = 20;
-        const pageHeight = doc.internal.pageSize.height;
+        const pageWidth = doc.internal.pageSize.width; // A4 standard width in points: ~595pt
+        const pageHeight = doc.internal.pageSize.height; // A4 standard height in points: ~842pt
 
-        for (let i = 0; i < splitText.length; i++) {
-            if (yAxisPos > pageHeight - 20) {
+        // Assuming you stored your processed canvas elements in an array during preview rendering:
+        // Let's call this array 'processedCanvasesArray' (fallback to standard page rendering if not available)
+        const canvasesToProcess = window.processedCanvasesArray || [];
+
+        if (canvasesToProcess.length === 0) {
+            alert("No document page images found to overlay. Please ensure your preview has loaded.");
+            return;
+        }
+
+        for (let pageNum = 0; pageNum < canvasesToProcess.length; pageNum++) {
+            if (pageNum > 0) {
                 doc.addPage();
-                yAxisPos = 20;
             }
-            doc.text(splitText[i], 15, yAxisPos);
-            yAxisPos += 7;
+
+            const canvas = canvasesToProcess[pageNum];
+            const imgData = canvas.toDataURL("image/jpeg", 0.85);
+
+            // Draw the visual background (the exact uploaded document page)
+            doc.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight);
+
+            // 3. Extract word-by-word structural coordinates from Tesseract
+            // Note: During your active OCR pipeline run, you should save the Tesseract result object globally.
+            // Let's assume you save this in: window.lastOcrResults[pageNum]
+            const ocrResult = window.lastOcrResults && window.lastOcrResults[pageNum];
+            // 2. PASTE THESE LINES DIRECTLY HERE:
+        if (!window.lastOcrResults) {
+            window.lastOcrResults = [];
+        }
+        // Save the raw scan coordinates for this page index
+        window.lastOcrResults[i] = ocrResult.data;
+            if (ocrResult && ocrResult.words) {
+                // Set font details to match OCR scaling (typically Courier or Helvetica)
+                doc.setFont("Helvetica", "normal");
+                
+                // Set the Text Rendering Mode to 3 (invisible text layer)
+                // This makes the text highlightable and searchable, but completely transparent!
+                doc.saveGraphicsState();
+                
+                ocrResult.words.forEach(word => {
+                    const text = word.text;
+                    const bbox = word.bbox; // Tesseract bounding box coordinates: { x0, y0, x1, y1 }
+
+                    // Calculate scaling ratios from the original canvas dimensions to the A4 PDF page dimensions
+                    const scaleX = pageWidth / canvas.width;
+                    const scaleY = pageHeight / canvas.height;
+
+                    const wordX = bbox.x0 * scaleX;
+                    const wordY = bbox.y1 * scaleY; // jsPDF places text from the baseline, so use y1 (bottom)
+                    const wordWidth = (bbox.x1 - bbox.x0) * scaleX;
+                    const wordHeight = (bbox.y1 - bbox.y0) * scaleY;
+
+                    // Dynamically calculate font size based on the bounding box height
+                    const fontSize = wordHeight * 0.9; 
+                    doc.setFontSize(fontSize);
+
+                    // Place the text invisibly over the physical coordinates
+                    doc.text(text, wordX, wordY, {
+                        renderingMode: "invisible", // Magic setting that hides the text but keeps it copyable!
+                        maxWidth: wordWidth
+                    });
+                });
+                
+                doc.restoreGraphicsState();
+            }
         }
 
-        // Safe filename check
-        let fileName = "scanned-document.pdf";
-        if (typeof activeFileStream !== 'undefined' && activeFileStream && activeFileStream.name) {
-            fileName = `searchable-${activeFileStream.name.replace(/\.[^/.]+$/, "")}.pdf`;
-        }
-
-        console.log("Saving PDF as:", fileName);
+        // Save file name
+        let fileName = `searchable-${activeFileStream.name.replace(/\.[^/.]+$/, "")}.pdf`;
         doc.save(fileName);
-        console.log("PDF saved successfully!");
+        console.log("Searchable PDF saved successfully!");
 
     } catch (error) {
-        console.error("PDF Generation failed:", error);
-        alert(`PDF generation failed: ${error.message}. Look at the browser Console for more details.`);
+        console.error("PDF generation failed:", error);
+        alert(`Failed to build searchable PDF: ${error.message}`);
     }
 }
         function downloadTextDataStreamFile(formatType) {
