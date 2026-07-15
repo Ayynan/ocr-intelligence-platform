@@ -1231,37 +1231,57 @@ togglePassViewBtn.addEventListener('click', () => {
             setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
         }
 
-        function executePdfDownloadAction() {
-    // 1. Get the text directly from your output box
+       function executePdfDownloadAction() {
+    console.log("Download button clicked!"); // Check 1
+
     const textarea = document.getElementById('outputTextarea');
-    if (!textarea || !textarea.value.trim()) return;
-
-    // 2. Initialize your loaded jsPDF library
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4"
-    });
-
-    // 3. Keep line breaks by splitting the text correctly to fit A4 width
-    const splitText = doc.splitTextToSize(textarea.value, 180);
-    let yAxisPos = 20;
-    const pageHeight = doc.internal.pageSize.height;
-
-    // 4. Draw the text line-by-line onto the PDF page
-    for (let i = 0; i < splitText.length; i++) {
-        if (yAxisPos > pageHeight - 20) {
-            doc.addPage();
-            yAxisPos = 20; // Margin reset for new page
-        }
-        doc.text(splitText[i], 15, yAxisPos);
-        yAxisPos += 7; // Line height spacing
+    if (!textarea) {
+        console.error("Error: Could not find outputTextarea element!");
+        return;
     }
 
-    // 5. Download the final valid PDF file
-    const fileName = `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`;
-    doc.save(fileName);
+    const textToPrint = textarea.value.trim();
+    if (!textToPrint) {
+        alert("There is no text to download yet. Please run OCR first!");
+        return;
+    }
+
+    console.log("Text found, initializing jsPDF..."); // Check 2
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4"
+        });
+
+        const splitText = doc.splitTextToSize(textToPrint, 180);
+        let yAxisPos = 20;
+        const pageHeight = doc.internal.pageSize.height;
+
+        for (let i = 0; i < splitText.length; i++) {
+            if (yAxisPos > pageHeight - 20) {
+                doc.addPage();
+                yAxisPos = 20;
+            }
+            doc.text(splitText[i], 15, yAxisPos);
+            yAxisPos += 7;
+        }
+
+        // Safe filename check
+        let fileName = "scanned-document.pdf";
+        if (typeof activeFileStream !== 'undefined' && activeFileStream && activeFileStream.name) {
+            fileName = `searchable-${activeFileStream.name.replace(/\.[^/.]+$/, "")}.pdf`;
+        }
+
+        console.log("Saving PDF as:", fileName); // Check 3
+        doc.save(fileName);
+        console.log("PDF saved successfully!");
+
+    } catch (error) {
+        console.error("PDF Generation failed with error:", error);
+    }
 }
 
         function downloadTextDataStreamFile(formatType) {
