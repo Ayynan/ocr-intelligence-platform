@@ -1241,10 +1241,12 @@ togglePassViewBtn.addEventListener('click', () => {
        function executePdfDownloadAction() {
     console.log("Download button clicked!");
 
-    // FIX: Changed from 'outputTextarea' to 'output' to match your HTML
-    const textarea = document.getElementById('output');
+    // FALLBACK check: Look for 'output' first, then try 'outputTextarea'
+    let textarea = document.getElementById('output') || document.getElementById('outputTextarea');
+    
     if (!textarea) {
-        console.error("Error: Could not find output textarea element!");
+        console.error("Error: Could not find any output textarea element with ID 'output' or 'outputTextarea'!");
+        alert("Development Error: Text box element could not be found on this page.");
         return;
     }
 
@@ -1257,8 +1259,21 @@ togglePassViewBtn.addEventListener('click', () => {
     console.log("Text found, initializing jsPDF...");
 
     try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
+        // FALLBACK check: Handle different ways jsPDF registers on the window object
+        let PDFClass;
+        if (window.jspdf && window.jspdf.jsPDF) {
+            PDFClass = window.jspdf.jsPDF;
+        } else if (window.jsPDF) {
+            PDFClass = window.jsPDF;
+        } else if (typeof jsPDF !== 'undefined') {
+            PDFClass = jsPDF;
+        }
+
+        if (!PDFClass) {
+            throw new Error("jsPDF library is not loaded on this page. Check your HTML script tags.");
+        }
+
+        const doc = new PDFClass({
             orientation: "portrait",
             unit: "mm",
             format: "a4"
@@ -1288,7 +1303,8 @@ togglePassViewBtn.addEventListener('click', () => {
         console.log("PDF saved successfully!");
 
     } catch (error) {
-        console.error("PDF Generation failed with error:", error);
+        console.error("PDF Generation failed:", error);
+        alert(`PDF generation failed: ${error.message}. Look at the browser Console for more details.`);
     }
 }
         function downloadTextDataStreamFile(formatType) {
