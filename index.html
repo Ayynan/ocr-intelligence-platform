@@ -1233,47 +1233,36 @@ togglePassViewBtn.addEventListener('click', () => {
         }
 
         function executePdfDownloadAction() {
-    // Check if the html2pdf library is loaded in the HTML head
-    if (typeof html2pdf !== 'undefined') {
-        const textarea = document.getElementById('outputTextarea');
-        if (!textarea || !textarea.value.trim()) return;
+    // 1. Get the text directly from your output box
+    const textarea = document.getElementById('outputTextarea');
+    if (!textarea || !textarea.value.trim()) return;
 
-        // 1. Create temporary div to hold formatted text
-        const tempContainer = document.createElement('div');
-        tempContainer.style.fontFamily = "'Plus Jakarta Sans', sans-serif";
-        tempContainer.style.fontSize = "12pt";
-        tempContainer.style.lineHeight = "1.6";
-        tempContainer.style.color = "#1f2937";
-        tempContainer.style.whiteSpace = "pre-wrap"; // Keeps formatting / line breaks!
-        tempContainer.style.padding = "20px";
-        tempContainer.style.backgroundColor = "#ffffff";
-        tempContainer.textContent = textarea.value;
-        document.body.appendChild(tempContainer);
+    // 2. Initialize your loaded jsPDF library
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4"
+    });
 
-        // 2. Set print parameters
-        const printOptions = {
-            margin:       15,
-            filename:     `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, logging: false, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+    // 3. Keep line breaks by splitting the text correctly to fit A4 width
+    const splitText = doc.splitTextToSize(textarea.value, 180);
+    let yAxisPos = 20;
+    const pageHeight = doc.internal.pageSize.height;
 
-        // 3. Render and clean up
-        html2pdf().set(printOptions).from(tempContainer).save().then(() => {
-            document.body.removeChild(tempContainer);
-        });
-    } else {
-        // Safe Fallback: If the library isn't loaded, use your original download code
-        console.warn("html2pdf library not detected. Falling back to default download.");
-        if (!searchablePdfBlobUrl) return;
-        const dlAnchor = document.createElement('a'); 
-        dlAnchor.href = searchablePdfBlobUrl;
-        dlAnchor.download = `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`;
-        document.body.appendChild(dlAnchor); 
-        dlAnchor.click(); 
-        document.body.removeChild(dlAnchor);
+    // 4. Draw the text line-by-line onto the PDF page
+    for (let i = 0; i < splitText.length; i++) {
+        if (yAxisPos > pageHeight - 20) {
+            doc.addPage();
+            yAxisPos = 20; // Margin reset for new page
+        }
+        doc.text(splitText[i], 15, yAxisPos);
+        yAxisPos += 7; // Line height spacing
     }
+
+    // 5. Download the final valid PDF file
+    const fileName = `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`;
+    doc.save(fileName);
 }
 
         function downloadTextDataStreamFile(formatType) {
