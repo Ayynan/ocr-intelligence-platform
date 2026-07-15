@@ -1232,21 +1232,21 @@ togglePassViewBtn.addEventListener('click', () => {
         }
 
        function executePdfDownloadAction() {
-    console.log("Download button clicked!"); // Check 1
+    console.log("Download button clicked!");
 
-    const textarea = document.getElementById('outputTextarea');
-    if (!textarea) {
+    // FIX: Using the correct, globally declared outputTextarea variable
+    if (!outputTextarea) {
         console.error("Error: Could not find outputTextarea element!");
         return;
     }
 
-    const textToPrint = textarea.value.trim();
+    const textToPrint = outputTextarea.value.trim();
     if (!textToPrint) {
         alert("There is no text to download yet. Please run OCR first!");
         return;
     }
 
-    console.log("Text found, initializing jsPDF..."); // Check 2
+    console.log("Text found, initializing jsPDF...");
 
     try {
         const { jsPDF } = window.jspdf;
@@ -1275,7 +1275,7 @@ togglePassViewBtn.addEventListener('click', () => {
             fileName = `searchable-${activeFileStream.name.replace(/\.[^/.]+$/, "")}.pdf`;
         }
 
-        console.log("Saving PDF as:", fileName); // Check 3
+        console.log("Saving PDF as:", fileName);
         doc.save(fileName);
         console.log("PDF saved successfully!");
 
@@ -1518,15 +1518,6 @@ let currentPreviewIndex = 1;
 let totalPreviewPages = 0;
 let loadedPdfDocumentInstance = null; // Caches PDF instance for speedy flips
 let currentLoadedImageFile = null;
-
-function handlePageRangeSelectionChange() {
-    const selector = document.getElementById('page-range-selector');
-    const customInput = document.getElementById('custom-range-input-container');
-    if (customInput) {
-        customInput.style.display = selector.value === 'custom' ? 'block' : 'none';
-    }
-}
-
 // Main logic routing entry for previews
 let targetedPreviewPagesArray = []; // Stores only the pages matching your dropdown/input configuration
 let currentPreviewQueueIndex = 0;   // Keeps track of where we are inside the matching array sequence
@@ -1568,7 +1559,7 @@ function calculateTargetedPagesArray() {
     return list;
 }
 
-// Re-evaluates configuration boundaries whenever you toggle dropdown parameters
+// Handles dropdown selections and dynamically limits preview window constraints
 function handlePageRangeSelectionChange() {
     const selector = document.getElementById('page-range-selector');
     const customInput = document.getElementById('custom-range-input-container');
@@ -1576,16 +1567,15 @@ function handlePageRangeSelectionChange() {
         customInput.style.display = selector.value === 'custom' ? 'block' : 'none';
     }
 
-    // Re-render and limit preview window constraints instantly if a file is active
+    // Re-render and adjust preview windows instantly if a PDF is active
     if (activeFileStream && activeFileType === "application/pdf") {
         targetedPreviewPagesArray = calculateTargetedPagesArray();
-        currentPreviewQueueIndex = 0; // Reset focus to first page in the valid subset
+        currentPreviewQueueIndex = 0; // Reset focus to the first page in the valid subset
         if (targetedPreviewPagesArray.length > 0) {
             renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
         }
     }
 }
-
 // Setup primary container frameworks upon direct ingestion sequences
 async function initializeDocumentPreviewEngine(file) {
     const viewportBox = document.getElementById('preview-viewport-box');
