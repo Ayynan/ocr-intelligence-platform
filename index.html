@@ -560,6 +560,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
         <div id="feedback-status-text" style="font-size: 0.8rem; text-align: center; margin-top: 4px; display: none;"></div>
     </form>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         const { jsPDF } = window.jspdf;
         let isOcrCancelled = false;
@@ -1232,14 +1233,48 @@ togglePassViewBtn.addEventListener('click', () => {
         }
 
         function executePdfDownloadAction() {
-            if (!searchablePdfBlobUrl) return;
-            const dlAnchor = document.createElement('a'); 
-            dlAnchor.href = searchablePdfBlobUrl;
-            dlAnchor.download = `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`;
-            document.body.appendChild(dlAnchor); 
-            dlAnchor.click(); 
-            document.body.removeChild(dlAnchor);
-        }
+    // Check if the html2pdf library is loaded in the HTML head
+    if (typeof html2pdf !== 'undefined') {
+        const textarea = document.getElementById('outputTextarea');
+        if (!textarea || !textarea.value.trim()) return;
+
+        // 1. Create temporary div to hold formatted text
+        const tempContainer = document.createElement('div');
+        tempContainer.style.fontFamily = "'Plus Jakarta Sans', sans-serif";
+        tempContainer.style.fontSize = "12pt";
+        tempContainer.style.lineHeight = "1.6";
+        tempContainer.style.color = "#1f2937";
+        tempContainer.style.whiteSpace = "pre-wrap"; // Keeps formatting / line breaks!
+        tempContainer.style.padding = "20px";
+        tempContainer.style.backgroundColor = "#ffffff";
+        tempContainer.textContent = textarea.value;
+        document.body.appendChild(tempContainer);
+
+        // 2. Set print parameters
+        const printOptions = {
+            margin:       15,
+            filename:     `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, logging: false, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // 3. Render and clean up
+        html2pdf().set(printOptions).from(tempContainer).save().then(() => {
+            document.body.removeChild(tempContainer);
+        });
+    } else {
+        // Safe Fallback: If the library isn't loaded, use your original download code
+        console.warn("html2pdf library not detected. Falling back to default download.");
+        if (!searchablePdfBlobUrl) return;
+        const dlAnchor = document.createElement('a'); 
+        dlAnchor.href = searchablePdfBlobUrl;
+        dlAnchor.download = `searchable-${activeFileStream ? activeFileStream.name.replace(/\.[^/.]+$/, "") : "document"}.pdf`;
+        document.body.appendChild(dlAnchor); 
+        dlAnchor.click(); 
+        document.body.removeChild(dlAnchor);
+    }
+}
 
         function downloadTextDataStreamFile(formatType) {
             const outputTextPayload = outputTextarea.value; 
