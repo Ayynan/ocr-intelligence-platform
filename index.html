@@ -1,1157 +1,985 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocuScan AI Pro - Ultimate Enterprise Document Suite</title>
-    
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCc+PHJlY3Qgd2lkdGg9JzI0JyBoZWlnaHQ9JzI0JyByeD0nNycgZmlsbD0nIzNiODJmNicvPjxwYXRoIGQ9J00xNCAySDZhMiAyIDAgMCAwLTIgMnYxNmEyIDIgMCAwIDAgMiAyaDEyYTIgMiAwIDAgMCAyLTJWOHonIGZpbGw9J25vbmUnIHN0cm9rZT0nI2ZmZmZmZicgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS1saW5lam9pbj0ncm91bmQnIHRyYW5zZm9ybT0nc2NhbGUoMC42KSB0cmFuc2xhdGUoOCwgOCknLz48cGF0aCBkPSdNMTQgMnY2aDZNMTYgMTNIOE0xNiAxN0g4TTEwIDlIOCcgZmlsbD0nbm9uZScgc3Ryb2tlPScjZmZmZmZmJyBzdHJva2Utd2lkdGg9JzInIHRyYW5zZm9ybT0nc2NhbGUoMC42KSB0cmFuc2xhdGUoOCwgOCknLz48L3N2Zz4=">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&family=JetBrains+Mono:wght=400;500&display=swap" rel="stylesheet">
+    <title>DocuScan AI Pro — Enterprise Grade Optical Document Core Engine</title>
+    <!-- External Asset Matrix Dependencies -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
-            --bg-base: #090d16;
-            --bg-surface: #131c2e;
-            --bg-surface-elevated: #1e293b;
+            --bg-base: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-accent: #334155;
+            --border-color: #475569;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
             --primary: #3b82f6;
-            --primary-glow: rgba(59, 130, 246, 0.15);
+            --primary-hover: #2563eb;
             --success: #10b981;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border: #24334d;
-            --font-sans: 'Plus Jakarta Sans', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --danger: #ef4444;
+            --sidebar-width: 320px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-sans); }
-        body { background-color: var(--bg-base); color: var(--text-primary); min-height: 100vh; padding: 30px; display: flex; flex-direction: column; }
-        
-        /* Main Layout Blur Effect when logged out */
-        .app-layout { max-width: 1400px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; flex: 1; transition: filter 0.4s ease; }
-        body.logged-out .app-layout { filter: blur(8px); pointer-events: none; user-select: none; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .logo-area { display: flex; align-items: center; gap: 12px; }
-        .logo-icon { background: linear-gradient(135deg, var(--primary), #60a5fa); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; box-shadow: 0 0 20px var(--primary-glow); }
-        header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
-        header p { color: var(--text-secondary); font-size: 0.875rem; }
-        .badge { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: var(--primary); padding: 4px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
-        
-        .user-profile-badge { display: flex; align-items: center; gap: 10px; background: var(--bg-surface-elevated); padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); pointer-events: auto; }
-        .logout-btn { background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 0.85rem; margin-left: 8px; font-weight: 600; }
+        .light-theme {
+            --bg-base: #f1f5f9;
+            --bg-surface: #ffffff;
+            --bg-accent: #e2e8f0;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+        }
 
-        .main-grid { display: grid; grid-template-columns: 300px 1fr 1fr; gap: 24px; flex: 1; }
-        @media (max-width: 1200px) { .main-grid { grid-template-columns: 1fr 1fr; } .history-sidebar { grid-column: span 2; order: 3; } }
-        @media (max-width: 800px) { .main-grid { grid-template-columns: 1fr; } .history-sidebar { grid-column: span 1; } }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.25s ease, border-color 0.25s ease;
+        }
 
-        .panel { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); }
-        .panel-heading { font-size: 1rem; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); }
-        .panel-heading i { color: var(--primary); }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+        }
 
-        .drop-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; background: rgba(19, 28, 46, 0.4); transition: all 0.2s ease; position: relative; }
-        .drop-zone:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.03); }
-        .drop-zone i { font-size: 2.5rem; color: var(--primary); margin-bottom: 12px; }
-        .drop-zone h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
-        .drop-zone p { font-size: 0.8rem; color: var(--text-secondary); }
+        /* App Structural Window Core Layout Framework */
+        .workspace-wrapper {
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            height: calc(100vh - 45px);
+            width: 100vw;
+        }
 
-        .preview-container { margin-top: 16px; border-radius: 8px; overflow: hidden; background: #000; display: none; justify-content: center; align-items: center; max-height: 180px; border: 1px solid var(--border); position: relative; }
-        .preview-container img, .preview-container canvas { max-width: 100%; max-height: 180px; object-fit: contain; }
-        .clear-file-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); border: none; color: white; width: 24px; height: 24px; border-radius: 5px; cursor: pointer; font-size: 0.75rem; }
+        header.navbar-viewport {
+            height: 45px;
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 10;
+        }
 
-        .config-group { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface-elevated); padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; }
-        
-        .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .2s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(14px); }
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
 
-        .action-btn { width: 100%; background: var(--primary); color: white; padding: 14px; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px var(--primary-glow); transition: all 0.2s; }
-        .action-btn:hover:not(:disabled) { background: #2563eb; transform: translateY(-1px); }
-        .action-btn:disabled { background: #1e293b; color: #64748b; cursor: not-allowed; box-shadow: none; }
+        .brand-cluster i {
+            color: var(--primary);
+        }
 
-        .status-wrapper { margin-top: 16px; padding: 14px; background: rgba(9, 13, 22, 0.6); border-radius: 10px; border: 1px solid var(--border); font-size: 0.8rem; }
-        .status-details { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--text-secondary); }
-        .progress-track { width: 100%; height: 6px; background: #1e293b; border-radius: 99px; overflow: hidden; }
-        .progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), #60a5fa); transition: width 0.1s linear; }
+        .navigation-node-cluster {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-        .metrics-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-        .metric-card { background: var(--bg-surface-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; }
-        .metric-val { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 600; color: var(--success); }
-        .metric-lbl { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 2px; }
+        .utility-nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
 
-        .text-editor-container { position: relative; flex: 1; display: flex; flex-direction: column; }
-        textarea { width: 100%; flex: 1; min-height: 300px; background: #070a12; color: #e2e8f0; border: 1px solid var(--border); border-radius: 10px; padding: 16px; font-family: var(--font-mono); font-size: 0.9rem; resize: none; line-height: 1.6; }
-        textarea:focus { outline: none; border-color: var(--primary); }
+        .utility-nav-btn:hover {
+            color: var(--text-main);
+            background-color: var(--bg-accent);
+        }
 
-        .toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-        .tool-btn { background: var(--bg-surface-elevated); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
-        .tool-btn:hover:not(:disabled) { background: var(--border); }
-        .tool-btn.primary-action { background: var(--success); border-color: #059669; }
-        .tool-btn.primary-action:hover { background: #059669; }
+        /* Primary Left Side Control Panel Sidebar Structure */
+        aside.control-matrix-sidebar {
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
 
-        .history-sidebar { max-height: calc(100vh - 150px); overflow-y: auto; }
-        .history-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
-        .history-item { background: var(--bg-surface-elevated); border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; position: relative; padding-right: 35px; }
-        .history-item:hover { border-color: var(--primary); background: rgba(59,130,246,0.02); }
-        .history-item h4 { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-        .history-item span { font-size: 0.7rem; color: var(--text-secondary); display: block; }
-        .delete-history-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #ef4444; cursor: pointer; opacity: 0.6; padding: 4px; }
-        .delete-history-btn:hover { opacity: 1; }
-        .empty-history { font-size: 0.8rem; color: var(--text-secondary); text-align: center; padding: 20px 0; }
+        .control-group-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-        /* Modern Auth Multi-Panel Switcher Layout */
-        .auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 8, 15, 0.85); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        body.logged-out .auth-overlay { opacity: 1; pointer-events: auto; }
-        .auth-card { background: var(--bg-surface); border: 1px solid var(--border); padding: 40px; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); text-align: center; }
-        .auth-logo { width: 50px; height: 50px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 16px; box-shadow: 0 0 20px var(--primary-glow); }
-        .auth-card h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
-        .auth-card p { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 24px; }
-        .auth-input-group { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; text-align: left; }
-        .auth-input-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: -6px; }
-        .auth-field { background: #070a12; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-size: 0.9rem; width: 100%; }
-        .auth-field:focus { outline: none; border-color: var(--primary); }
-        .auth-submit-btn { width: 100%; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-bottom: 12px; }
-        .auth-submit-btn:hover { background: #2563eb; }
-        .guest-trigger-btn { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 12px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-bottom: 16px; }
-        .guest-trigger-btn:hover { background: var(--bg-surface-elevated); color: white; }
-        .auth-toggle-link { font-size: 0.8rem; color: var(--text-secondary); }
-        .auth-toggle-link span { color: var(--primary); cursor: pointer; font-weight: 600; }
-        .auth-toggle-link span:hover { text-decoration: underline; }
-        /* Interactive Password Eye Input Frame Placement */
-.password-wrapper { 
-    position: relative; 
-    width: 100%; 
-}
-.password-wrapper .auth-field { 
-    padding-right: 40px; 
-}
-.toggle-password-visibility { 
-    position: absolute; 
-    right: 12px; 
-    top: 50%; 
-    transform: translateY(-50%); 
-    background: transparent; 
-    border: none; 
-    color: var(--text-secondary); 
-    cursor: pointer; 
-    font-size: 0.95rem; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-}
-.toggle-password-visibility:hover { 
-    color: white; 
-}
-/* Premium Telemetry User Dropdown System */
-.user-profile-badge {
-    position: relative; /* Essential for dropdown positioning anchoring */
-}
-.profile-badge-trigger {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    user-select: none;
-}
-.user-settings-dropdown {
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    width: 280px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    z-index: 1000;
-    display: none; /* Controlled by JavaScript toggles */
-    text-align: left;
-    flex-direction: column;
-    gap: 14px;
-}
-.user-settings-dropdown.active {
-    display: flex;
-}
-.dropdown-section-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 4px;
-    margin-bottom: 2px;
-}
-.dropdown-input-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-.dropdown-input-wrapper label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-.dropdown-field {
-    background: #070a12;
-    border: 1px solid var(--border);
-    color: white;
-    padding: 8px 10px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    width: 100%;
-}
-.dropdown-field:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-.dropdown-save-btn {
-    background: var(--primary);
-    border: none;
-    color: white;
-    padding: 8px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-.dropdown-save-btn:hover {
-    background: #2563eb;
-}
-.dropdown-logout-btn {
-    width: 100%;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s;
-    margin-top: 4px;
-}
-.dropdown-logout-btn:hover {
-    background: #ef4444;
-    color: white;
-}
-/* Paste this into your CSS for the feedback container id/class */
-/* Fixes the feedback box to the bottom right corner of the screen */
-#feedback-card { 
-    position: fixed !important;
-    bottom: 20px !important;
-    right: 20px !important;
-    z-index: 1000 !important;
-    max-width: 320px !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
-}
-/* THE ULTIMATE LIGHT MODE CONTRAST OVERRIDE */
-body.light-mode {
-    background-color: #f1f5f9 !important;
-    background-image: none !important; /* Clears dark background gradients */
-    color: #0f172a !important;
-}
+        .control-group-box h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
 
-/* 1. Force all containers with dark inline backgrounds to turn clean white */
-body.light-mode div[style*="background"], 
-body.light-mode section[style*="background"] {
-    background: #ffffff !important;
-    border-color: rgba(15, 23, 42, 0.1) !important;
-}
+        /* File Intake Vector Drag Box */
+        .file-dropzone-container {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 30px 15px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            background-color: var(--bg-base);
+        }
 
-/* 2. Target any inline gray/white text colors and flip them to dark slate */
-body.light-mode [style*="color: #9ca3af"],
-body.light-mode [style*="color:#9ca3af"],
-body.light-mode [style*="color: #cbd5e1"],
-body.light-mode [style*="color:#cbd5e1"],
-body.light-mode [style*="color: #ffffff"],
-body.light-mode [style*="color:#ffffff"],
-body.light-mode [style*="color: white"] {
-    color: #0f172a !important;
-}
+        .file-dropzone-container:hover, .file-dropzone-container.dragover {
+            border-color: var(--primary);
+            background-color: var(--bg-accent);
+        }
 
-/* 3. Specific fix for muted paragraph/description text labels */
-body.light-mode p, 
-body.light-mode label,
-body.light-mode .history-card div {
-    color: #334155 !important;
-}
+        .file-dropzone-container i {
+            font-size: 2.5rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
 
-/* 4. Fix account profile drop-down panel fields so inputs aren't blind white-on-white */
-body.light-mode input[style*="background"], 
-body.light-mode textarea[style*="background"] {
-    background: #f8fafc !important;
-    color: #0f172a !important;
-    border: 1px solid #cbd5e1 !important;
-}
-body.light-mode input::placeholder, 
-body.light-mode textarea::placeholder {
-    color: #64748b !important;
-}
+        .file-dropzone-container input[type="file"] {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
 
-/* 5. Keep icons looking sharp but allow your custom blue brand icons to stay colorful */
-body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
-    color: #475569 !important;
-}
+        /* System Action Processing Controls Block buttons */
+        .action-execution-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary-action {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-primary-action:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-primary-action:disabled {
+            background-color: var(--bg-accent);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary-action {
+            background-color: var(--bg-accent);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary-action:hover:not(:disabled) {
+            background-color: var(--border-color);
+        }
+
+        /* Workspace Grid Matrix Split Execution Engine */
+        main.workspace-view-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100%;
+            background-color: var(--bg-base);
+        }
+
+        .document-intake-column, .terminal-output-column {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .terminal-output-column {
+            border-right: none;
+        }
+
+        .column-header-toolbar {
+            height: 40px;
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+
+        .column-title-node {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .toolbar-action-cluster {
+            display: flex;
+            gap: 5px;
+        }
+
+        .toolbar-action-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toolbar-action-btn:hover {
+            color: var(--text-main);
+            background-color: var(--bg-accent);
+        }
+
+        /* Document Render Frame Pipeline Styles */
+        .document-render-viewport-frame {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background-color: var(--bg-base);
+        }
+
+        .page-canvas-render-wrapper {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            background-color: #ffffff;
+            position: relative;
+            max-width: 100%;
+        }
+
+        .page-canvas-render-wrapper canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Text Area Terminal Matrix Workspace Grid Core */
+        .matrix-textarea-editor {
+            flex: 1;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            border: none;
+            padding: 20px;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Dynamic Engine History Registry List Architecture */
+        .workspace-history-scroller {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .history-item:hover {
+            border-color: var(--primary);
+            background-color: var(--bg-accent);
+        }
+
+        .history-item h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding-right: 30px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .delete-history-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .delete-history-btn:hover {
+            color: var(--danger);
+        }
+
+        /* Web3Forms Feedback Floating Widget Layout Card Panel Engine Styles */
+        .feedback-floating-card-panel {
+            position: fixed;
+            bottom: 60px;
+            left: 20px;
+            width: 280px;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+        }
+
+        .feedback-card-header {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .feedback-card-body {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .feedback-input-element {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .feedback-status-msg {
+            font-size: 0.75rem;
+            display: none;
+            margin-top: 5px;
+        }
+
+        /* Real-Time Telemetry Stats Footer Panel */
+        .system-telemetry-footer-bar {
+            height: 25px;
+            background-color: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .telemetry-node-metric-cluster {
+            display: flex;
+            gap: 15px;
+        }
+
+        .telemetry-node-metric-cluster span strong {
+            color: var(--text-main);
+        }
+
+        /* Processing Loader Overlays & UI Enhancements */
+        .processing-indicator-overlay {
+            position: absolute;
+            top: 40px; left: 0; width: 100%; height: 4px;
+            background-color: var(--bg-accent);
+            display: none;
+            overflow: hidden;
+        }
+
+        .processing-progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary);
+            transition: width 0.2s ease;
+        }
+
+        .empty-state-notice {
+            margin: auto;
+            text-align: center;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .empty-state-notice i {
+            font-size: 3rem;
+        }
+
+        /* Page Selection Navigation Control Bar */
+        .page-navigation-hub-control-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            width: 100%;
+        }
+
+        .page-nav-hub-action-btn {
+            background-color: var(--bg-accent);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-nav-hub-action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-hub-tracker-display {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
     </style>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
-<body class="logged-out">
+<body>
 
-    <div class="auth-overlay" id="auth-shield-gateway">
-        <div class="auth-card">
-            <div class="auth-logo"><i class="fa-solid fa-shield-halved" style="color: white;"></i></div>
-            <h2 id="auth-title">Account Sign In</h2>
-            <p id="auth-desc">Access enterprise document extraction nodes safely</p>
-            
-            <div class="auth-input-group">
-                <label>Account Username</label>
-                <input type="text" id="auth-user-field" class="auth-field" placeholder="Username">
-                <label>Secure Password</label>
-<div class="password-wrapper">
-    <input type="password" id="auth-pass-field" class="auth-field" placeholder="••••••••">
-    <button type="button" class="toggle-password-visibility" id="btn-toggle-pass-view" title="Toggle Password Visibility">
-        <i class="fa-regular fa-eye" id="pass-eye-icon"></i>
-    </button>
-</div>
-                
-            </div>
-
-            <button class="auth-submit-btn" id="btn-action-auth-submit"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
-            <button class="guest-trigger-btn" id="btn-action-guest"><i class="fa-solid fa-user-secret"></i> Continue as Guest</button>
-            
-            <div class="auth-toggle-link" id="auth-switcher-msg">
-                Don't have an account? <span id="auth-toggle-trigger">Create Account</span>
-            </div>
+    <!-- Upper Viewport Navbar Core Module Frame -->
+    <header class="navbar-viewport">
+        <div class="brand-cluster">
+            <i class="fa-solid fa-microchip-ai"></i>
+            <span>DocuScan AI <span style="color: var(--primary); font-weight: 300;">PRO</span></span>
         </div>
-    </div>
+        <div class="navigation-node-cluster">
+            <button class="utility-nav-btn" onclick="toggleFeedbackWidget()"><i class="fa-solid fa-comment-dots"></i> Feedback</button>
+            <button class="utility-nav-btn" id="theme-toggle-node" onclick="toggleThemePipeline()"><i class="fa-solid fa-moon"></i> Theme</button>
+        </div>
+    </header>
 
-    <div class="app-layout">
-        <header>
-            <div class="logo-area">
-                <div class="logo-icon"><i class="fa-solid fa-file-invoice" style="color: white;"></i></div>
-                <div>
-                    <h1>DocuScan AI <span class="badge">v3.5 Max</span></h1>
-                    <p>All-in-One Multi-Page Preserver & Raw Text Extraction Terminal</p>
-                </div>
-            </div>
-            <div class="user-profile-badge" id="profile-container-node">
-    <div class="profile-badge-trigger" id="profile-trigger-btn">
-        <i class="fa-solid fa-circle-user" style="color: var(--primary);"></i> 
-        <span id="lbl-display-username">Guest Account</span>
-        <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; color: var(--text-secondary);"></i>
-    </div>
-    
-    <div class="user-settings-dropdown" id="dropdown-settings-panel">
-        <div class="dropdown-section-title">Account Profiles</div>
+    <!-- Main Core Operational Workspace Section -->
+    <div class="workspace-wrapper">
         
-        <div class="dropdown-input-wrapper">
-            <label>Profile Name</label>
-            <input type="text" id="settings-username-field" class="dropdown-field" placeholder="Username">
-        </div>
-        
-        <div class="dropdown-input-wrapper">
-            <label>Access Password</label>
-            <div class="password-wrapper">
-                <input type="password" id="settings-password-field" class="dropdown-field" placeholder="••••••••">
-                <button type="button" class="toggle-password-visibility" id="btn-toggle-settings-pass" style="font-size: 0.8rem;">
-                    <i class="fa-regular fa-eye" id="settings-pass-eye"></i>
-                </button>
-            </div>
-        </div>
-
-        <button class="dropdown-save-btn" id="btn-save-settings">Update Configuration</button>
-
-        <div class="dropdown-section-title">Ecosystem Controls</div>
-        
-        <div class="toggle-row" style="padding: 6px 0; background: transparent; border: none;">
-            <span style="font-size: 0.8rem; color: var(--text-secondary);">Core Image Enhancer</span>
-            <label class="switch" style="transform: scale(0.85);">
-                <input type="checkbox" id="dropdown-filter-toggle" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <button class="dropdown-logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit Workspace</button>
-    </div>
-</div>
-        </header>
-
-        <div class="main-grid">
-            
-            <div class="panel history-sidebar">
-                <div class="panel-heading">
-                    <span><i class="fa-solid fa-clock-rotate-left"></i> Session History</span>
-                    <span id="clear-all-logs" style="font-size: 0.75rem; color: #ef4444; cursor: pointer; font-weight: 500;">Clear All</span>
-                </div>
-                <div class="history-list" id="history-list-target"></div>
-            </div>
-
-            <div class="panel">
-                <div class="panel-heading">
-                    <span><i class="fa-solid fa-file-import"></i> Document Intake</span>
-                </div>
-                
-                <div class="drop-zone" onclick="document.getElementById('file-input').click()">
+        <!-- Left Sidebar System Controls Panel Drawer -->
+        <aside class="control-matrix-sidebar">
+            <div class="control-group-box">
+                <h3>Document Intake Streams</h3>
+                <div class="file-dropzone-container" id="dropzone-intake-module">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <h3>Upload local document</h3>
-                    <p>Supports PNG, JPEG, or multi-page PDF files</p>
-                    <input type="file" id="file-input" accept="image/*,application/pdf" style="display:none">
+                    <p id="dropzone-status-msg-text">Drag & drop files or click to browse targets</p>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); display:block; margin-top:5px;">Supports PDF, PNG, JPEG, WEBP, TIFF</span>
+                    <input type="file" id="document-file-input-stream-node" accept="application/pdf, image/*" onchange="handleIncomingFileStream(this.files)">
                 </div>
+                <button class="action-execution-btn btn-secondary-action" id="btn-clear-stream" onclick="clearActiveWorkspaceEnvironment()" style="display: none;"><i class="fa-solid fa-eject"></i> Eject Target File</button>
+            </div>
 
-                <div class="preview-container" id="preview-wrapper">
-                    <button class="clear-file-btn" id="btn-clear-stream" title="Discard"><i class="fa-solid fa-xmark"></i></button>
+            <div class="control-group-box">
+                <h3>Optical Core Controls</h3>
+                <button class="action-execution-btn btn-primary-action" id="convert-btn" onclick="executeDocumentOcrProcessingEngine()" disabled><i class="fa-solid fa-bolt"></i> Compute OCR Matrix</button>
+                <button class="action-execution-btn btn-secondary-action" id="btn-abort-stream" onclick="abortOcrOperation()" style="display: none; border-color: var(--danger); color: var(--danger);"><i class="fa-solid fa-ban"></i> Abort Engine Loop</button>
+            </div>
+
+            <div class="control-group-box">
+                <h3>Export Vector Outputs</h3>
+                <button class="action-execution-btn btn-secondary-action" id="btn-download-pdf-id" onclick="executePdfDownloadAction()" disabled><i class="fa-solid fa-file-pdf"></i> Generate Searchable PDF</button>
+                <button class="action-execution-btn btn-secondary-action" id="btn-download-txt-id" onclick="downloadTextDataStreamFile('txt')" disabled><i class="fa-solid fa-file-lines"></i> Export Plain Text (.TXT)</button>
+                <button class="action-execution-btn btn-secondary-action" id="btn-download-doc-id" onclick="downloadTextDataStreamFile('doc')" disabled><i class="fa-solid fa-file-word"></i> Export MS Word (.DOC)</button>
+            </div>
+
+            <div class="control-group-box" style="flex: 1; min-height: 150px; margin-top: 10px;">
+                <h3>Workspace Session Logs</h3>
+                <div class="workspace-history-scroller" id="history-list-target-id">
+                    <!-- Dynamic session list injected here -->
                 </div>
+            </div>
+        </aside>
 
-                <div class="config-group">
-                    <div class="toggle-row">
-                        <div>
-                            <p style="font-weight: 500;">Dynamic Brightness Optimizer</p>
-                            <p style="font-size: 0.7rem; color: var(--text-secondary);">Cleans phone text shadow layers for raw OCR conversion</p>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="filter-toggle" checked>
-                            <span class="slider"></span>
-                        </label>
+        <!-- Right Core Split Panel Grid View Area -->
+        <main class="workspace-view-grid">
+            
+            <!-- Left Grid Pane: Source Document Render Engine Frame -->
+            <div class="document-intake-column">
+                <div class="column-header-toolbar">
+                    <span class="column-title-node" id="render-pane-title-node">Source Document Feed Frame</span>
+                    <div class="toolbar-action-cluster">
+                        <button class="toolbar-action-btn" title="Rotate Vector Layer 90 Deg" onclick="rotateDocumentRenderLayer()"><i class="fa-solid fa-rotate-right"></i></button>
                     </div>
                 </div>
-<div style="margin-top: 14px; margin-bottom: 14px; background: rgba(30, 41, 59, 0.25); padding: 14px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-        <label style="color: #ffffff; font-size: 0.85rem; font-weight: 500;">Page Range Config</label>
-        <select id="page-range-selector" onchange="handlePageRangeSelectionChange()" style="background: #0f172a; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; outline: none; font-family: inherit;">
-            <option value="all">All Pages</option>
-            <option value="odd">Odd Pages Only</option>
-            <option value="even">Even Pages Only</option>
-            <option value="custom">Custom Range</option>
-        </select>
-    </div>
+                
+                <!-- Horizontal Progress Loading Bar Strip Component -->
+                <div class="processing-indicator-overlay" id="processing-progress-strip">
+                    <div class="processing-progress-bar-fill" id="progress-bar-fill-node"></div>
+                </div>
 
-    <div id="custom-range-input-container" style="display: none; margin-bottom: 12px;">
-        <input type="text" id="custom-page-string" placeholder="e.g., 1-3, 5" style="width: 100%; background: #0f172a; color: #ffffff; border: 1px solid rgba(59, 130, 246, 0.4); padding: 8px; border-radius: 6px; font-size: 0.8rem; box-sizing: border-box; outline: none;">
-    </div>
-
-    <div style="color: #64748b; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px;">Document Preview Queue:</div>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 6px;">
-        <div id="preview-viewport-box" style="display: flex; align-items: center; justify-content: center; min-height: 80px; width: 100%;">
-            <span id="thumbnail-strip-placeholder" style="color: #475569; font-size: 0.75rem;">No loaded rendering queue pipelines ready</span>
-        </div>
-        
-        <div id="preview-nav-controls" style="display: none; align-items: center; gap: 14px; margin-top: 4px;">
-            <button type="button" id="btn-prev-preview" onclick="navigatePreviewPage(-1)" style="background: #1e293b; color: #ffffff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;"><i class="fa-solid fa-chevron-left"></i></button>
-            <span id="lbl-preview-page-counter" style="color: #94a3b8; font-size: 0.75rem; font-weight: 600; min-width: 60px; text-align: center;">Page 0 / 0</span>
-            <button type="button" id="btn-next-preview" onclick="navigatePreviewPage(1)" style="background: #1e293b; color: #ffffff; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;"><i class="fa-solid fa-chevron-right"></i></button>
-        </div>
-    </div>
-</div>
-                <div style="display: flex; gap: 12px; width: 100%; margin-top: 14px; box-sizing: border-box; align-items: stretch;">
-    
-    <button id="convert-btn" class="action-btn" disabled style="flex-grow: 2; margin: 0;">
-        <i class="fa-solid fa-arrows-spin"></i> Run Multi-Page OCR Pipeline
-    </button>
-
-    <button type="button" id="cancel-pipeline-btn" onclick="abortOcrOperation()" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; flex-shrink: 0; margin: 0;">
-        <i class="fa-solid fa-xmark"></i> Cancel
-    </button>
-
-</div>
-
-                <div class="status-wrapper">
-                    <div class="status-details">
-                        <span id="status-text">Status: Systems initialized</span>
-                        <span id="progress-percent">0%</span>
+                <div class="document-render-viewport-frame" id="render-viewport-canvas-frame">
+                    <div class="empty-state-notice" id="render-empty-state-notice">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        <p>No compiled layout target loaded in buffer pipeline channels</p>
                     </div>
-                    <div class="progress-track">
-                        <div id="progress-bar" class="progress-fill"></div>
-                    </div>
+                </div>
+
+                <!-- Dynamic Page Select Hub Controller Console Panel Bar Component Layout -->
+                <div class="page-navigation-hub-control-bar" id="page-nav-hub-console-panel" style="display: none;">
+                    <button class="page-nav-hub-action-btn" id="btn-page-nav-prev" onclick="changeActivePageContextTarget(-1)"><i class="fa-solid fa-angle-left"></i></button>
+                    <span class="page-hub-tracker-display" id="page-hub-index-tracker">Page 0 of 0</span>
+                    <button class="page-nav-hub-action-btn" id="btn-page-nav-next" onclick="changeActivePageContextTarget(1)"><i class="fa-solid fa-angle-right"></i></button>
                 </div>
             </div>
 
-            <div class="panel">
-                <div class="panel-heading">
-                    <span><i class="fa-solid fa-square-poll-horizontal"></i> Output Matrix Tools</span>
-                </div>
-
-                <div class="metrics-bar">
-                    <div class="metric-card">
-                        <div class="metric-val" id="metric-words">0</div>
-                        <div class="metric-lbl">Words</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-val" id="metric-chars">0</div>
-                        <div class="metric-lbl">Characters</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-val" id="metric-time">0s</div>
-                        <div class="metric-lbl">Read Time</div>
+            <!-- Right Grid Pane: Transpiled Matrix Output Editor Interface -->
+            <div class="terminal-output-column">
+                <div class="column-header-toolbar">
+                    <span class="column-title-node">Transpiled OCR String Terminal Output</span>
+                    <div class="toolbar-action-cluster">
+                        <button class="toolbar-action-btn" id="btn-utility-copy" title="Copy Text Stream Output Buffer Channels to Clipboard" onclick="copyTextToClipboardEcosystem()"><i class="fa-solid fa-copy"></i></button>
+                        <button class="toolbar-action-btn" title="Clear Extracted Output Text Blocks" onclick="clearOutputMatrixField()"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 </div>
-
-                <div class="toolbar" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-    <button class="tool-btn primary-action" id="btn-utility-download-pdf" disabled><i class="fa-solid fa-file-shield"></i> Searchable PDF (Keep Format)</button>
-    <button class="tool-btn" id="btn-utility-download-doc"><i class="fa-solid fa-file-word"></i> Word Doc</button>
-    <button class="tool-btn" id="btn-utility-download-txt"><i class="fa-solid fa-file-lines"></i> .TXT</button>
-    <button class="tool-btn" id="btn-utility-copy"><i class="fa-regular fa-copy"></i> Copy</button>
-    
-    <button type="button" id="btn-utility-clear" onclick="clearOutputMatrixField()" class="tool-btn" style="background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.25); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; margin-left: auto;">
-        <i class="fa-solid fa-trash-can"></i> Clear Text
-    </button>
-</div>
-
-                <div class="text-editor-container">
-                    <textarea id="output" placeholder="Raw editable text extraction layer will populate inside this viewport framework..." readonly></textarea>
-                </div>
+                <textarea class="matrix-textarea-editor" id="output-textarea-id" placeholder="// Extracted plain-text token vectors output blocks will populate inside this viewport channel engine log registry ecosystem..." oninput="calculateTelemetryAnalysisMetrics(this.value)"></textarea>
             </div>
-<div id="feedback-toggle-btn" onclick="toggleFeedbackWidget()" style="position: fixed; bottom: 20px; right: 20px; width: 48px; height: 48px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); z-index: 10000; transition: transform 0.2s, background 0.2s;">
-    <i class="fa-solid fa-comment-dots" style="color: #ffffff; font-size: 1.3rem;"></i>
-</div>
 
-<div id="app-feedback-card" class="feedback-card" style="display: none; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.15); padding: 24px; border-radius: 14px; width: 320px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6); backdrop-filter: blur(12px); box-sizing: border-box; position: fixed; bottom: 80px; right: 20px; z-index: 9999;">
-    
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="background: rgba(59, 130, 246, 0.15); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                <i class="fa-solid fa-comment-dots" style="color: #3b82f6; font-size: 0.95rem;"></i>
-            </div>
-            <div>
-                <h3 style="margin: 0; font-size: 1rem; font-weight: 600; color: #ffffff; letter-spacing: -0.01em;">Submit System Feedback</h3>
-                <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: #9ca3af;">Report bugs or suggest features</p>
-            </div>
-        </div>
-        <span onclick="toggleFeedbackWidget()" style="color: #9ca3af; cursor: pointer; font-size: 1.1rem; font-weight: bold; padding: 0 4px;">&times;</span>
+        </main>
+
     </div>
-    
-    <form id="feedback-form-element" onsubmit="handleSilentFeedbackDispatch(event)" style="display: flex; flex-direction: column; gap: 14px; width: 100%; box-sizing: border-box;">
-        <input type="hidden" name="access_key" value="6f6a735c-7d9a-4c28-98e6-7df089e023ba">
-        <input type="hidden" name="subject" value="DocuScan AI Pro - System Telemetry Feedback">
 
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Your Name</label>
-            <input type="text" name="name" id="feedback-user-name" required placeholder="John Doe" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none; transition: border 0.2s; width: 100%; box-sizing: border-box;">
+    <!-- Web3Forms Secure User System Feedback Dispatched Widget Engine Layout Panel Component Card Matrix -->
+    <div class="feedback-floating-card-panel" id="app-feedback-card">
+        <div class="feedback-card-header">
+            <span><i class="fa-solid fa-envelope-open-text"></i> System Engine Feedback</span>
+            <button style="background:none; border:none; color:var(--text-muted); cursor:pointer;" onclick="toggleFeedbackWidget()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Your Email Address</label>
-            <input type="email" name="email" id="feedback-user-email" required placeholder="yourname@domain.com" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none; transition: border 0.2s; width: 100%; box-sizing: border-box;">
+        <div class="feedback-card-body">
+            <input type="text" id="feedback-user-name" class="feedback-input-element" placeholder="Your Name">
+            <input type="email" id="feedback-user-email" class="feedback-input-element" placeholder="Your Developer Email">
+            <textarea id="feedback-message-input" class="feedback-input-element" rows="4" placeholder="Report system crash logs or structural suggestions..."></textarea>
+            <button class="action-execution-btn btn-primary-action" id="feedback-submit-btn" style="padding:8px; font-size:0.8rem;"><i class="fa-solid fa-paper-plane"></i> Dispatch Feedback</button>
+            <div class="feedback-status-msg" id="feedback-status-text"></div>
         </div>
+    </div>
 
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Message Details</label>
-            <textarea name="message" id="feedback-message-input" required placeholder="Describe your experience or report an issue..." style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 12px; font-size: 0.85rem; min-height: 80px; max-height: 150px; resize: vertical; outline: none; transition: border 0.2s; font-family: inherit; width: 100%; box-sizing: border-box;"></textarea>
+    <!-- Lower Operational Real-Time Metrics Telemetry Info Status Bar Panel -->
+    <footer class="system-telemetry-footer-bar">
+        <span id="status-text-element">Status: Operational Systems Initialized</span>
+        <div class="telemetry-node-metric-cluster">
+            <span>Tokens / Words: <strong id="metrics-words">0</strong></span>
+            <span>Character Allocation: <strong id="metrics-chars">0</strong></span>
+            <span>Est. Parse Latency: <strong id="metrics-time">0s</strong></span>
         </div>
+    </footer>
 
-        <button type="submit" id="feedback-submit-btn" style="background: #3b82f6; color: #ffffff; border: none; padding: 11px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; margin-top: 4px; width: 100%;">
-            <i class="fa-solid fa-paper-plane" style="font-size: 0.8rem;"></i> Dispatch Feedback
-        </button>
-        
-        <div id="feedback-status-text" style="font-size: 0.8rem; text-align: center; margin-top: 4px; display: none;"></div>
-    </form>
-</div>
+    <!-- Script Block Core Operations Pipeline Logic System -->
     <script>
-        const { jsPDF } = window.jspdf;
-        let isOcrCancelled = false;
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        // Set up global workers and library environments
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 
-        // --- AUTHENTICATION FLOW CONTEXT SWITCHER ENGINE ---
-        const bodyNode = document.body;
-        const btnAuthSubmit = document.getElementById('btn-action-auth-submit');
-        const btnGuest = document.getElementById('btn-action-guest');
-        const btnLogout = document.getElementById('btn-action-logout');
-        const userField = document.getElementById('auth-user-field');
-        const passField = document.getElementById('auth-pass-field');
-        const usernameDisplayLabel = document.getElementById('lbl-display-username');
-        const authTitle = document.getElementById('auth-title');
-        const authDesc = document.getElementById('auth-desc');
-        const authToggleTrigger = document.getElementById('auth-toggle-trigger');
-        const authSwitcherMsg = document.getElementById('auth-switcher-msg');
-
-        let isSignUpMode = false;
-
-        // Load fake server accounts array map from device local registry
-        let localRegisteredAccounts = JSON.parse(localStorage.getItem('docuscan_vault_users') || '[]');
-
-        const activeCachedUser = localStorage.getItem('docuscan_logged_session');
-        if (activeCachedUser) { 
-            activateAuthenticatedSessionEcosystem(activeCachedUser); 
-        }
-const togglePassViewBtn = document.getElementById('btn-toggle-pass-view');
-const passEyeIcon = document.getElementById('pass-eye-icon');
-
-// Interactive Password Visibility Toggle Trigger Routine
-togglePassViewBtn.addEventListener('click', () => {
-    if (passField.type === "password") {
-        passField.type = "text";
-        passEyeIcon.className = "fa-regular fa-eye-slash";
-    } else {
-        passField.type = "password";
-        passEyeIcon.className = "fa-regular fa-eye";
-    }
-});
-        authToggleTrigger.addEventListener('click', function toggleModeHandler() {
-            isSignUpMode = !isSignUpMode;
-            if (isSignUpMode) {
-                authTitle.textContent = "Create New Account";
-                authDesc.textContent = "Register global device access encryption tokens";
-                btnAuthSubmit.innerHTML = `<i class="fa-solid fa-user-plus"></i> Register & Log In`;
-                authSwitcherMsg.innerHTML = `Already have an account? <span id="auth-toggle-trigger">Sign In Instead</span>`;
-            } else {
-                authTitle.textContent = "Account Sign In";
-                authDesc.textContent = "Access enterprise document extraction nodes safely";
-                btnAuthSubmit.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Sign In`;
-                authSwitcherMsg.innerHTML = `Don't have an account? <span id="auth-toggle-trigger">Create Account</span>`;
-            }
-            // Rebind the dynamically replaced element anchor target
-            document.getElementById('auth-toggle-trigger').addEventListener('click', toggleModeHandler);
-        });
-
-        // --- SECURE SIGN-UP / LIVE VERIFICATION CORE ROUTINE ---
-        // Setup state variables for live registration security tokens
-        let generatedVerificationToken = null;
-        let temporaryPendingUser = null;
-        let temporaryPendingPass = null;
-
-        btnAuthSubmit.addEventListener('click', () => {
-            const u = userField.value.trim();
-            const p = passField.value.trim();
-            const emailValidationRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            
-            if (!u || !p) { 
-                alert("Complete all profile credential fields."); 
-                return; 
-            }
-            if (!emailValidationRegex.test(u)) {
-                alert("Please register using a valid, structural email address (e.g., user@domain.com). Fake phrases are rejected.");
-                return;
-            }
-
-            if (isSignUpMode) {
-                if (localRegisteredAccounts.some(acc => acc.username === u)) { 
-                    alert("This email profile registry is already locked. Try Signing In."); 
-                    return; 
-                }
-
-                // Generate a random 6-digit verification code
-                generatedVerificationToken = Math.floor(100000 + Math.random() * 900000).toString();
-                temporaryPendingUser = u;
-                temporaryPendingPass = p;
-
-                // 1. Check if EmailJS is active and loaded in the HTML head
-                if (typeof emailjs !== 'undefined') {
-                    alert("Verification dispatch sequence running! Sending unique access tokens directly to: " + u);
-                    
-                    // Dispatches the live email code directly from your web client side
-                    emailjs.send("default_service", "YOUR_TEMPLATE_ID", {
-                        to_email: u,
-                        verification_code: generatedVerificationToken
-                    }).then(() => {
-                        const validationAttempt = prompt("A verification security code was sent to your inbox. Please type the 6-digit code here to finalize registration:");
-                        
-                        if (validationAttempt === generatedVerificationToken) {
-                            localRegisteredAccounts.push({ username: temporaryPendingUser, password: temporaryPendingPass });
-                            localStorage.setItem('docuscan_vault_users', JSON.stringify(localRegisteredAccounts));
-                            localStorage.setItem('docuscan_logged_session', temporaryPendingUser);
-                            activateAuthenticatedSessionEcosystem(temporaryPendingUser);
-                            alert("Account verified and registered successfully!");
-                        } else {
-                            alert("Invalid security token code match. Registration rejected.");
-                        }
-                    }).catch((err) => {
-                        console.error("EmailJS failed:", err);
-                        handleDevSimulationFallback(u, p);
-                    });
-                } else {
-                    // 2. Safe Fallback if you haven't linked the emailjs script tag yet
-                    handleDevSimulationFallback(u, p);
-                }
-
-            } else {
-                // Regular Sign In Route
-                const matchFound = localRegisteredAccounts.find(acc => acc.username === u && acc.password === p);
-                if (matchFound || (u === "admin@domain.com" && p === "12345")) {
-                    localStorage.setItem('docuscan_logged_session', u);
-                    activateAuthenticatedSessionEcosystem(u);
-                } else {
-                    alert("Invalid credential signature match found inside local profile tables.");
-                }
-            }
-        });
-
-        // Helper function to keep app working during development testing
-        function handleDevSimulationFallback(user, pass) {
-            const codeOverride = prompt("[Verification Mode Simulator]\nTo test the verification block without live email API configurations, enter '123456' to safely confirm: " + user);
-            if (codeOverride === "123456") {
-                localRegisteredAccounts.push({ username: user, password: pass });
-                localStorage.setItem('docuscan_vault_users', JSON.stringify(localRegisteredAccounts));
-                localStorage.setItem('docuscan_logged_session', user);
-                activateAuthenticatedSessionEcosystem(user);
-                alert("Account created successfully via simulator bypass pass!");
-            } else {
-                alert("Verification process cancelled.");
-            }
-        }
-
-        btnGuest.addEventListener('click', () => { 
-            activateAuthenticatedSessionEcosystem("Guest Workspace"); 
-        });
-        
-        // --- USER CONTROL PANEL SETTINGS & DROPDOWN MATRIX ---
-        const profileTrigger = document.getElementById('profile-trigger-btn');
-        const settingsDropdown = document.getElementById('dropdown-settings-panel');
-        const settingsUserField = document.getElementById('settings-username-field');
-        const settingsPassField = document.getElementById('settings-password-field');
-        const btnSaveSettings = document.getElementById('btn-save-settings');
-        const dropdownFilterToggle = document.getElementById('dropdown-filter-toggle');
-        const btnToggleSettingsPass = document.getElementById('btn-toggle-settings-pass');
-        const settingsPassEye = document.getElementById('settings-pass-eye');
-
-        // Open/Close user profile dropdown frame
-        profileTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            settingsDropdown.classList.toggle('active');
-            
-            // Auto-populate fields based on the currently logged-in account status
-            const currentActiveUser = localStorage.getItem('docuscan_logged_session') || "Guest Workspace";
-            settingsUserField.value = currentActiveUser === "Guest Workspace" ? "Guest" : currentActiveUser;
-            
-            let accountsDb = JSON.parse(localStorage.getItem('docuscan_vault_users') || '[]');
-            let currentAccount = accountsDb.find(acc => acc.username === currentActiveUser);
-            
-            if (currentActiveUser === "admin") {
-                settingsPassField.value = "12345";
-            } else {
-                settingsPassField.value = currentAccount ? currentAccount.password : "";
-            }
-        });
-
-        // Auto-close settings drop panel if user clicks off-bounds
-        document.addEventListener('click', (e) => {
-            if (!settingsDropdown.contains(e.target) && !profileTrigger.contains(e.target)) {
-                settingsDropdown.classList.remove('active');
-            }
-        });
-
-        // Synchronize drop-panel enhancer switches with the layout core toggle seamlessly
-        dropdownFilterToggle.addEventListener('change', (e) => {
-            document.getElementById('filter-toggle').checked = e.target.checked;
-        });
-        document.getElementById('filter-toggle').addEventListener('change', (e) => {
-            dropdownFilterToggle.checked = e.target.checked;
-        });
-
-        // Settings password box structural visibility engine toggle
-        btnToggleSettingsPass.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (settingsPassField.type === "password") {
-                settingsPassField.type = "text";
-                settingsPassEye.className = "fa-regular fa-eye-slash";
-            } else {
-                settingsPassField.type = "password";
-                settingsPassEye.className = "fa-regular fa-eye";
-            }
-        });
-
-        // Update profile parameter registries and database rows
-        btnSaveSettings.addEventListener('click', () => {
-            const newUserValue = settingsUserField.value.trim();
-            const newPassValue = settingsPassField.value.trim();
-            const oldSessionUser = localStorage.getItem('docuscan_logged_session');
-            
-            if (!newUserValue || !newPassValue) {
-                alert("Account values cannot be left empty.");
-                return;
-            }
-            
-            if (oldSessionUser && oldSessionUser !== "Guest Workspace") {
-                let databaseArray = JSON.parse(localStorage.getItem('docuscan_vault_users') || '[]');
-                let userMatchIndex = databaseArray.findIndex(acc => acc.username === oldSessionUser);
-                
-                if (userMatchIndex !== -1) {
-                    databaseArray[userMatchIndex].username = newUserValue;
-                    databaseArray[userMatchIndex].password = newPassValue;
-                    localStorage.setItem('docuscan_vault_users', JSON.stringify(databaseArray));
-                } else if (oldSessionUser === "admin") {
-                    // Seed newly customized admin variants directly into the database structure array
-                    databaseArray.push({ username: newUserValue, password: newPassValue });
-                    localStorage.setItem('docuscan_vault_users', JSON.stringify(databaseArray));
-                }
-                
-                localStorage.setItem('docuscan_logged_session', newUserValue);
-                activateAuthenticatedSessionEcosystem(newUserValue);
-                alert("Account settings saved successfully!");
-                settingsDropdown.classList.remove('active');
-            } else {
-                alert("Guest workspace preferences temporarily cached.");
-                activateAuthenticatedSessionEcosystem(newUserValue);
-                settingsDropdown.classList.remove('active');
-            }
-        });
-
-        // Consolidated exit execution block listener targeting drop element links
-        document.getElementById('btn-action-logout').addEventListener('click', () => { 
-            localStorage.removeItem('docuscan_logged_session'); 
-            bodyNode.className = "logged-out"; 
-            clearActiveStreamEcosystemState(); 
-            outputTextarea.value = ""; 
-            calculateTelemetryAnalysisMetrics(""); 
-            settingsDropdown.classList.remove('active');
-        });
-
-        function activateAuthenticatedSessionEcosystem(usernamePayloadString) { 
-            usernameDisplayLabel.textContent = usernamePayloadString; 
-            bodyNode.className = "logged-in"; 
-        }
-
-
-        // --- MAIN MULTI-PAGE PROCESSING LOOPS SYSTEM ARCHITECTURE ---
-        const fileInput = document.getElementById('file-input');
-        const convertBtn = document.getElementById('convert-btn');
-        const statusText = document.getElementById('status-text');
-        const progressPercent = document.getElementById('progress-percent');
-        const progressBar = document.getElementById('progress-bar');
-        const outputTextarea = document.getElementById('output');
-        const previewWrapper = document.getElementById('preview-wrapper');
-        const btnClearStream = document.getElementById('btn-clear-stream');
-        const filterToggle = document.getElementById('filter-toggle');
-        const historyListTarget = document.getElementById('history-list-target');
-        const clearAllLogsBtn = document.getElementById('clear-all-logs');
-        const btnDownloadPdf = document.getElementById('btn-utility-download-pdf');
-
-        const mWords = document.getElementById('metric-words');
-        const mChars = document.getElementById('metric-chars');
-        const mTime = document.getElementById('metric-time');
-
+        // Core Pipeline Global App State Registry Matrices
         let activeFileStream = null;
         let activeFileType = null;
+        let activeTargetDocumentRotationDegree = 0;
+        let activeSelectedPageNumberIndex = 1;
+        let totalDocumentPagesCount = 0;
+        let pdfjsActiveDocumentInstanceObject = null;
+        let isOcrCancelled = false;
+
+        // Workspace Image Array Storage Vectors
+        window.processedCanvasesArray = [];
+        window.lastOcrResults = [];
+
+        // Stored App Memory State Local Registries
+        let sessionHistoryData = JSON.parse(localStorage.getItem('docuscan_history')) || [];
         let searchablePdfBlobUrl = null;
-        let sessionHistoryData = JSON.parse(localStorage.getItem('docuscan_history') || '[]');
 
-        renderHistoryItemsList();
+        // Cache DOM selectors efficiently
+        const outputTextarea = document.getElementById('output-textarea-id'); 
+        const btnDownloadPdf = document.getElementById('btn-download-pdf-id');
+        const btnDownloadTxt = document.getElementById('btn-download-txt-id');
+        const btnDownloadDoc = document.getElementById('btn-download-doc-id');
+        const statusText = document.getElementById('status-text-element');
+        const mWords = document.getElementById('metrics-words');
+        const mChars = document.getElementById('metrics-chars');
+        const mTime = document.getElementById('metrics-time');
+        const historyListTarget = document.getElementById('history-list-target-id');
+        const renderViewport = document.getElementById('render-viewport-canvas-frame');
+        const emptyStateNotice = document.getElementById('render-empty-state-notice');
+        const pageNavPanelHub = document.getElementById('page-nav-hub-console-panel');
+        const pageIndexTrackerDisplay = document.getElementById('page-hub-index-tracker');
+        const convertBtn = document.getElementById('convert-btn');
+        const clearStreamBtn = document.getElementById('btn-clear-stream');
+        const abortStreamBtn = document.getElementById('btn-abort-stream');
+        const progressStrip = document.getElementById('processing-progress-strip');
+        const progressBarFill = document.getElementById('progress-bar-fill-node');
 
-        fileInput.addEventListener('change', handleFileStreamIngestion);
-        btnClearStream.addEventListener('click', clearActiveStreamEcosystemState);
-        convertBtn.addEventListener('click', runOcrProcessingPipelineSystemMatrix);
-        clearAllLogsBtn.addEventListener('click', () => { 
-            sessionHistoryData = []; 
-            saveHistoryState(); 
-            renderHistoryItemsList(); 
-        });
-
-        document.getElementById('btn-utility-copy').addEventListener('click', copyTextToClipboardEcosystem);
-        document.getElementById('btn-utility-download-txt').addEventListener('click', () => downloadTextDataStreamFile('txt'));
-        document.getElementById('btn-utility-download-doc').addEventListener('click', () => downloadTextDataStreamFile('doc'));
-        btnDownloadPdf.addEventListener('click', executePdfDownloadAction);
-
-        function handleFileStreamIngestion(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    activeFileStream = file;
-    activeFileType = file.type;
-    convertBtn.disabled = false;
-    btnDownloadPdf.disabled = true;
-    statusText.textContent = "Status: File loaded successfully";
-
-    // Hide old dual preview layout wrappers to keep space pristine
-    if (previewWrapper) {
-        previewWrapper.style.display = 'none';
-    }
-
-    // Launch the updated interactive selection preview engine
-    initializeDocumentPreviewEngine(file);
-}
-
-        async function processAndRenderPdfFirstPageThumbnailInstance(file) {
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                const page = await pdf.getPage(1);
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const viewport = page.getViewport({ scale: 0.5 });
-                
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-                previewWrapper.appendChild(canvas);
-            } catch (err) {
-                statusText.textContent = "Status: Thumbnail generator crashed";
-            }
-        }
-
-        function clearActiveStreamEcosystemState() {
-    fileInput.value = ""; 
-    activeFileStream = null; 
-    activeFileType = null; 
-    searchablePdfBlobUrl = null;
-    convertBtn.disabled = true; 
-    btnDownloadPdf.disabled = true; 
-    previewWrapper.style.display = 'none';
-    
-    const existingRender = previewWrapper.querySelector('img, canvas'); 
-    if (existingRender) existingRender.remove();
-    
-    statusText.textContent = "Status: Buffer targets reset"; 
-    progressBar.style.width = "0%"; 
-    progressPercent.textContent = "0%";
-
-    // --- FEATURE 2 STATE CLEANUP ---
-    loadedPdfDocumentInstance = null;
-    totalPreviewPages = 0;
-    currentPreviewIndex = 1;
-
-    // Hide navigation arrow buttons
-    const navControls = document.getElementById('preview-nav-controls');
-    if (navControls) {
-        navControls.style.display = "none";
-    }
-
-    // Reset preview box back to original placeholder text
-    const viewportBox = document.getElementById('preview-viewport-box');
-    if (viewportBox) {
-        viewportBox.innerHTML = `<span id="thumbnail-strip-placeholder" style="color: #475569; font-size: 0.75rem;">No loaded rendering queue pipelines ready</span>`;
-    }
-}
-
-        async function runOcrProcessingPipelineSystemMatrix() {
-    isOcrCancelled = false;
-    if (!activeFileStream) return;
-    
-    convertBtn.disabled = true;
-    outputTextarea.value = "";
-    let comprehensiveTextCompilation = "";
-    
-    try {
-        const worker = await Tesseract.createWorker('eng', 1, {
-            logger: m => {
-                if (m.status === 'recognizing text' && activeFileType !== "application/pdf") {
-                    const pct = Math.round(m.progress * 100);
-                    progressBar.style.width = `${pct}%`;
-                    progressPercent.textContent = `${pct}%`;
-                    statusText.textContent = `Status: Processing matrix segments (${pct}%)`;
-                }
-            }
-        });
-
-        if (activeFileType === "application/pdf") {
-            const arrayBuffer = await activeFileStream.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const totalPagesCount = pdf.numPages;
-            
-            // --- PARSE USER PAGE TARGET SELECTION QUEUE ---
-            let targetedPagesArray = [];
-            const executionSelectionMode = document.getElementById('page-range-selector').value;
-
-            if (executionSelectionMode === 'all') {
-                for (let p = 1; p <= totalPagesCount; p++) targetedPagesArray.push(p);
-            } else if (executionSelectionMode === 'odd') {
-                for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 !== 0) targetedPagesArray.push(p); }
-            } else if (executionSelectionMode === 'even') {
-                for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 === 0) targetedPagesArray.push(p); }
-            } else if (executionSelectionMode === 'custom') {
-                const rawInputStr = document.getElementById('custom-page-string').value;
-                rawInputStr.split(',').forEach(part => {
-                    if (part.includes('-')) {
-                        const [start, end] = part.split('-').map(Number);
-                        for (let p = start; p <= end; p++) { if (p >= 1 && p <= totalPagesCount) targetedPagesArray.push(p); }
-                    } else {
-                        const num = Number(part.trim());
-                        if (num && num >= 1 && num <= totalPagesCount) targetedPagesArray.push(num);
-                    }
-                });
-            }
-
-            // Fallback to all pages if custom input evaluates to empty arrays
-            if (targetedPagesArray.length === 0) {
-                for (let p = 1; p <= totalPagesCount; p++) targetedPagesArray.push(p);
-            }
-            
-            statusText.textContent = `Status: Deep scanning multi-page architecture (0/${targetedPagesArray.length})`;
-            
-            // Native looping system grid to iterate across all targeted document blocks
-            for (let i = 0; i < targetedPagesArray.length; i++) {
-                let targetPageIndex = targetedPagesArray[i];
-                
-                if (isOcrCancelled) {
-                    console.log("OCR Loop stopped by user request.");
-    
-                    // Force the layout numbers and bars back to their original startup values
-                    statusText.textContent = "Status: Systems initialized";
-                    progressBar.style.width = "0%";
-                    progressPercent.textContent = "0%";
-    
-                    break; // Exits the loop safely
-                }
-                
-                // Smart layout check: if the selection count equals the whole book, keep it clean
-                if (targetedPagesArray.length === totalPagesCount) {
-                    statusText.textContent = `Status: Compiling data maps for Page ${targetPageIndex}...`;
-                } else {
-                    // Only show the complex batch layout if you're processing a custom chunk (like 8-26)
-                    statusText.textContent = `Status: Compiling data maps (${i + 1}/${targetedPagesArray.length}) [Doc Page ${targetPageIndex}]...`;
-                }
-                // Calculate progress percentage accurately based on pages processed
-                const currentLoopPct = Math.round(((i + 1) / targetedPagesArray.length) * 100);
-                progressBar.style.width = `${currentLoopPct}%`;
-                progressPercent.textContent = `${currentLoopPct}%`;
-
-                const page = await pdf.getPage(targetPageIndex);
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                const viewport = page.getViewport({ scale: 2.0 });
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-                
-                let processingSource = canvas;
-                if (filterToggle.checked) {
-                    processingSource = await applyContrastEnhancementFilterMatrix(canvas, true);
-                }
-                
-                const dataImgUrl = processingSource.toDataURL('image/jpeg');
-                
-                // --- PROBLEM 1 REFINED: LINE-BY-LINE MATRIX SCRUBBING ---
-                const { data } = await worker.recognize(dataImgUrl);
-                
-                let cleanedPageText = "";
-                
-                // Break the extracted text into individual lines to inspect them separately
-                const lines = data.text.split('\n');
-                
-                lines.forEach(line => {
-                    const trimmedLine = line.trim();
-                    if (trimmedLine.length === 0) return;
-
-                    // 1. Remove obvious stray symbol noise lines
-                    if (/^[|~_\-—=\s+:]+$/.test(trimmedLine)) return;
-
-                    // 2. Count words that look like real language (at least 2 letters together)
-                    const words = trimmedLine.split(/\s+/);
-                    const realWordCount = words.filter(word => /[a-zA-Z]{2,}/.test(word)).length;
-                    
-                    // 3. Count isolated single characters (e.g., "y", "K", "p", "t")
-                    const singleCharCount = words.filter(word => word.length === 1 && /[a-zA-Z0-9]/.test(word)).length;
-
-                    // 4. Calculate uppercase density to catch diagram noise like "EWC ‘XN }"
-                    const upperCaseCount = (trimmedLine.match(/[A-Z]/g) || []).length;
-                    const lowerCaseCount = (trimmedLine.match(/[a-z]/g) || []).length;
-
-                    // FILTER LOGIC: 
-                    // - A real sentence line must have real word clusters (more words than isolated single letters).
-                    // - It shouldn't be dominated by random capital blocks (caps shouldn't outnumber lowercase lines significantly in prose).
-                    if (realWordCount >= singleCharCount && (upperCaseCount <= lowerCaseCount || lowerCaseCount > 5)) {
-                        cleanedPageText += line + "\n";
-                    } else {
-                        console.log(`Scrubbed diagram noise: "${trimmedLine}"`);
-                    }
-                });
-
-                // If the page ended up containing content, append it cleanly
-                if (cleanedPageText.trim().length > 0) {
-                    comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n` + cleanedPageText + "\n\n";
-                } else {
-                    comprehensiveTextCompilation += `--- PAGE ${targetPageIndex} ---\n[Image / Visual Content Block]\n\n`;
-                }
-            }
-            
-            statusText.textContent = "Status: Building valid PDF architecture...";
-                    
-                    // 1. Initialize a genuine, structural jsPDF container
-                    const doc = new jsPDF({
-                        orientation: "portrait",
-                        unit: "mm",
-                        format: "a4"
-                    });
-
-                    // 2. Wrap your extracted text so it folds clean inside a structural A4 layout
-                    const splitText = doc.splitTextToSize(comprehensiveTextCompilation, 180);
-                    let yAxisPos = 20;
-                    const pageHeight = doc.internal.pageSize.height;
-
-                    // 3. Systematically stamp the strings page by page
-                    for (let lineIndex = 0; lineIndex < splitText.length; lineIndex++) {
-                        if (yAxisPos > pageHeight - 20) {
-                            doc.addPage();
-                            yAxisPos = 20; // Re-align cursor height to the top margin of the new page
-                        }
-                        doc.text(splitText[lineIndex], 15, yAxisPos);
-                        yAxisPos += 7; // Line grid height spacing
-                    }
-
-                    // 4. Output a completely valid binary file asset
-                    const realPdfBlob = doc.output('blob');
-                    searchablePdfBlobUrl = URL.createObjectURL(realPdfBlob);
-
-        } else {
-            let sourceAsset = activeFileStream;
-            if (filterToggle.checked) { 
-                sourceAsset = await applyContrastEnhancementFilterMatrix(activeFileStream); 
-            }
-            const { data: { text } } = await worker.recognize(sourceAsset);
-            comprehensiveTextCompilation = text;
-            
-            // --- FIXED PROBLEM 2: CONVERTED SINGLE IMAGE BLOB AS WELL ---
-            const blob = new Blob([comprehensiveTextCompilation], { type: 'text/plain' });
-            searchablePdfBlobUrl = URL.createObjectURL(blob);
-        }
-
-        await worker.terminate();
-
-        outputTextarea.value = comprehensiveTextCompilation;
-        calculateTelemetryAnalysisMetrics(comprehensiveTextCompilation);
-        appendEntryToSessionHistory(activeFileStream.name, comprehensiveTextCompilation, searchablePdfBlobUrl);
+        // Core Drag Drop Component Interaction Node Event Register Listeners Matrix
+        const dropZoneContainer = document.getElementById('dropzone-intake-module');
         
-        btnDownloadPdf.disabled = false;
-        statusText.textContent = "Status: Pipeline processing successful!";
-        progressBar.style.width = "100%";
-        progressPercent.textContent = "100%";
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZoneContainer.addEventListener(eventName, (e) => {
+                e.preventDefault(); e.stopPropagation();
+                dropZoneContainer.classList.add('dragover');
+            }, false);
+        });
 
-    } catch (error) {
-        console.error(error);
-        statusText.textContent = "Status: Matrix pipeline execution crash";
-    } finally {
-        convertBtn.disabled = false;
-    }
-}
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZoneContainer.addEventListener(eventName, (e) => {
+                e.preventDefault(); e.stopPropagation();
+                dropZoneContainer.classList.remove('dragover');
+            }, false);
+        });
 
-        function applyContrastEnhancementFilterMatrix(sourceData, isCanvas = false) {
-            return new Promise((resolve) => {
-                const canvas = document.createElement('canvas'); 
+        dropZoneContainer.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleIncomingFileStream(files);
+        }, false);
+
+        // Core Function Handler Matrix Channels
+        function handleIncomingFileStream(files) {
+            if (files.length === 0) return;
+            clearActiveWorkspaceEnvironment();
+            
+            activeFileStream = files[0];
+            activeFileType = activeFileStream.type;
+            
+            document.getElementById('dropzone-status-msg-text').textContent = `Target: ${activeFileStream.name}`;
+            if(clearStreamBtn) clearStreamBtn.style.display = 'flex';
+            if(convertBtn) convertBtn.disabled = false;
+            if(statusText) statusText.textContent = `Status: Loaded raw data file vector object stream block: ${activeFileStream.name}`;
+
+            if (activeFileType === "application/pdf") {
+                renderPdfFileStreamToWorkspaceViewLayout();
+            } else if (activeFileType.startsWith("image/")) {
+                renderImageFileStreamToWorkspaceViewLayout();
+            } else {
+                alert("Unsupported document configuration format signature. Please feed supported files into core parsing channels.");
+                clearActiveWorkspaceEnvironment();
+            }
+        }
+
+        // Processing Pipeline Engine: Image Layout File Conversion Streams
+        function renderImageFileStreamToWorkspaceViewLayout() {
+            if(emptyStateNotice) emptyStateNotice.style.display = 'none';
+            if(pageNavPanelHub) pageNavPanelHub.style.display = 'none';
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'page-canvas-render-wrapper';
+                    wrapper.id = 'active-image-render-node-wrapper';
+                    wrapper.appendChild(canvas);
+                    
+                    if(renderViewport) {
+                        // Clear past nodes except hidden state notifications
+                        const elements = renderViewport.querySelectorAll('.page-canvas-render-wrapper');
+                        elements.forEach(el => el.remove());
+                        renderViewport.appendChild(wrapper);
+                    }
+
+                    window.processedCanvasesArray = [canvas];
+                    totalDocumentPagesCount = 1;
+                    activeSelectedPageNumberIndex = 1;
+                    document.getElementById('render-pane-title-node').textContent = `Source Image Feed Frame (1:1)`;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(activeFileStream);
+        }
+
+        // Processing Pipeline Engine: PDF Multi-Page Vector Splitting Streams
+        function renderPdfFileStreamToWorkspaceViewLayout() {
+            if(emptyStateNotice) emptyStateNotice.style.display = 'none';
+            if(progressStrip) progressStrip.style.display = 'block';
+            if(progressBarFill) progressBarFill.style.width = '20%';
+
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                try {
+                    const typedarray = new Uint8Array(event.target.result);
+                    pdfjsActiveDocumentInstanceObject = await pdfjsLib.getDocument(typedarray).promise;
+                    totalDocumentPagesCount = pdfjsActiveDocumentInstanceObject.numPages;
+                    activeSelectedPageNumberIndex = 1;
+                    
+                    window.processedCanvasesArray = new Array(totalDocumentPagesCount);
+                    window.lastOcrResults = new Array(totalDocumentPagesCount);
+
+                    if(progressBarFill) progressBarFill.style.width = '50%';
+                    await loadAndBufferAllPdfPagesMatrixElements();
+                    
+                    if(progressBarFill) progressBarFill.style.width = '100%';
+                    setTimeout(() => { if(progressStrip) progressStrip.style.display = 'none'; }, 4000);
+
+                    renderActiveIndexedPageFrameToCanvasViewport();
+                    if(pageNavPanelHub) pageNavPanelHub.style.display = 'flex';
+                    updatePageNavigationHubButtonsState();
+                } catch (err) {
+                    console.error("PDF engine crash exception log:", err);
+                    alert("Core failed parsing PDF architecture stream context blocks.");
+                }
+            };
+            reader.readAsArrayBuffer(activeFileStream);
+        }
+
+        // Render Loop Hub Engine Array Maps
+        async function loadAndBufferAllPdfPagesMatrixElements() {
+            for(let pageNum = 1; pageNum <= totalDocumentPagesCount; pageNum++) {
+                const page = await pdfjsActiveDocumentInstanceObject.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 2.0 }); // Render at 2x crisp scale vector layout bounds
+                
+                const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                if (isCanvas) {
-                    canvas.width = sourceData.width; 
-                    canvas.height = sourceData.height;
-                    ctx.drawImage(sourceData, 0, 0); 
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                const renderContext = { canvasContext: ctx, viewport: viewport };
+                await page.render(renderContext).promise;
+                
+                window.processedCanvasesArray[pageNum - 1] = canvas;
+            }
+        }
+
+        function renderActiveIndexedPageFrameToCanvasViewport() {
+            if (window.processedCanvasesArray.length === 0) return;
+            
+            const activeCanvasTargetNode = window.processedCanvasesArray[activeSelectedPageNumberIndex - 1];
+            if (!activeCanvasTargetNode) return;
+
+            if(renderViewport) {
+                const elements = renderViewport.querySelectorAll('.page-canvas-render-wrapper');
+                elements.forEach(el => el.remove());
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'page-canvas-render-wrapper';
+            
+            // Create cloned viewport instance reference canvas layout block safely
+            const displayCanvas = document.createElement('canvas');
+            displayCanvas.width = activeCanvasTargetNode.width;
+            displayCanvas.height = activeCanvasTargetNode.height;
+            const dCtx = displayCanvas.getContext('2d');
+            dCtx.drawImage(activeCanvasTargetNode, 0, 0);
+
+            wrapper.appendChild(displayCanvas);
+            if(renderViewport) renderViewport.appendChild(wrapper);
+
+            applyRotationToRenderLayers(activeTargetDocumentRotationDegree);
+            if(pageIndexTrackerDisplay) pageIndexTrackerDisplay.textContent = `Page ${activeSelectedPageNumberIndex} of ${totalDocumentPagesCount}`;
+            document.getElementById('render-pane-title-node').textContent = `Source PDF Page Stack (${activeSelectedPageNumberIndex}/${totalDocumentPagesCount})`;
+        }
+
+        function changeActivePageContextTarget(directionOffsetValue) {
+            const nextTargetPageIndex = activeSelectedPageNumberIndex + directionOffsetValue;
+            if (nextTargetPageIndex < 1 || nextTargetPageIndex > totalDocumentPagesCount) return;
+            
+            activeSelectedPageNumberIndex = nextTargetPageIndex;
+            renderActiveIndexedPageFrameToCanvasViewport();
+            updatePageNavigationHubButtonsState();
+        }
+
+        function updatePageNavigationHubButtonsState() {
+            const prevBtn = document.getElementById('btn-page-nav-prev');
+            const nextBtn = document.getElementById('btn-page-nav-next');
+            if(prevBtn) prevBtn.disabled = (activeSelectedPageNumberIndex === 1);
+            if(nextBtn) nextBtn.disabled = (activeSelectedPageNumberIndex === totalDocumentPagesCount);
+        }
+
+        // Geometric Rotation Transformations Pipeline Engine Module
+        function rotateDocumentRenderLayer() {
+            activeTargetDocumentRotationDegree = (activeTargetDocumentRotationDegree + 90) % 360;
+            applyRotationToRenderLayers(activeTargetDocumentRotationDegree);
+            if(statusText) statusText.textContent = `Status: Rotated canvas rendering layout coordinates tracking view orientation matrix to: ${activeTargetDocumentRotationDegree}°`;
+        }
+
+        function applyRotationToRenderLayers(degree) {
+            const targets = document.querySelectorAll('.page-canvas-render-wrapper canvas');
+            targets.forEach(canvas => { canvas.style.transform = `rotate(${degree}deg)`; });
+        }
+
+        // Filter Algorithm Transformations Sandbox Framework
+        function triggerActiveCanvasImagePixelFilterPipeline(canvas) {
+            return new Promise((resolve) => {
+                const ctx = canvas.getContext('2d');
+                if (typeof runFilterAlgorithmProcessing === 'function') {
                     runFilterAlgorithmProcessing(canvas, ctx, resolve);
                 } else {
-                    const img = new Image(); 
-                    img.src = URL.createObjectURL(sourceData);
-                    img.onload = () => { 
-                        canvas.width = img.width; 
-                        canvas.height = img.height; 
-                        ctx.drawImage(img, 0, 0); 
-                        runFilterAlgorithmProcessing(canvas, ctx, resolve); 
-                    };
+                    resolve(canvas);
                 }
             });
         }
+
+        // Core Processing Execution Flow
+        async function executeDocumentOcrProcessingEngine() {
+            if (window.processedCanvasesArray.length === 0) return;
+            
+            isOcrCancelled = false;
+            if(convertBtn) convertBtn.disabled = true;
+            if(abortStreamBtn) abortStreamBtn.style.display = 'flex';
+            if(progressStrip) progressStrip.style.display = 'block';
+            if(outputTextarea) outputTextarea.value = "";
+
+            let integratedTextAccumulator = "";
+            if(statusText) statusText.textContent = "Status: Initializing Tesseract Core Worker Engine Registry Nodes...";
+
+            try {
+                const worker = await Tesseract.createWorker();
+                await worker.loadLanguage('eng');
+                await worker.initialize('eng');
+
+                for (let pageNum = 0; pageNum < window.processedCanvasesArray.length; pageNum++) {
+                    if (isOcrCancelled) break;
+
+                    if(statusText) statusText.textContent = `Status: Parsing Optical Text Token Channels (Page ${pageNum + 1}/${window.processedCanvasesArray.length})...`;
+                    if(progressBarFill) progressBarFill.style.width = `${Math.ceil(((pageNum) / window.processedCanvasesArray.length) * 100)}%`;
+
+                    let targetCanvas = window.processedCanvasesArray[pageNum];
+                    
+                    // Run preprocessing filters inside parallel microtask sandbox chains
+                    targetCanvas = await triggerActiveCanvasImagePixelFilterPipeline(targetCanvas);
+
+                    const ocrResult = await worker.recognize(targetCanvas);
+                    
+                    // Safely store the word bounding box metadata coordinates for searchable rendering steps later
+                    window.lastOcrResults[pageNum] = ocrResult.data;
+
+                    const cleanedPageText = cleanExtractedText(ocrResult.data.text);
+                    integratedTextAccumulator += `--- [PAGE BLOCKS CHANNELS INDEX DETECTED: ${pageNum + 1}] ---\n${cleanedPageText}\n\n`;
+                    
+                    if(outputTextarea) outputTextarea.value = integratedTextAccumulator;
+                    calculateTelemetryAnalysisMetrics(integratedTextAccumulator);
+                }
+
+                await worker.terminate();
+
+                if (!isOcrCancelled) {
+                    if(statusText) statusText.textContent = "Status: OCR Engine Loop finalized. Transpiled string structures mapped into editor workspace viewport channels.";
+                    if(progressBarFill) progressBarFill.style.width = '100%';
+                    
+                    if(btnDownloadPdf) btnDownloadPdf.disabled = false;
+                    if(btnDownloadTxt) btnDownloadTxt.disabled = false;
+                    if(btnDownloadDoc) btnDownloadDoc.disabled = false;
+
+                    appendEntryToSessionHistory(activeFileStream.name, integratedTextAccumulator, null);
+                }
+            } catch (err) {
+                console.error("OCR core runtime fault analysis profile stack log:", err);
+                if(statusText) statusText.textContent = "Status: Fatal error tracking text layers configuration pipeline parameters.";
+                alert("The runtime system engine met structural parsing faults during transcription computations.");
+            } finally {
+                if(abortStreamBtn) abortStreamBtn.style.display = 'none';
+                setTimeout(() => { if(progressStrip) progressStrip.style.display = 'none'; }, 3000);
+                if(convertBtn) convertBtn.disabled = false;
+            }
+        }
+
+        // Theme Toggle Functionality
+        function toggleThemePipeline() {
+            const body = document.body;
+            const themeBtn = document.getElementById('theme-toggle-node');
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                if(themeBtn) themeBtn.innerHTML = `<i class="fa-solid fa-moon"></i> Theme`;
+                localStorage.setItem('docuscan-theme', 'dark');
+            } else {
+                body.classList.add('light-theme');
+                if(themeBtn) themeBtn.innerHTML = `<i class="fa-solid fa-sun"></i> Theme`;
+                localStorage.setItem('docuscan-theme', 'light');
+            }
+        }
+
+        function clearActiveWorkspaceEnvironment() {
+            activeFileStream = null;
+            activeFileType = null;
+            activeTargetDocumentRotationDegree = 0;
+            activeSelectedPageNumberIndex = 1;
+            totalDocumentPagesCount = 0;
+            pdfjsActiveDocumentInstanceObject = null;
+            
+            window.processedCanvasesArray = [];
+            window.lastOcrResults = [];
+
+            if (searchablePdfBlobUrl) {
+                URL.revokeObjectURL(searchablePdfBlobUrl);
+                searchablePdfBlobUrl = null;
+            }
+
+            document.getElementById('dropzone-status-msg-text').textContent = "Drag & drop files or click to browse targets";
+            if(clearStreamBtn) clearStreamBtn.style.display = 'none';
+            if(convertBtn) convertBtn.disabled = true;
+            if(btnDownloadPdf) btnDownloadPdf.disabled = true;
+            if(btnDownloadTxt) btnDownloadTxt.disabled = true;
+            if(btnDownloadDoc) btnDownloadDoc.disabled = true;
+            if(pageNavPanelHub) pageNavPanelHub.style.display = 'none';
+            if(emptyStateNotice) emptyStateNotice.style.display = 'flex';
+            if(outputTextarea) outputTextarea.value = "";
+            document.getElementById('render-pane-title-node').textContent = "Source Document Feed Frame";
+
+            if(renderViewport) {
+                const elements = renderViewport.querySelectorAll('.page-canvas-render-wrapper');
+                elements.forEach(el => el.remove());
+            }
+
+            calculateTelemetryAnalysisMetrics("");
+            if(statusText) statusText.textContent = "Status: Operational Systems Initialized";
+        }
+
+        // --- SPLIT PIPELINE UTILITY MATRIX HELPER CODE SEGMENTS ---
 
         function runFilterAlgorithmProcessing(canvas, ctx, resolve) {
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height); 
             const data = imgData.data;
             for (let i = 0; i < data.length; i += 4) {
+                // Standard digital luminance formula
                 let v = (0.2126 * data[i] + 0.7152 * data[i+1] + 0.0722 * data[i+2]);
                 v = (v > 130) ? 255 : 0; 
                 data[i] = data[i+1] = data[i+2] = v;
@@ -1161,16 +989,16 @@ togglePassViewBtn.addEventListener('click', () => {
         }
 
         function calculateTelemetryAnalysisMetrics(text) {
-            if (!text.trim()) { 
-                mWords.textContent = "0"; 
-                mChars.textContent = "0"; 
-                mTime.textContent = "0s"; 
+            if (!text || !text.trim()) { 
+                if(mWords) mWords.textContent = "0"; 
+                if(mChars) mChars.textContent = "0"; 
+                if(mTime)  mTime.textContent = "0s"; 
                 return; 
             }
             const wordsCount = text.replace(/\s+/g, ' ').trim().split(' ').length;
-            mWords.textContent = wordsCount; 
-            mChars.textContent = text.length; 
-            mTime.textContent = `${Math.ceil((wordsCount / 200) * 60)}s`;
+            if(mWords) mWords.textContent = wordsCount; 
+            if(mChars) mChars.textContent = text.length; 
+            if(mTime)  mTime.textContent = `${Math.ceil((wordsCount / 200) * 60)}s`;
         }
 
         function appendEntryToSessionHistory(title, content, pdfUrl) {
@@ -1192,155 +1020,140 @@ togglePassViewBtn.addEventListener('click', () => {
         }
 
         function renderHistoryItemsList() {
+            if (!historyListTarget) return;
             historyListTarget.innerHTML = "";
             if (sessionHistoryData.length === 0) { 
-                historyListTarget.innerHTML = `<div class="empty-history">No logged workspace files inside memory storage registry channels</div>`; 
+                historyListTarget.innerHTML = `<div class="empty-history" style="font-size:0.75rem; text-align:center; color:var(--text-muted); padding:10px;">No logged workspace files inside memory storage registry channels</div>`; 
                 return; 
             }
             sessionHistoryData.forEach(item => {
                 const div = document.createElement('div'); 
                 div.className = "history-item";
                 div.innerHTML = `<h4>${item.title}</h4><span>Compiled structure layout architecture at ${item.timestamp}</span><button class="delete-history-btn" data-id="${item.id}"><i class="fa-solid fa-trash-can"></i></button>`;
+                
                 div.addEventListener('click', (e) => {
-                if (e.target.closest('.delete-history-btn')) { 
-                e.stopPropagation(); 
-                const targetId = parseInt(e.target.closest('.delete-history-btn').getAttribute('data-id')); 
-    
-                // Clean up allocated browser memory before deleting
-                const itemToDelete = sessionHistoryData.find(i => i.id === targetId);
-                if (itemToDelete && itemToDelete.pdfUrl) {
-                URL.revokeObjectURL(itemToDelete.pdfUrl);
-                }
+                    if (e.target.closest('.delete-history-btn')) { 
+                        e.stopPropagation(); 
+                        const targetId = parseInt(e.target.closest('.delete-history-btn').getAttribute('data-id')); 
+            
+                        const itemToDelete = sessionHistoryData.find(i => i.id === targetId);
+                        if (itemToDelete && itemToDelete.pdfUrl) {
+                            URL.revokeObjectURL(itemToDelete.pdfUrl);
+                        }
 
-                sessionHistoryData = sessionHistoryData.filter(i => i.id !== targetId); 
-                saveHistoryState(); 
-                renderHistoryItemsList(); 
-                return; 
-                }
-                    outputTextarea.value = cleanExtractedText(item.text); 
+                        sessionHistoryData = sessionHistoryData.filter(i => i.id !== targetId); 
+                        saveHistoryState(); 
+                        renderHistoryItemsList(); 
+                        return; 
+                    }
+                    if (outputTextarea) outputTextarea.value = cleanExtractedText(item.text); 
                     calculateTelemetryAnalysisMetrics(item.text);
                     if (item.pdfUrl) { 
                         searchablePdfBlobUrl = item.pdfUrl; 
-                        btnDownloadPdf.disabled = false; 
+                        if (btnDownloadPdf) btnDownloadPdf.disabled = false; 
                     }
-                    statusText.textContent = `Status: Restored structural data context files for: ${item.title}`;
+                    if (statusText) statusText.textContent = `Status: Restored structural data context files for: ${item.title}`;
                 });
                 historyListTarget.appendChild(div);
             });
         }
 
         function copyTextToClipboardEcosystem() {
-            if (!outputTextarea.value) return; 
+            if (!outputTextarea || !outputTextarea.value) return; 
             navigator.clipboard.writeText(outputTextarea.value);
             const btn = document.getElementById('btn-utility-copy'); 
+            if (!btn) return;
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-check" style="color: var(--success);"></i> Copied!`; 
+            btn.innerHTML = `<i class="fa-solid fa-check" style="color: var(--success);"></i>`; 
             setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
         }
 
-       async function executePdfDownloadAction() {
-    console.log("Generating Searchable (Sandwich) PDF...");
+        async function executePdfDownloadAction() {
+            console.log("Generating Searchable (Sandwich) PDF...");
 
-    try {
-        // 1. Ensure jsPDF is loaded
-        let PDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF || jsPDF;
-        if (!PDFClass) {
-            throw new Error("jsPDF library is not loaded.");
-        }
+            try {
+                let PDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF || jsPDF;
+                if (!PDFClass) {
+                    throw new Error("jsPDF library is not loaded.");
+                }
 
-        // 2. We need the original page images (saved as canvases during upload/preview processing)
-        // Ensure you have a global reference to your page canvases (e.g., loaded during the preview rendering)
-        if (!activeFileStream) {
-            alert("Please upload a document and run OCR first!");
-            return;
-        }
+                if (typeof activeFileStream === 'undefined' || !activeFileStream) {
+                    alert("Please upload a document and run OCR first!");
+                    return;
+                }
 
-        const doc = new PDFClass({
-            orientation: "portrait",
-            unit: "pt", // Points make scaling coordinate overlays much more accurate
-            format: "a4"
-        });
-
-        const pageWidth = doc.internal.pageSize.width; // A4 standard width in points: ~595pt
-        const pageHeight = doc.internal.pageSize.height; // A4 standard height in points: ~842pt
-
-        // Assuming you stored your processed canvas elements in an array during preview rendering:
-        // Let's call this array 'processedCanvasesArray' (fallback to standard page rendering if not available)
-        const canvasesToProcess = window.processedCanvasesArray || [];
-
-        if (canvasesToProcess.length === 0) {
-            alert("No document page images found to overlay. Please ensure your preview has loaded.");
-            return;
-        }
-
-        for (let pageNum = 0; pageNum < canvasesToProcess.length; pageNum++) {
-            if (pageNum > 0) {
-                doc.addPage();
-            }
-
-            const canvas = canvasesToProcess[pageNum];
-            const imgData = canvas.toDataURL("image/jpeg", 0.85);
-
-            // Draw the visual background (the exact uploaded document page)
-            doc.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight);
-
-            // 3. Extract word-by-word structural coordinates from Tesseract
-            // Note: During your active OCR pipeline run, you should save the Tesseract result object globally.
-            // Let's assume you save this in: window.lastOcrResults[pageNum]
-            const ocrResult = window.lastOcrResults && window.lastOcrResults[pageNum];
-            // 2. PASTE THESE LINES DIRECTLY HERE:
-        if (!window.lastOcrResults) {
-            window.lastOcrResults = [];
-        }
-        // Save the raw scan coordinates for this page index
-        window.lastOcrResults[i] = ocrResult.data;
-            if (ocrResult && ocrResult.words) {
-                // Set font details to match OCR scaling (typically Courier or Helvetica)
-                doc.setFont("Helvetica", "normal");
-                
-                // Set the Text Rendering Mode to 3 (invisible text layer)
-                // This makes the text highlightable and searchable, but completely transparent!
-                doc.saveGraphicsState();
-                
-                ocrResult.words.forEach(word => {
-                    const text = word.text;
-                    const bbox = word.bbox; // Tesseract bounding box coordinates: { x0, y0, x1, y1 }
-
-                    // Calculate scaling ratios from the original canvas dimensions to the A4 PDF page dimensions
-                    const scaleX = pageWidth / canvas.width;
-                    const scaleY = pageHeight / canvas.height;
-
-                    const wordX = bbox.x0 * scaleX;
-                    const wordY = bbox.y1 * scaleY; // jsPDF places text from the baseline, so use y1 (bottom)
-                    const wordWidth = (bbox.x1 - bbox.x0) * scaleX;
-                    const wordHeight = (bbox.y1 - bbox.y0) * scaleY;
-
-                    // Dynamically calculate font size based on the bounding box height
-                    const fontSize = wordHeight * 0.9; 
-                    doc.setFontSize(fontSize);
-
-                    // Place the text invisibly over the physical coordinates
-                    doc.text(text, wordX, wordY, {
-                        renderingMode: "invisible", // Magic setting that hides the text but keeps it copyable!
-                        maxWidth: wordWidth
-                    });
+                const doc = new PDFClass({
+                    orientation: "portrait",
+                    unit: "pt", 
+                    format: "a4"
                 });
-                
-                doc.restoreGraphicsState();
+
+                const pageWidth = doc.internal.pageSize.width; 
+                const pageHeight = doc.internal.pageSize.height; 
+                const canvasesToProcess = window.processedCanvasesArray || [];
+
+                if (canvasesToProcess.length === 0) {
+                    alert("No document page images found to overlay. Please ensure your preview has loaded.");
+                    return;
+                }
+
+                for (let pageNum = 0; pageNum < canvasesToProcess.length; pageNum++) {
+                    if (pageNum > 0) {
+                        doc.addPage();
+                    }
+
+                    const canvas = canvasesToProcess[pageNum];
+                    const imgData = canvas.toDataURL("image/jpeg", 0.85);
+
+                    // Render background layer
+                    doc.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight);
+
+                    // Read safely from the saved global registry using the correct loop index
+                    const ocrResult = window.lastOcrResults && window.lastOcrResults[pageNum];
+                    
+                    if (ocrResult && ocrResult.words) {
+                        doc.setFont("Helvetica", "normal");
+                        doc.saveGraphicsState();
+                        
+                        ocrResult.words.forEach(word => {
+                            const text = word.text;
+                            const bbox = word.bbox; 
+
+                            // Coordinate scaling transformations
+                            const scaleX = pageWidth / canvas.width;
+                            const scaleY = pageHeight / canvas.height;
+
+                            const wordX = bbox.x0 * scaleX;
+                            const wordY = bbox.y1 * scaleY; 
+                            const wordWidth = (bbox.x1 - bbox.x0) * scaleX;
+                            const wordHeight = (bbox.y1 - bbox.y0) * scaleY;
+
+                            const fontSize = wordHeight * 0.9; 
+                            doc.setFontSize(fontSize);
+
+                            // Overlay invisible text for text selection capabilities
+                            doc.text(text, wordX, wordY, {
+                                renderingMode: "invisible", 
+                                maxWidth: wordWidth
+                            });
+                        });
+                        
+                        doc.restoreGraphicsState();
+                    }
+                }
+
+                let fileName = `searchable-${activeFileStream.name.replace(/\.[^/.]+$/, "")}.pdf`;
+                doc.save(fileName);
+                console.log("Searchable PDF saved successfully!");
+
+            } catch (error) {
+                console.error("PDF generation failed:", error);
+                alert(`Failed to build searchable PDF: ${error.message}`);
             }
         }
 
-        // Save file name
-        let fileName = `searchable-${activeFileStream.name.replace(/\.[^/.]+$/, "")}.pdf`;
-        doc.save(fileName);
-        console.log("Searchable PDF saved successfully!");
-
-    } catch (error) {
-        console.error("PDF generation failed:", error);
-        alert(`Failed to build searchable PDF: ${error.message}`);
-    }
-}
         function downloadTextDataStreamFile(formatType) {
+            if (!outputTextarea) return;
             const outputTextPayload = outputTextarea.value; 
             if (!outputTextPayload.trim()) return;
             
@@ -1363,343 +1176,104 @@ togglePassViewBtn.addEventListener('click', () => {
             downloadLinkAnchor.click(); 
             document.body.removeChild(downloadLinkAnchor);
         }
-        // Connect user profile metadata contexts to outbound feedback forms
-        document.getElementById('feedback-form-element').addEventListener('submit', function (e) {
-            const currentUserSession = localStorage.getItem('docuscan_logged_session') || "unauthenticated_guest@domain.com";
-            document.getElementById('feedback-hidden-user-email').value = currentUserSession;
-            
-            // Short alert visual validation trick
-            alert("Routing telemetry report details to system administrator at ayynanwaheed2021@gmail.com...");
-        });
-        // --- SECURE USER SYSTEM FEEDBACK ACTION CHANNEL ---
-        // Dynamically processes inputs and opens a local message box bound to your inbox
-        const feedbackForm = document.getElementById('feedback-form-element');
-        if (feedbackForm) {
-            feedbackForm.addEventListener('submit', function (e) {
-                e.preventDefault();
-                
-                const senderName = document.getElementById('feedback-user-name').value.trim();
-                const senderEmail = document.getElementById('feedback-user-email').value.trim();
-                const messageBody = document.getElementById('feedback-message-input').value.trim();
-                
-                const developerTargetEmail = "ayynanwaheed2021@gmail.com";
-                const emailSubject = encodeURIComponent("DocuScan AI Pro - System Telemetry Feedback");
-                
-                const formattedBody = encodeURIComponent(
-                    "Sender Profile Name: " + senderName + "\n" +
-                    "Sender Return Contact: " + senderEmail + "\n\n" +
-                    "Report Details:\n" + messageBody
-                );
-                
-                // Directly triggers native client window link bypass arrays
-                window.location.href = `mailto:${developerTargetEmail}?subject=${emailSubject}&body=${formattedBody}`;
-                
-                alert("Redirecting to your mail provider to compile transmission to ayynanwaheed2021@gmail.com.");
-            });
-        }
-        // --- SECURE USER SYSTEM FEEDBACK ROUTING CHANNEL ---
-        // Listens for the form submission and reliably fires up the local mail application
-        // --- BACKGROUND FEEDBACK TRANSMISSION ENGINE ---
-        // --- BULLETPROOF BACKGROUND FEEDBACK DISPATCH MATRIX ---
-        // --- ABSOLUTE BACKGROUND FEEDBACK DISPATCH MATRIX ---
-        // --- FIXED BACKGROUND FEEDBACK DISPATCH ENGINE ---
-        const fbButton = document.getElementById('feedback-submit-btn');
-        if (fbButton) {
-            fbButton.addEventListener('click', () => {
-                const nameVal = document.getElementById('feedback-user-name').value.trim();
-                const emailVal = document.getElementById('feedback-user-email').value.trim();
-                const messageVal = document.getElementById('feedback-message-input').value.trim();
-                const statusTxt = document.getElementById('feedback-status-text');
 
-                // Simple Field Verification
-                if (!nameVal || !emailVal || !messageVal) {
-                    alert("Please fill in all feedback fields before dispatching.");
-                    return;
-                }
+        // --- SECURE USER SYSTEM FEEDBACK DISPATCH ENGINE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('docuscan-theme');
+            if (savedTheme === 'light') {
+                toggleThemePipeline();
+            }
+            renderHistoryItemsList();
 
-                // Show status layout text
-                statusTxt.style.display = "block";
-                statusTxt.style.color = "#3b82f6";
-                statusTxt.textContent = "Transmitting feedback quietly to developer inbox...";
-                fbButton.disabled = true;
+            const fbButton = document.getElementById('feedback-submit-btn');
+            if (fbButton) {
+                fbButton.addEventListener('click', () => {
+                    const nameVal = document.getElementById('feedback-user-name').value.trim();
+                    const emailVal = document.getElementById('feedback-user-email').value.trim();
+                    const messageVal = document.getElementById('feedback-message-input').value.trim();
+                    const statusTxt = document.getElementById('feedback-status-text');
 
-                // Create standard Form Data to bypass cross-origin browser blocks smoothly
-                const formPayload = new FormData();
-                formPayload.append("access_key", "cfbc07f6-127f-4305-ae8a-552a645d3ccb");
-                formPayload.append("subject", "DocuScan AI Pro - System Telemetry Feedback");
-                formPayload.append("name", nameVal);
-                formPayload.append("email", emailVal);
-                formPayload.append("message", messageVal);
-
-                fetch('https://api.web3forms.com/submit', {
-                    method: 'POST',
-                    body: formPayload
-                })
-                .then(async (response) => {
-                    if (response.status === 200 || response.ok) {
-                        statusTxt.style.color = "#10b981";
-                        statusTxt.textContent = "Feedback received seamlessly! Thank you.";
-                        
-                        // Clear inputs manually
-                        document.getElementById('feedback-user-name').value = "";
-                        document.getElementById('feedback-user-email').value = "";
-                        document.getElementById('feedback-message-input').value = "";
-                    } else {
-                        let json = await response.json();
-                        statusTxt.style.color = "#ef4444";
-                        statusTxt.textContent = json.message || "Transmission error encountered.";
+                    if (!nameVal || !emailVal || !messageVal) {
+                        alert("Please fill in all feedback fields before dispatching.");
+                        return;
                     }
-                })
-                .catch(error => {
-                    console.error("Transmission logs:", error);
-                    statusTxt.style.color = "#ef4444";
-                    statusTxt.textContent = "Network block bypassed. Retrying submit action...";
-                })
-                .then(() => {
-                    fbButton.disabled = false;
-                    setTimeout(() => {
-                        statusTxt.style.display = "none";
-                    }, 4000);
+
+                    if (statusTxt) {
+                        statusTxt.style.display = "block";
+                        statusTxt.style.color = "#3b82f6";
+                        statusTxt.textContent = "Transmitting feedback quietly to developer inbox...";
+                    }
+                    fbButton.disabled = true;
+
+                    const formPayload = new FormData();
+                    formPayload.append("access_key", "cfbc07f6-127f-4305-ae8a-552a645d3ccb");
+                    formPayload.append("subject", "DocuScan AI Pro - System Telemetry Feedback");
+                    formPayload.append("name", nameVal);
+                    formPayload.append("email", emailVal);
+                    formPayload.append("message", messageVal);
+
+                    fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        body: formPayload
+                    })
+                    .then(async (response) => {
+                        if (response.ok) {
+                            if (statusTxt) {
+                                statusTxt.style.color = "#10b981";
+                                statusTxt.textContent = "Feedback received seamlessly! Thank you.";
+                            }
+                            document.getElementById('feedback-user-name').value = "";
+                            document.getElementById('feedback-user-email').value = "";
+                            document.getElementById('feedback-message-input').value = "";
+                        } else {
+                            let json = await response.json();
+                            if (statusTxt) {
+                                statusTxt.style.color = "#ef4444";
+                                statusTxt.textContent = json.message || "Transmission error encountered.";
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Transmission logs:", error);
+                        if (statusTxt) {
+                            statusTxt.style.color = "#ef4444";
+                            statusTxt.textContent = "Network error encountered.";
+                        }
+                    })
+                    .then(() => {
+                        fbButton.disabled = false;
+                        setTimeout(() => {
+                            if (statusTxt) statusTxt.style.display = "none";
+                        }, 4000);
+                    });
                 });
-            });
-        }
-// --- ADVANCED OCR TEXT SANITIZATION FILTER ---
-function cleanExtractedText(rawText) {
-    if (!rawText) return "";
-    
-    return rawText
-        // 1. Strips out weird system symbols and unreadable character blocks
-        .replace(/[^\x20-\x7E\t\n\r]/g, "") 
-        // 2. Cleans up massive accidental spaces or layout gaps
-        .replace(/ {3,}/g, " ")
-        // 3. Removes empty, useless line breaks
-        .replace(/\n\s*\n/g, '\n')
-        .trim();
-}
-function toggleFeedbackWidget() {
-    const card = document.getElementById('app-feedback-card');
-    if (card.style.display === 'none' || card.style.display === '') {
-        card.style.display = 'block';
-    } else {
-        card.style.display = 'none';
-    }
-}
-// Keep theme state persistent on refresh
-document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('docuscan-theme');
-    if (savedTheme === 'light') {
-        toggleThemePipeline();
-    }
-});
-function abortOcrOperation() {
-    // 1. Set the global flag to true to immediately kill background loop calculations
-    isOcrCancelled = true;
-
-    // 2. Click your native clear button to discard file stream memory registries
-    const clearBtn = document.getElementById('btn-clear-stream');
-    if (clearBtn) {
-        clearBtn.click(); 
-    }
-
-    // 3. Re-lock the execution button back to disabled status
-    const convertBtn = document.getElementById('convert-btn');
-    if (convertBtn) {
-        convertBtn.disabled = true;
-    }
-
-    // 4. Force override all visual elements using your exact class names from the screenshot
-    // (Targeting the status bar wrapper text and the blue moving bar)
-    const statusText = document.querySelector('[style*="Status:"]') || document.getElementById('status-text-element') || document.querySelector('.document-intake-column div[style*="justify-content"] span:first-child');
-    const progressPercentText = document.querySelector('.document-intake-column div[style*="justify-content"] span:last-child');
-    const progressBar = document.querySelector('div[style*="width: 46%"]') || document.querySelector('.document-intake-column div[style*="background"] div');
-
-    // Hard reset UI elements back to default initialization settings
-    if (statusText) {
-        statusText.textContent = "Status: Systems initialized";
-    }
-    if (progressPercentText) {
-        progressPercentText.textContent = "0%";
-    }
-    if (progressBar) {
-        progressBar.style.width = "0%";
-    }
-}
-function clearOutputMatrixField() {
-    // 1. Target your exact text box using its script variable
-    if (outputTextarea) {
-        outputTextarea.value = "";
-    }
-
-    // 2. Call your native calculation function with empty text!
-    // This instantly forces mWords to "0", mChars to "0", and mTime to "0s" safely.
-    calculateTelemetryAnalysisMetrics("");
-}
-// Add or combine this helper if your code uses custom tracker variables:
-function updateOutputMatrixMetricsCounterBlock(currentTextString) {
-    // If your code has a native update function for word count, call it with ""
-    // Otherwise, we force reset the specific text nodes on the dashboard:
-    
-    // Find the wrapper holding your numeric highlights (0, 0, 0s)
-    const panels = document.querySelectorAll('div');
-    panels.forEach(panel => {
-        if (panel.textContent.includes('WORDS') && panel.textContent.includes('CHARACTERS')) {
-            const numbers = panel.querySelectorAll('div, span, h3, p');
-            // Force values to absolute base values
-            if (numbers.length >= 3) {
-                numbers[0].textContent = "0";
-                numbers[1].textContent = "0";
-                numbers[2].textContent = "0s";
             }
+        });
+
+        function cleanExtractedText(rawText) {
+            if (!rawText) return "";
+            return rawText
+                .replace(/[^\x20-\x7E\t\n\r]/g, "") 
+                .replace(/ {3,}/g, " ")
+                .replace(/\n\s*\n/g, '\n')
+                .trim();
         }
-    });
-}
 
-// Generates structural scrollable image thumbnails for your page previews inside the strip viewport
-let currentPreviewIndex = 1;
-let totalPreviewPages = 0;
-let loadedPdfDocumentInstance = null; // Caches PDF instance for speedy flips
-let currentLoadedImageFile = null;
-// Main logic routing entry for previews
-let targetedPreviewPagesArray = []; // Stores only the pages matching your dropdown/input configuration
-let currentPreviewQueueIndex = 0;   // Keeps track of where we are inside the matching array sequence
-loadedPdfDocumentInstance = null;
-
-// Helper function to calculate matching page targets based on filter dropdown structures
-function calculateTargetedPagesArray() {
-    if (!loadedPdfDocumentInstance) return [];
-    
-    const totalPagesCount = loadedPdfDocumentInstance.numPages;
-    let list = [];
-    const executionSelectionMode = document.getElementById('page-range-selector').value;
-
-    if (executionSelectionMode === 'all') {
-        for (let p = 1; p <= totalPagesCount; p++) list.push(p);
-    } else if (executionSelectionMode === 'odd') {
-        for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 !== 0) list.push(p); }
-    } else if (executionSelectionMode === 'even') {
-        for (let p = 1; p <= totalPagesCount; p++) { if (p % 2 === 0) list.push(p); }
-    } else if (executionSelectionMode === 'custom') {
-        const rawInputStr = document.getElementById('custom-page-string').value;
-        if (rawInputStr.trim()) {
-            rawInputStr.split(',').forEach(part => {
-                if (part.includes('-')) {
-                    const [start, end] = part.split('-').map(Number);
-                    for (let p = start; p <= end; p++) { if (p >= 1 && p <= totalPagesCount) list.push(p); }
-                } else {
-                    const num = Number(part.trim());
-                    if (num && num >= 1 && num <= totalPagesCount) list.push(num);
-                }
-            });
+        function toggleFeedbackWidget() {
+            const card = document.getElementById('app-feedback-card');
+            if (!card) return;
+            card.style.display = (card.style.display === 'none' || card.style.display === '') ? 'flex' : 'none';
         }
-    }
 
-    // Fallback block: default to all pages if selection arrays evaluate empty
-    if (list.length === 0) {
-        for (let p = 1; p <= totalPagesCount; p++) list.push(p);
-    }
-    return list;
-}
-function handlePageRangeSelectionChange() {
-    const selector = document.getElementById('page-range-selector');
-    const customInput = document.getElementById('custom-range-input-container');
-    if (customInput) {
-        customInput.style.display = selector.value === 'custom' ? 'block' : 'none';
-    }
-
-    // Re-render and limit preview window constraints instantly if a file is active
-    if (activeFileStream && activeFileType === "application/pdf") {
-        targetedPreviewPagesArray = calculateTargetedPagesArray();
-        currentPreviewQueueIndex = 0; // Reset focus to first page in the valid subset
-        if (targetedPreviewPagesArray.length > 0) {
-            renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
+        function abortOcrOperation() {
+            isOcrCancelled = true;
+            clearActiveWorkspaceEnvironment();
         }
-    }
-}
-// Setup primary container frameworks upon direct ingestion sequences
-async function initializeDocumentPreviewEngine(file) {
-    const viewportBox = document.getElementById('preview-viewport-box');
-    const navControls = document.getElementById('preview-nav-controls');
-    if (!viewportBox) return;
 
-    viewportBox.innerHTML = "";
-    currentPreviewQueueIndex = 0;
-
-    if (file.type === "application/pdf") {
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-            loadedPdfDocumentInstance = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            
-            // Build the initial filtered target array pool mapping structure
-            targetedPreviewPagesArray = calculateTargetedPagesArray();
-            
-            navControls.style.display = "flex";
-            if (targetedPreviewPagesArray.length > 0) {
-                renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
-            }
-        } catch (err) {
-            console.error("Preview configuration failed:", err);
+        function clearOutputMatrixField() {
+            if (outputTextarea) outputTextarea.value = "";
+            calculateTelemetryAnalysisMetrics("");
         }
-    } else if (file.type.startsWith("image/")) {
-        loadedPdfDocumentInstance = null;
-        targetedPreviewPagesArray = [1];
-        navControls.style.display = "flex";
-        
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
-        img.style.cssText = "max-height: 120px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);";
-        viewportBox.appendChild(img);
-        
-        document.getElementById('lbl-preview-page-counter').textContent = "Page 1 / 1";
-    }
-}
-
-// Renders page previews visually inside the framework canvas
-async function renderSinglePdfPagePreview(pageNum) {
-    if (!loadedPdfDocumentInstance) return;
-    const viewportBox = document.getElementById('preview-viewport-box');
-    viewportBox.innerHTML = ""; 
-
-    try {
-        const page = await loadedPdfDocumentInstance.getPage(pageNum);
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const viewport = page.getViewport({ scale: 0.4 }); 
-        
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        canvas.style.cssText = "border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);";
-        
-        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-        viewportBox.appendChild(canvas);
-
-        // Displays actual Document Page index vs where it ranks in the selection pipeline array length context
-        document.getElementById('lbl-preview-page-counter').textContent = `Page ${pageNum} (Queue: ${currentPreviewQueueIndex + 1}/${targetedPreviewPagesArray.length})`;
-    } catch (err) {
-        console.error("Single page render target crash:", err);
-    }
-}
-
-// Flips forward and backward within the restricted collection limits securely
-function navigatePreviewPage(direction) {
-    if (!loadedPdfDocumentInstance || !targetedPreviewPagesArray || targetedPreviewPagesArray.length === 0) {
-        return;
-    }
-    
-    let targetIndex = currentPreviewQueueIndex + direction;
-    if (targetIndex >= 0 && targetIndex < targetedPreviewPagesArray.length) {
-        currentPreviewQueueIndex = targetIndex;
-        renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
-    }
-}
-document.getElementById('custom-page-string').addEventListener('input', () => {
-    if (activeFileStream && activeFileType === "application/pdf") {
-        targetedPreviewPagesArray = calculateTargetedPagesArray();
-        currentPreviewQueueIndex = 0;
-        if (targetedPreviewPagesArray.length > 0) {
-            renderSinglePdfPagePreview(targetedPreviewPagesArray[currentPreviewQueueIndex]);
-        }
-    }
-});
     </script>
 </body>
 </html>
