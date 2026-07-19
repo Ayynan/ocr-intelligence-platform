@@ -1100,8 +1100,7 @@ togglePassViewBtn.addEventListener('click', () => {
             }
             const { data: { text } } = await worker.recognize(sourceAsset);
             comprehensiveTextCompilation = text;
-            if (!window.lastOcrResults) window.lastOcrResults = [];
-            window.lastOcrResults[pageNum] = data;
+            
             // --- FIXED PROBLEM 2: CONVERTED SINGLE IMAGE BLOB AS WELL ---
             const blob = new Blob([comprehensiveTextCompilation], { type: 'text/plain' });
             searchablePdfBlobUrl = URL.createObjectURL(blob);
