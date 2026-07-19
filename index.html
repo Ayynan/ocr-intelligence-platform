@@ -13,7 +13,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --bg-base: #090d16;
@@ -1101,7 +1100,8 @@ togglePassViewBtn.addEventListener('click', () => {
             }
             const { data: { text } } = await worker.recognize(sourceAsset);
             comprehensiveTextCompilation = text;
-            
+            if (!window.lastOcrResults) window.lastOcrResults = [];
+            window.lastOcrResults[pageNum] = data;
             // --- FIXED PROBLEM 2: CONVERTED SINGLE IMAGE BLOB AS WELL ---
             const blob = new Blob([comprehensiveTextCompilation], { type: 'text/plain' });
             searchablePdfBlobUrl = URL.createObjectURL(blob);
@@ -1113,8 +1113,7 @@ togglePassViewBtn.addEventListener('click', () => {
         calculateTelemetryAnalysisMetrics(comprehensiveTextCompilation);
         appendEntryToSessionHistory(activeFileStream.name, comprehensiveTextCompilation, searchablePdfBlobUrl);
         
-        const pdfBtn = document.getElementById('btn-utility-download-pdf');
-if (pdfBtn) pdfBtn.disabled = false;
+        btnDownloadPdf.disabled = false;
         statusText.textContent = "Status: Pipeline processing successful!";
         progressBar.style.width = "100%";
         progressPercent.textContent = "100%";
@@ -1243,14 +1242,12 @@ if (pdfBtn) pdfBtn.disabled = false;
     console.log("Generating Searchable (Sandwich) PDF...");
 
     try {
-        // 1. Ensure jsPDF is loaded
+        // Fallback to safely find your original jsPDF instance from your first two CDN tags
         let PDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF || jsPDF;
         if (!PDFClass) {
             throw new Error("jsPDF library is not loaded.");
         }
 
-        // 2. We need the original page images (saved as canvases during upload/preview processing)
-        // Ensure you have a global reference to your page canvases (e.g., loaded during the preview rendering)
         if (!activeFileStream) {
             alert("Please upload a document and run OCR first!");
             return;
@@ -1258,15 +1255,13 @@ if (pdfBtn) pdfBtn.disabled = false;
 
         const doc = new PDFClass({
             orientation: "portrait",
-            unit: "pt", // Points make scaling coordinate overlays much more accurate
+            unit: "pt", // Points make scaling coordinate overlays accurate
             format: "a4"
         });
 
-        const pageWidth = doc.internal.pageSize.width; // A4 standard width in points: ~595pt
-        const pageHeight = doc.internal.pageSize.height; // A4 standard height in points: ~842pt
+        const pageWidth = doc.internal.pageSize.width; // A4 standard width: ~595pt
+        const pageHeight = doc.internal.pageSize.height; // A4 standard height: ~842pt
 
-        // Assuming you stored your processed canvas elements in an array during preview rendering:
-        // Let's call this array 'processedCanvasesArray' (fallback to standard page rendering if not available)
         const canvasesToProcess = window.processedCanvasesArray || [];
 
         if (canvasesToProcess.length === 0) {
@@ -1280,58 +1275,51 @@ if (pdfBtn) pdfBtn.disabled = false;
             }
 
             const canvas = canvasesToProcess[pageNum];
-            const imgData = canvas.toDataURL("image/jpeg", 0.85);
+            const imgData = canvas.toDataURL("image/jpeg", 1.0); // High quality background render
 
-            // Draw the visual background (the exact uploaded document page)
+            // Draw the visual background page cleanly
             doc.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight);
 
-            // 3. Extract word-by-word structural coordinates from Tesseract
-            // Note: During your active OCR pipeline run, you should save the Tesseract result object globally.
-            // Let's assume you save this in: window.lastOcrResults[pageNum]
-            const ocrResult = window.lastOcrResults && window.lastOcrResults[pageNum];
-            // 2. PASTE THESE LINES DIRECTLY HERE:
-        if (!window.lastOcrResults) {
-            window.lastOcrResults = [];
-        }
-        // Save the raw scan coordinates for this page index
-        window.lastOcrResults[i] = ocrResult.data;
-            if (ocrResult && ocrResult.words) {
-                // Set font details to match OCR scaling (typically Courier or Helvetica)
-                doc.setFont("Helvetica", "normal");
+            // Access saved global Tesseract results safely
+            if (window.lastOcrResults && window.lastOcrResults[pageNum]) {
+                const ocrResult = window.lastOcrResults[pageNum];
                 
-                // Set the Text Rendering Mode to 3 (invisible text layer)
-                // This makes the text highlightable and searchable, but completely transparent!
-                doc.saveGraphicsState();
-                
-                ocrResult.words.forEach(word => {
-                    const text = word.text;
-                    const bbox = word.bbox; // Tesseract bounding box coordinates: { x0, y0, x1, y1 }
+                // Read word structures directly from the data properties
+                const wordsArray = ocrResult.words || (ocrResult.data && ocrResult.data.words);
 
-                    // Calculate scaling ratios from the original canvas dimensions to the A4 PDF page dimensions
-                    const scaleX = pageWidth / canvas.width;
-                    const scaleY = pageHeight / canvas.height;
+                if (wordsArray) {
+                    doc.setFont("Helvetica", "normal");
+                    doc.saveGraphicsState();
+                    
+                    wordsArray.forEach(word => {
+                        const text = word.text;
+                        const bbox = word.bbox; // { x0, y0, x1, y1 }
 
-                    const wordX = bbox.x0 * scaleX;
-                    const wordY = bbox.y1 * scaleY; // jsPDF places text from the baseline, so use y1 (bottom)
-                    const wordWidth = (bbox.x1 - bbox.x0) * scaleX;
-                    const wordHeight = (bbox.y1 - bbox.y0) * scaleY;
+                        // Calculate translation ratios from raw canvas to standard A4 document sizes
+                        const scaleX = pageWidth / canvas.width;
+                        const scaleY = pageHeight / canvas.height;
 
-                    // Dynamically calculate font size based on the bounding box height
-                    const fontSize = wordHeight * 0.9; 
-                    doc.setFontSize(fontSize);
+                        const wordX = bbox.x0 * scaleX;
+                        const wordY = bbox.bbox ? (bbox.y1 * scaleY) : (bbox.y1 * scaleY); 
+                        const wordWidth = (bbox.x1 - bbox.x0) * scaleX;
+                        const wordHeight = (bbox.y1 - bbox.y0) * scaleY;
 
-                    // Place the text invisibly over the physical coordinates
-                    doc.text(text, wordX, wordY, {
-                        renderingMode: "invisible", // Magic setting that hides the text but keeps it copyable!
-                        maxWidth: wordWidth
+                        // Dynamically scale font size to bound heights
+                        const fontSize = wordHeight * 0.85; 
+                        doc.setFontSize(fontSize);
+
+                        // Overlay text layer invisibly over physical coordinates to allow highlighting
+                        doc.text(text, wordX, wordY, {
+                            renderingMode: "invisible", 
+                            maxWidth: wordWidth
+                        });
                     });
-                });
-                
-                doc.restoreGraphicsState();
+                    
+                    doc.restoreGraphicsState();
+                }
             }
         }
 
-        // Save file name
         let fileName = `searchable-${activeFileStream.name.replace(/\.[^/.]+$/, "")}.pdf`;
         doc.save(fileName);
         console.log("Searchable PDF saved successfully!");
@@ -1491,10 +1479,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedTheme === 'light') {
         toggleThemePipeline();
     }
-    const pdfBtn = document.getElementById('btn-utility-download-pdf');
-if (pdfBtn) {
-    pdfBtn.addEventListener('click', executePdfDownloadAction);
-}
 });
 function abortOcrOperation() {
     // 1. Set the global flag to true to immediately kill background loop calculations
