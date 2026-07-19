@@ -1113,7 +1113,8 @@ togglePassViewBtn.addEventListener('click', () => {
         calculateTelemetryAnalysisMetrics(comprehensiveTextCompilation);
         appendEntryToSessionHistory(activeFileStream.name, comprehensiveTextCompilation, searchablePdfBlobUrl);
         
-        btnDownloadPdf.disabled = false;
+        const pdfBtn = document.getElementById('btn-utility-download-pdf');
+if (pdfBtn) pdfBtn.disabled = false;
         statusText.textContent = "Status: Pipeline processing successful!";
         progressBar.style.width = "100%";
         progressPercent.textContent = "100%";
@@ -1490,6 +1491,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedTheme === 'light') {
         toggleThemePipeline();
     }
+    const pdfBtn = document.getElementById('btn-utility-download-pdf');
+if (pdfBtn) {
+    pdfBtn.addEventListener('click', executePdfDownloadAction);
+}
 });
 function abortOcrOperation() {
     // 1. Set the global flag to true to immediately kill background loop calculations
