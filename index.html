@@ -1238,7 +1238,7 @@ togglePassViewBtn.addEventListener('click', () => {
             setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
         }
 
-       async function executePdfDownloadAction() {
+async function executePdfDownloadAction() {
     console.log("Generating Searchable (Sandwich) PDF...");
 
     try {
@@ -1288,12 +1288,7 @@ togglePassViewBtn.addEventListener('click', () => {
             // Note: During your active OCR pipeline run, you should save the Tesseract result object globally.
             // Let's assume you save this in: window.lastOcrResults[pageNum]
             const ocrResult = window.lastOcrResults && window.lastOcrResults[pageNum];
-            // 2. PASTE THESE LINES DIRECTLY HERE:
-        if (!window.lastOcrResults) {
-            window.lastOcrResults = [];
-        }
-        // Save the raw scan coordinates for this page index
-        window.lastOcrResults[i] = ocrResult.data;
+
             if (ocrResult && ocrResult.words) {
                 // Set font details to match OCR scaling (typically Courier or Helvetica)
                 doc.setFont("Helvetica", "normal");
