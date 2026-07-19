@@ -1279,16 +1279,18 @@ async function runOcrProcessingPipelineSystemMatrix() {
             // 1. Spoof the active stream file metadata object structure so the generator validates
             activeFileStream = { name: item.title };
 
-            // 2. RESTORE THE CRITICAL SELECTION DATA ARRAYS MATCHING APPENDFUNCTION KEYS EXACTLY
-            window.processedCanvasesArray = item.processedCanvases ? [...item.processedCanvases] : [];
-            window.lastOcrResults = item.ocrResults ? [...item.ocrResults] : [];
+            // 2. SAFE MATCHING: Read either the new names OR fall back to your old names
+            const savedCanvases = item.processedCanvases || item.runtimeCanvases || [];
+            const savedOcrResults = item.ocrResults || item.runtimeOcrResults || [];
+
+            window.processedCanvasesArray = [...savedCanvases];
+            window.lastOcrResults = [...savedOcrResults];
 
             statusText.textContent = `Status: Restored structural data context files for: ${item.title}`;
         });
         historyListTarget.appendChild(div);
     });
 }
-
         function copyTextToClipboardEcosystem() {
             if (!outputTextarea.value) return; 
             navigator.clipboard.writeText(outputTextarea.value);
