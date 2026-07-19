@@ -1140,13 +1140,8 @@ togglePassViewBtn.addEventListener('click', () => {
 
         outputTextarea.value = comprehensiveTextCompilation;
         calculateTelemetryAnalysisMetrics(comprehensiveTextCompilation);
-        appendEntryToSessionHistory(
-        activeFileStream.name, 
-        comprehensiveTextCompilation, 
-        searchablePdfBlobUrl, 
-        [...window.processedCanvasesArray], 
-        [...window.lastOcrResults]
-        );
+        appendEntryToSessionHistory(activeFileStream.name, comprehensiveTextCompilation, searchablePdfBlobUrl);
+        
         btnDownloadPdf.disabled = false;
         statusText.textContent = "Status: Pipeline processing successful!";
         progressBar.style.width = "100%";
@@ -1207,22 +1202,18 @@ togglePassViewBtn.addEventListener('click', () => {
             mTime.textContent = `${Math.ceil((wordsCount / 200) * 60)}s`;
         }
 
-        function appendEntryToSessionHistory(title, content, pdfUrl, savedCanvases = [], savedOcrResults = []) {
-        const newHistoryItemNode = { 
-        id: Date.now(), 
-        title: title, 
-        text: content, 
-        pdfUrl: pdfUrl, 
-        canvases: savedCanvases,      // Store a snapshot of the visual canvas array
-        ocrResults: savedOcrResults,  // Store a snapshot of the raw coordinates array
-        timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
-        };
-
-        sessionHistoryData.unshift(newHistoryItemNode); 
-        if (sessionHistoryData.length > 10) sessionHistoryData.pop();
-    
-        saveHistoryState(); 
-        renderHistoryItemsList();
+        function appendEntryToSessionHistory(title, content, pdfUrl) {
+            const newHistoryItemNode = { 
+                id: Date.now(), 
+                title: title, 
+                text: content, 
+                pdfUrl: pdfUrl, 
+                timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+            };
+            sessionHistoryData.unshift(newHistoryItemNode); 
+            if (sessionHistoryData.length > 10) sessionHistoryData.pop();
+            saveHistoryState(); 
+            renderHistoryItemsList();
         }
 
         function saveHistoryState() { 
