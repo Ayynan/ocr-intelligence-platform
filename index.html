@@ -980,6 +980,10 @@ togglePassViewBtn.addEventListener('click', () => {
             
             statusText.textContent = `Status: Deep scanning multi-page architecture (0/${targetedPagesArray.length})`;
             
+            // Initialize global memory slots to catch page assets for the download function
+            window.processedCanvasesArray = [];
+            window.lastOcrResults = [];
+
             // Native looping system grid to iterate across all targeted document blocks
             for (let i = 0; i < targetedPagesArray.length; i++) {
                 let targetPageIndex = targetedPagesArray[i];
@@ -1020,10 +1024,16 @@ togglePassViewBtn.addEventListener('click', () => {
                     processingSource = await applyContrastEnhancementFilterMatrix(canvas, true);
                 }
                 
+                // Save this page's visual canvas into memory for the background PDF layer
+                window.processedCanvasesArray.push(processingSource);
+
                 const dataImgUrl = processingSource.toDataURL('image/jpeg');
                 
                 // --- PROBLEM 1 REFINED: LINE-BY-LINE MATRIX SCRUBBING ---
                 const { data } = await worker.recognize(dataImgUrl);
+                
+                // Save the raw word token map before scrubbing text strings for the viewport textarea
+                window.lastOcrResults.push(data);
                 
                 let cleanedPageText = "";
                 
@@ -1099,8 +1109,27 @@ togglePassViewBtn.addEventListener('click', () => {
             if (filterToggle.checked) { 
                 sourceAsset = await applyContrastEnhancementFilterMatrix(activeFileStream); 
             }
-            const { data: { text } } = await worker.recognize(sourceAsset);
-            comprehensiveTextCompilation = text;
+            const { data } = await worker.recognize(sourceAsset);
+            comprehensiveTextCompilation = data.text;
+            
+            // Save single image parameters globally to maintain uniform workflow logic execution
+            window.processedCanvasesArray = [];
+            window.lastOcrResults = [data];
+            
+            // Convert file object to a canvas mapping if it's run via single file stream upload channels
+            const imageCanvas = document.createElement('canvas');
+            const imageCtx = imageCanvas.getContext('2d');
+            const imgElement = new Image();
+            imgElement.src = URL.createObjectURL(sourceAsset);
+            await new Promise(resolve => {
+                imgElement.onload = () => {
+                    imageCanvas.width = imgElement.width;
+                    imageCanvas.height = imgElement.height;
+                    imageCtx.drawImage(imgElement, 0, 0);
+                    window.processedCanvasesArray.push(imageCanvas);
+                    resolve();
+                };
+            });
             
             // --- FIXED PROBLEM 2: CONVERTED SINGLE IMAGE BLOB AS WELL ---
             const blob = new Blob([comprehensiveTextCompilation], { type: 'text/plain' });
@@ -1248,31 +1277,30 @@ async function executePdfDownloadAction() {
             throw new Error("jsPDF library is not loaded.");
         }
 
-        // 2. We need the original page images (saved as canvases during upload/preview processing)
-        // Ensure you have a global reference to your page canvases (e.g., loaded during the preview rendering)
         if (!activeFileStream) {
             alert("Please upload a document and run OCR first!");
             return;
         }
 
+        // Initialize jsPDF container using points (pt) for precise geometric text-overlay alignment
         const doc = new PDFClass({
             orientation: "portrait",
-            unit: "pt", // Points make scaling coordinate overlays much more accurate
+            unit: "pt", 
             format: "a4"
         });
 
-        const pageWidth = doc.internal.pageSize.width; // A4 standard width in points: ~595pt
+        const pageWidth = doc.internal.pageSize.width;   // A4 standard width in points: ~595pt
         const pageHeight = doc.internal.pageSize.height; // A4 standard height in points: ~842pt
 
-        // Assuming you stored your processed canvas elements in an array during preview rendering:
-        // Let's call this array 'processedCanvasesArray' (fallback to standard page rendering if not available)
+        // Grab the globally cached page images saved during the active OCR loop
         const canvasesToProcess = window.processedCanvasesArray || [];
 
         if (canvasesToProcess.length === 0) {
-            alert("No document page images found to overlay. Please ensure your preview has loaded.");
+            alert("No processed document page assets found. Please run the OCR pipeline first.");
             return;
         }
 
+        // Loop through each processed page to assemble the visual and text layers
         for (let pageNum = 0; pageNum < canvasesToProcess.length; pageNum++) {
             if (pageNum > 0) {
                 doc.addPage();
@@ -1281,27 +1309,23 @@ async function executePdfDownloadAction() {
             const canvas = canvasesToProcess[pageNum];
             const imgData = canvas.toDataURL("image/jpeg", 0.85);
 
-            // Draw the visual background (the exact uploaded document page)
+            // Draw the visual background (the exact processed document page image)
             doc.addImage(imgData, "JPEG", 0, 0, pageWidth, pageHeight);
 
-            // 3. Extract word-by-word structural coordinates from Tesseract
-            // Note: During your active OCR pipeline run, you should save the Tesseract result object globally.
-            // Let's assume you save this in: window.lastOcrResults[pageNum]
+            // Extract the matching word-by-word structural coordinates from your global data store
             const ocrResult = window.lastOcrResults && window.lastOcrResults[pageNum];
 
             if (ocrResult && ocrResult.words) {
-                // Set font details to match OCR scaling (typically Courier or Helvetica)
                 doc.setFont("Helvetica", "normal");
                 
-                // Set the Text Rendering Mode to 3 (invisible text layer)
-                // This makes the text highlightable and searchable, but completely transparent!
+                // Isolate graphics state modifications to protect layout scaling
                 doc.saveGraphicsState();
                 
                 ocrResult.words.forEach(word => {
                     const text = word.text;
                     const bbox = word.bbox; // Tesseract bounding box coordinates: { x0, y0, x1, y1 }
 
-                    // Calculate scaling ratios from the original canvas dimensions to the A4 PDF page dimensions
+                    // Calculate scaling ratios from raw canvas dimensions to the A4 PDF page boundaries
                     const scaleX = pageWidth / canvas.width;
                     const scaleY = pageHeight / canvas.height;
 
@@ -1310,13 +1334,13 @@ async function executePdfDownloadAction() {
                     const wordWidth = (bbox.x1 - bbox.x0) * scaleX;
                     const wordHeight = (bbox.y1 - bbox.y0) * scaleY;
 
-                    // Dynamically calculate font size based on the bounding box height
+                    // Dynamically calculate font size based on bounding box height matrix
                     const fontSize = wordHeight * 0.9; 
                     doc.setFontSize(fontSize);
 
-                    // Place the text invisibly over the physical coordinates
+                    // Place the text layer invisibly over the exact physical coordinate blocks
                     doc.text(text, wordX, wordY, {
-                        renderingMode: "invisible", // Magic setting that hides the text but keeps it copyable!
+                        renderingMode: "invisible", // Hides the text layer visually while keeping it copyable and searchable!
                         maxWidth: wordWidth
                     });
                 });
@@ -1325,10 +1349,10 @@ async function executePdfDownloadAction() {
             }
         }
 
-        // Save file name
+        // Sanitize and save the file asset container safely
         let fileName = `searchable-${activeFileStream.name.replace(/\.[^/.]+$/, "")}.pdf`;
         doc.save(fileName);
-        console.log("Searchable PDF saved successfully!");
+        console.log("Searchable PDF sandwich architecture compiled and saved successfully!");
 
     } catch (error) {
         console.error("PDF generation failed:", error);
