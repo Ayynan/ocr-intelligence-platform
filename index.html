@@ -933,10 +933,6 @@ async function runOcrProcessingPipelineSystemMatrix() {
     outputTextarea.value = "";
     let comprehensiveTextCompilation = "";
     
-    // Clear and initialize global memory slots uniformly before tracking assets
-    window.processedCanvasesArray = [];
-    window.lastOcrResults = [];
-    
     try {
         const worker = await Tesseract.createWorker('eng', 1, {
             logger: m => {
@@ -983,6 +979,10 @@ async function runOcrProcessingPipelineSystemMatrix() {
             }
             
             statusText.textContent = `Status: Deep scanning multi-page architecture (0/${targetedPagesArray.length})`;
+            
+            // Initialize global memory slots to catch page assets for the download function
+            window.processedCanvasesArray = [];
+            window.lastOcrResults = [];
 
             // Native looping system grid to iterate across all targeted document blocks
             for (let i = 0; i < targetedPagesArray.length; i++) {
@@ -995,6 +995,7 @@ async function runOcrProcessingPipelineSystemMatrix() {
                     statusText.textContent = "Status: Systems initialized";
                     progressBar.style.width = "0%";
                     progressPercent.textContent = "0%";
+    
                     break; // Exits the loop safely
                 }
                 
@@ -1005,7 +1006,6 @@ async function runOcrProcessingPipelineSystemMatrix() {
                     // Only show the complex batch layout if you're processing a custom chunk (like 8-26)
                     statusText.textContent = `Status: Compiling data maps (${i + 1}/${targetedPagesArray.length}) [Doc Page ${targetPageIndex}]...`;
                 }
-                
                 // Calculate progress percentage accurately based on pages processed
                 const currentLoopPct = Math.round(((i + 1) / targetedPagesArray.length) * 100);
                 progressBar.style.width = `${currentLoopPct}%`;
@@ -1029,10 +1029,10 @@ async function runOcrProcessingPipelineSystemMatrix() {
 
                 const dataImgUrl = processingSource.toDataURL('image/jpeg');
                 
-                // --- LINE-BY-LINE MATRIX SCRUBBING ---
+                // --- PROBLEM 1 REFINED: LINE-BY-LINE MATRIX SCRUBBING ---
                 const { data } = await worker.recognize(dataImgUrl);
                 
-                // Save the raw word token map safely inside global scope tracks
+                // Save the raw word token map before scrubbing text strings for the viewport textarea
                 window.lastOcrResults.push(data);
                 
                 let cleanedPageText = "";
@@ -1058,7 +1058,9 @@ async function runOcrProcessingPipelineSystemMatrix() {
                     const upperCaseCount = (trimmedLine.match(/[A-Z]/g) || []).length;
                     const lowerCaseCount = (trimmedLine.match(/[a-z]/g) || []).length;
 
-                    // FILTER LOGIC MATCHING YOUR SPECIFICATION: 
+                    // FILTER LOGIC: 
+                    // - A real sentence line must have real word clusters (more words than isolated single letters).
+                    // - It shouldn't be dominated by random capital blocks (caps shouldn't outnumber lowercase lines significantly in prose).
                     if (realWordCount >= singleCharCount && (upperCaseCount <= lowerCaseCount || lowerCaseCount > 5)) {
                         cleanedPageText += line + "\n";
                     } else {
@@ -1076,40 +1078,33 @@ async function runOcrProcessingPipelineSystemMatrix() {
             
             statusText.textContent = "Status: Building valid PDF architecture...";
                     
-            // Safe fallback compilation instance initialization for jsPDF
-            let PDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF || jsPDF;
-            if (!PDFClass) {
-                throw new Error("jsPDF library context configuration missing.");
-            }
-            
-            const doc = new PDFClass({
-                orientation: "portrait",
-                unit: "mm",
-                format: "a4"
-            });
+                    // 1. Initialize a genuine, structural jsPDF container
+                    const doc = new jsPDF({
+                        orientation: "portrait",
+                        unit: "mm",
+                        format: "a4"
+                    });
 
-            // Wrap your extracted text so it folds clean inside a structural A4 layout
-            const splitText = doc.splitTextToSize(comprehensiveTextCompilation, 180);
-            let yAxisPos = 20;
-            const pageHeight = doc.internal.pageSize.height;
+                    // 2. Wrap your extracted text so it folds clean inside a structural A4 layout
+                    const splitText = doc.splitTextToSize(comprehensiveTextCompilation, 180);
+                    let yAxisPos = 20;
+                    const pageHeight = doc.internal.pageSize.height;
 
-            // Systematically stamp the strings page by page
-            for (let lineIndex = 0; lineIndex < splitText.length; lineIndex++) {
-                if (yAxisPos > pageHeight - 20) {
-                    doc.addPage();
-                    yAxisPos = 20; // Re-align cursor height to the top margin of the new page
-                }
-                doc.text(splitText[lineIndex], 15, yAxisPos);
-                yAxisPos += 7; // Line grid height spacing
-            }
+                    // 3. Systematically stamp the strings page by page
+                    for (let lineIndex = 0; lineIndex < splitText.length; lineIndex++) {
+                        if (yAxisPos > pageHeight - 20) {
+                            doc.addPage();
+                            yAxisPos = 20; // Re-align cursor height to the top margin of the new page
+                        }
+                        doc.text(splitText[lineIndex], 15, yAxisPos);
+                        yAxisPos += 7; // Line grid height spacing
+                    }
 
-            // Output a completely valid binary file asset
-            const realPdfBlob = doc.output('blob');
-            searchablePdfBlobUrl = URL.createObjectURL(realPdfBlob);
+                    // 4. Output a completely valid binary file asset
+                    const realPdfBlob = doc.output('blob');
+                    searchablePdfBlobUrl = URL.createObjectURL(realPdfBlob);
 
         } else {
-            // --- SINGLE IMAGE SCAN MODE ---
-            statusText.textContent = "Status: Parsing local image matrix layers...";
             let sourceAsset = activeFileStream;
             if (filterToggle.checked) { 
                 sourceAsset = await applyContrastEnhancementFilterMatrix(activeFileStream); 
@@ -1117,8 +1112,9 @@ async function runOcrProcessingPipelineSystemMatrix() {
             const { data } = await worker.recognize(sourceAsset);
             comprehensiveTextCompilation = data.text;
             
-            // Clean array insertion logic to protect indices down the stream 
-            window.lastOcrResults.push(data);
+            // Save single image parameters globally to maintain uniform workflow logic execution
+            window.processedCanvasesArray = [];
+            window.lastOcrResults = [data];
             
             // Convert file object to a canvas mapping if it's run via single file stream upload channels
             const imageCanvas = document.createElement('canvas');
@@ -1135,6 +1131,7 @@ async function runOcrProcessingPipelineSystemMatrix() {
                 };
             });
             
+            // --- FIXED PROBLEM 2: CONVERTED SINGLE IMAGE BLOB AS WELL ---
             const blob = new Blob([comprehensiveTextCompilation], { type: 'text/plain' });
             searchablePdfBlobUrl = URL.createObjectURL(blob);
         }
@@ -1143,16 +1140,13 @@ async function runOcrProcessingPipelineSystemMatrix() {
 
         outputTextarea.value = comprehensiveTextCompilation;
         calculateTelemetryAnalysisMetrics(comprehensiveTextCompilation);
-        
-        // Pass complete structural layout snapshot copies cleanly to memory historical tracks
         appendEntryToSessionHistory(
-            activeFileStream.name, 
-            comprehensiveTextCompilation, 
-            searchablePdfBlobUrl, 
-            [...window.processedCanvasesArray], 
-            [...window.lastOcrResults]
+        activeFileStream.name, 
+        comprehensiveTextCompilation, 
+        searchablePdfBlobUrl, 
+        [...window.processedCanvasesArray], 
+        [...window.lastOcrResults]
         );
-        
         btnDownloadPdf.disabled = false;
         statusText.textContent = "Status: Pipeline processing successful!";
         progressBar.style.width = "100%";
@@ -1241,56 +1235,54 @@ async function runOcrProcessingPipelineSystemMatrix() {
         }
 
         function renderHistoryItemsList() {
-    historyListTarget.innerHTML = "";
-    if (sessionHistoryData.length === 0) { 
-        historyListTarget.innerHTML = `<div class="empty-history">No logged workspace files inside memory storage registry channels</div>`; 
-        return; 
-    }
-    sessionHistoryData.forEach(item => {
-        const div = document.createElement('div'); 
-        div.className = "history-item";
-        div.innerHTML = `<h4>${item.title}</h4><span>Compiled structure layout architecture at ${item.timestamp}</span><button class="delete-history-btn" data-id="${item.id}"><i class="fa-solid fa-trash-can"></i></button>`;
-        div.addEventListener('click', (e) => {
-            if (e.target.closest('.delete-history-btn')) { 
-                e.stopPropagation(); 
-                const targetId = parseInt(e.target.closest('.delete-history-btn').getAttribute('data-id')); 
-    
-                // Clean up allocated browser memory before deleting
-                const itemToDelete = sessionHistoryData.find(i => i.id === targetId);
-                if (itemToDelete && itemToDelete.pdfUrl) {
-                    URL.revokeObjectURL(itemToDelete.pdfUrl);
-                }
-
-                sessionHistoryData = sessionHistoryData.filter(i => i.id !== targetId); 
-                saveHistoryState(); 
-                renderHistoryItemsList(); 
+            historyListTarget.innerHTML = "";
+            if (sessionHistoryData.length === 0) { 
+                historyListTarget.innerHTML = `<div class="empty-history">No logged workspace files inside memory storage registry channels</div>`; 
                 return; 
             }
+            sessionHistoryData.forEach(item => {
+                const div = document.createElement('div'); 
+                div.className = "history-item";
+                div.innerHTML = `<h4>${item.title}</h4><span>Compiled structure layout architecture at ${item.timestamp}</span><button class="delete-history-btn" data-id="${item.id}"><i class="fa-solid fa-trash-can"></i></button>`;
+                div.addEventListener('click', (e) => {
+                    if (e.target.closest('.delete-history-btn')) { 
+                        e.stopPropagation(); 
+                        const targetId = parseInt(e.target.closest('.delete-history-btn').getAttribute('data-id')); 
             
-            // --- RESTORING ACTIVE STATE ACTIONS CONTAINER ---
-            outputTextarea.value = cleanExtractedText(item.text); 
-            calculateTelemetryAnalysisMetrics(item.text);
-            
-            if (item.pdfUrl) { 
-                searchablePdfBlobUrl = item.pdfUrl; 
-                btnDownloadPdf.disabled = false; 
-            }
-            
-            // 1. Spoof the active stream file metadata object structure so the generator validates
-            activeFileStream = { name: item.title };
+                        // Clean up allocated browser memory before deleting
+                        const itemToDelete = sessionHistoryData.find(i => i.id === targetId);
+                        if (itemToDelete && itemToDelete.pdfUrl) {
+                            URL.revokeObjectURL(itemToDelete.pdfUrl);
+                        }
 
-            // 2. SAFE MATCHING: Read either the new names OR fall back to your old names
-            const savedCanvases = item.processedCanvases || item.runtimeCanvases || [];
-            const savedOcrResults = item.ocrResults || item.runtimeOcrResults || [];
+                        sessionHistoryData = sessionHistoryData.filter(i => i.id !== targetId); 
+                        saveHistoryState(); 
+                        renderHistoryItemsList(); 
+                        return; 
+                    }
+                    
+                    // --- RESTORING ACTIVE STATE ACTIONS CONTAINER ---
+                    outputTextarea.value = cleanExtractedText(item.text); 
+                    calculateTelemetryAnalysisMetrics(item.text);
+                    
+                    if (item.pdfUrl) { 
+                        searchablePdfBlobUrl = item.pdfUrl; 
+                        btnDownloadPdf.disabled = false; 
+                    }
+                    
+                    // 1. Spoof the active stream file metadata object structure so the generator validates
+                    activeFileStream = { name: item.title };
 
-            window.processedCanvasesArray = [...savedCanvases];
-            window.lastOcrResults = [...savedOcrResults];
+                    // 2. RESTORE THE CRITICAL SELECTION DATA ARRAYS FROM CURRENT TAB RUNTIME SESSION
+                    window.processedCanvasesArray = item.runtimeCanvases || [];
+                    window.lastOcrResults = item.runtimeOcrResults || [];
 
-            statusText.textContent = `Status: Restored structural data context files for: ${item.title}`;
-        });
-        historyListTarget.appendChild(div);
-    });
-}
+                    statusText.textContent = `Status: Restored structural data context files for: ${item.title}`;
+                });
+                historyListTarget.appendChild(div);
+            });
+        }
+
         function copyTextToClipboardEcosystem() {
             if (!outputTextarea.value) return; 
             navigator.clipboard.writeText(outputTextarea.value);
