@@ -1245,38 +1245,27 @@ togglePassViewBtn.addEventListener('click', () => {
                 div.className = "history-item";
                 div.innerHTML = `<h4>${item.title}</h4><span>Compiled structure layout architecture at ${item.timestamp}</span><button class="delete-history-btn" data-id="${item.id}"><i class="fa-solid fa-trash-can"></i></button>`;
                 div.addEventListener('click', (e) => {
-                    if (e.target.closest('.delete-history-btn')) { 
-                        e.stopPropagation(); 
-                        const targetId = parseInt(e.target.closest('.delete-history-btn').getAttribute('data-id')); 
-            
-                        // Clean up allocated browser memory before deleting
-                        const itemToDelete = sessionHistoryData.find(i => i.id === targetId);
-                        if (itemToDelete && itemToDelete.pdfUrl) {
-                            URL.revokeObjectURL(itemToDelete.pdfUrl);
-                        }
+                if (e.target.closest('.delete-history-btn')) { 
+                e.stopPropagation(); 
+                const targetId = parseInt(e.target.closest('.delete-history-btn').getAttribute('data-id')); 
+    
+                // Clean up allocated browser memory before deleting
+                const itemToDelete = sessionHistoryData.find(i => i.id === targetId);
+                if (itemToDelete && itemToDelete.pdfUrl) {
+                URL.revokeObjectURL(itemToDelete.pdfUrl);
+                }
 
-                        sessionHistoryData = sessionHistoryData.filter(i => i.id !== targetId); 
-                        saveHistoryState(); 
-                        renderHistoryItemsList(); 
-                        return; 
-                    }
-                    
-                    // --- RESTORING ACTIVE STATE ACTIONS CONTAINER ---
+                sessionHistoryData = sessionHistoryData.filter(i => i.id !== targetId); 
+                saveHistoryState(); 
+                renderHistoryItemsList(); 
+                return; 
+                }
                     outputTextarea.value = cleanExtractedText(item.text); 
                     calculateTelemetryAnalysisMetrics(item.text);
-                    
                     if (item.pdfUrl) { 
                         searchablePdfBlobUrl = item.pdfUrl; 
                         btnDownloadPdf.disabled = false; 
                     }
-                    
-                    // 1. Spoof the active stream file metadata object structure so the generator validates
-                    activeFileStream = { name: item.title };
-
-                    // 2. RESTORE THE CRITICAL SELECTION DATA ARRAYS FROM CURRENT TAB RUNTIME SESSION
-                    window.processedCanvasesArray = item.runtimeCanvases || [];
-                    window.lastOcrResults = item.runtimeOcrResults || [];
-
                     statusText.textContent = `Status: Restored structural data context files for: ${item.title}`;
                 });
                 historyListTarget.appendChild(div);
