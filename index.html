@@ -1207,27 +1207,18 @@ togglePassViewBtn.addEventListener('click', () => {
             mTime.textContent = `${Math.ceil((wordsCount / 200) * 60)}s`;
         }
 
-        function appendEntryToSessionHistory(title, content, pdfUrl, savedCanvases = [], savedOcrResults = []) {
-        // 1. Create your standard clean text node for localStorage
-        const newHistoryItemNode = { 
-        id: Date.now(), 
-        title: title, 
-        text: content, 
-        pdfUrl: pdfUrl, 
-        timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
-        };
-
-        // 2. Attach the heavy runtime assets directly to the object *without* stringifying them
-        newHistoryItemNode.runtimeCanvases = savedCanvases;
-        newHistoryItemNode.runtimeOcrResults = savedOcrResults;
-
-        // 3. Run your standard array updating sequence
-        sessionHistoryData.unshift(newHistoryItemNode); 
-        if (sessionHistoryData.length > 10) sessionHistoryData.pop();
-    
-        // This will now pass completely fine without throwing an allocation or element error!
-        saveHistoryState(); 
-        renderHistoryItemsList();
+        function appendEntryToSessionHistory(title, content, pdfUrl) {
+            const newHistoryItemNode = { 
+                id: Date.now(), 
+                title: title, 
+                text: content, 
+                pdfUrl: pdfUrl, 
+                timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+            };
+            sessionHistoryData.unshift(newHistoryItemNode); 
+            if (sessionHistoryData.length > 10) sessionHistoryData.pop();
+            saveHistoryState(); 
+            renderHistoryItemsList();
         }
 
         function saveHistoryState() { 
