@@ -351,9 +351,9 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
 /* Universal Button Styling (Fixes default white button look) */
 .nav-btn,
 .global-navbar .nav-btn {
-    background: rgba(255, 255, 255, 0.05) !important; /* Forces dark button bg */
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #94a3b8 !important;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
     padding: 8px 16px;
     border-radius: 8px;
     font-size: 0.85rem;
@@ -361,25 +361,24 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
     white-space: nowrap;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease-in-out;
 }
 
-/* Hover State */
+/* Hover State: Subtle highlight for inactive buttons */
 .nav-btn:hover,
 .global-navbar .nav-btn:hover {
-    color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff;
+    background: rgba(59, 130, 246, 0.2); /* Faint blue hover glow */
+    border-color: rgba(59, 130, 246, 0.4);
 }
 
-/* Active Highlighted State (Solid Blue) */
+/* Active State: STRICTLY blue ONLY for the current active page */
 .nav-btn.active,
 .global-navbar .nav-btn.active {
     color: #ffffff !important;
-    background: #3b82f6 !important; /* Solid blue active tab */
+    background: #3b82f6 !important; /* Solid blue active indicator */
     border-color: #3b82f6 !important;
 }
 /* User Profile Badge (Supports both class names) */
@@ -456,25 +455,32 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     padding: 12px 24px;
     border-radius: 8px;
     font-weight: 600;
+    font-size: 0.9rem;
     cursor: pointer;
-    border: none;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: transform 0.2s;
+    transition: all 0.2s ease-in-out;
 }
 
-.hero-btn.primary { 
-    background: var(--primary, #3b82f6); 
-    color: #fff; 
+/* Default state for hero buttons (Sleek dark look) */
+.hero-btn.secondary,
+.hero-btn.primary {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.hero-btn.secondary { 
-    background: rgba(255, 255, 255, 0.08); 
-    color: #fff; 
-    border: 1px solid rgba(255, 255, 255, 0.15); 
+/* Hover state: Both hero buttons react and turn vibrant blue on hover */
+.hero-btn:hover,
+.hero-btn.primary:hover,
+.hero-btn.secondary:hover {
+    background: #3b82f6 !important; /* Turns blue on hover */
+    color: #ffffff !important;
+    border-color: #3b82f6 !important;
+    transform: translateY(-2px); /* Subtle lift effect */
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
-
 .feature-cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -515,16 +521,16 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
             
     
     <nav class="nav-links">
-        <button class="nav-btn active" onclick="switchToolView('home-view')">
+        <button class="nav-btn active" data-view="home-view" onclick="switchToolView('home-view')">
             <i class="fa-solid fa-house"></i> Home
         </button>
-        <button class="nav-btn" onclick="switchToolView('ocr-view')">
+        <button class="nav-btn" data-view="ocr-view" onclick="switchToolView('ocr-view')">
             <i class="fa-solid fa-file-contract"></i> OCR Tool
         </button>
-        <button class="nav-btn" onclick="switchToolView('editor-view')">
+        <button class="nav-btn" data-view="editor-view" onclick="switchToolView('editor-view')">
             <i class="fa-solid fa-image"></i> Image Editor
         </button>
-        <button class="nav-btn" onclick="switchToolView('ai-view')">
+        <button class="nav-btn" data-view="ai-view" onclick="switchToolView('ai-view')">
             <i class="fa-solid fa-robot"></i> Ask AI
         </button>
     </nav>
@@ -607,14 +613,21 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
             <h1>Extract, Edit & Analyze Documents with <span class="accent-text">DocuScan AI</span></h1>
             <p>Convert non-searchable PDFs, images, and raw scans into structured editable text. Clean image shadows, export directly to Word or PDF, and consult AI insights instantly.</p>
             
-            <div class="hero-actions">
-                <button class="hero-btn primary" onclick="switchToolView('ocr-view')">
-                    <i class="fa-solid fa-bolt"></i> Launch OCR Pipeline
-                </button>
-                <button class="hero-btn secondary" onclick="switchToolView('ai-view')">
-                    <i class="fa-solid fa-robot"></i> Explore AI Assistant
-                </button>
-            </div>
+        <div class="hero-actions">
+            <button class="hero-btn primary" onclick="switchToolView('ocr-view')">
+            <i class="fa-solid fa-bolt"></i> Launch OCR Pipeline
+            </button>
+
+            <!-- NEW: Image Editor Button -->
+            <button class="hero-btn secondary" onclick="switchToolView('editor-view')">
+            <i class="fa-solid fa-image"></i> Image Editor
+            </button>
+
+            <button class="hero-btn secondary" onclick="switchToolView('ai-view')">
+            <i class="fa-solid fa-robot"></i> Explore AI Assistant
+            </button>
+        </div>
+        
         </div>
 
         <!-- FEATURE CARDS GRID -->
