@@ -343,9 +343,10 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: nowrap; /* Prevents icons and text from stacking vertically */
+    flex-wrap: nowrap;
+    margin-left: auto;  /* Pushes buttons away from the left logo */
+    margin-right: auto; /* Keeps buttons perfectly centered */
 }
-
 /* Universal Button Styling Across All Views */
 /* Universal Button Styling (Fixes default white button look) */
 .nav-btn,
@@ -503,8 +504,12 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
             <div class="logo-area">
                 <div class="logo-icon"><i class="fa-solid fa-file-invoice" style="color: white;"></i></div>
                 <div>
-                    <h1>DocuScan AI <span class="badge">v3.5 Max</span></h1>
-                    <p>Intelligent Document Processing & AI Analysis Suite</p>
+                    <h1 style="font-size: 1.1rem; margin: 0; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                        DocuScan AI <span class="badge">v3.5 Max</span>
+                    </h1>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin: 0;">
+                        Intelligent Document Processing & AI Analysis Suite
+                    </p>
                 </div>
             </div>
             
