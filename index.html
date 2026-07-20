@@ -500,11 +500,15 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
 </head>
 <body class="logged-out">
 
-    <header class="global-navbar">
-    <div class="nav-brand">
-        <i class="fa-solid fa-file-invoice"></i>
-        <span>DocuScan AI</span>
-    </div>
+    <header>
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-file-invoice" style="color: white;"></i></div>
+                <div>
+                    <h1>DocuScan AI <span class="badge">v3.5 Max</span></h1>
+                    <p>All-in-One Multi-Page Preserver & Raw Text Extraction Terminal</p>
+                </div>
+            </div>
+            
     
     <nav class="nav-links">
         <button class="nav-btn active" onclick="switchToolView('home-view')">
@@ -521,12 +525,47 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
         </button>
     </nav>
 
-    <!-- USER INFO IN NAVBAR -->
-    <div class="nav-user-profile" id="nav-profile-badge">
-        <i class="fa-solid fa-circle-user"></i>
-        <span id="nav-username-display">Guest Account</span>
+    <div class="user-profile-badge" id="profile-container-node">
+    <div class="profile-badge-trigger" id="profile-trigger-btn">
+        <i class="fa-solid fa-circle-user" style="color: var(--primary);"></i> 
+        <span id="lbl-display-username">Guest Account</span>
+        <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; color: var(--text-secondary);"></i>
     </div>
-</header>
+    
+    <div class="user-settings-dropdown" id="dropdown-settings-panel">
+        <div class="dropdown-section-title">Account Profiles</div>
+        
+        <div class="dropdown-input-wrapper">
+            <label>Profile Name</label>
+            <input type="text" id="settings-username-field" class="dropdown-field" placeholder="Username">
+        </div>
+        
+        <div class="dropdown-input-wrapper">
+            <label>Access Password</label>
+            <div class="password-wrapper">
+                <input type="password" id="settings-password-field" class="dropdown-field" placeholder="••••••••">
+                <button type="button" class="toggle-password-visibility" id="btn-toggle-settings-pass" style="font-size: 0.8rem;">
+                    <i class="fa-regular fa-eye" id="settings-pass-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <button class="dropdown-save-btn" id="btn-save-settings">Update Configuration</button>
+
+        <div class="dropdown-section-title">Ecosystem Controls</div>
+        
+        <div class="toggle-row" style="padding: 6px 0; background: transparent; border: none;">
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">Core Image Enhancer</span>
+            <label class="switch" style="transform: scale(0.85);">
+                <input type="checkbox" id="dropdown-filter-toggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <button class="dropdown-logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit Workspace</button>
+    </div>
+</div>
+        </header>
 
     <div class="auth-overlay" id="auth-shield-gateway">
         <div class="auth-card">
@@ -599,55 +638,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
 
 <main id="ocr-view" class="app-tool-view" style="display: none;">
     <div class="app-layout">
-        <header>
-            <div class="logo-area">
-                <div class="logo-icon"><i class="fa-solid fa-file-invoice" style="color: white;"></i></div>
-                <div>
-                    <h1>DocuScan AI <span class="badge">v3.5 Max</span></h1>
-                    <p>All-in-One Multi-Page Preserver & Raw Text Extraction Terminal</p>
-                </div>
-            </div>
-            <div class="user-profile-badge" id="profile-container-node">
-    <div class="profile-badge-trigger" id="profile-trigger-btn">
-        <i class="fa-solid fa-circle-user" style="color: var(--primary);"></i> 
-        <span id="lbl-display-username">Guest Account</span>
-        <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; color: var(--text-secondary);"></i>
-    </div>
-    
-    <div class="user-settings-dropdown" id="dropdown-settings-panel">
-        <div class="dropdown-section-title">Account Profiles</div>
         
-        <div class="dropdown-input-wrapper">
-            <label>Profile Name</label>
-            <input type="text" id="settings-username-field" class="dropdown-field" placeholder="Username">
-        </div>
-        
-        <div class="dropdown-input-wrapper">
-            <label>Access Password</label>
-            <div class="password-wrapper">
-                <input type="password" id="settings-password-field" class="dropdown-field" placeholder="••••••••">
-                <button type="button" class="toggle-password-visibility" id="btn-toggle-settings-pass" style="font-size: 0.8rem;">
-                    <i class="fa-regular fa-eye" id="settings-pass-eye"></i>
-                </button>
-            </div>
-        </div>
-
-        <button class="dropdown-save-btn" id="btn-save-settings">Update Configuration</button>
-
-        <div class="dropdown-section-title">Ecosystem Controls</div>
-        
-        <div class="toggle-row" style="padding: 6px 0; background: transparent; border: none;">
-            <span style="font-size: 0.8rem; color: var(--text-secondary);">Core Image Enhancer</span>
-            <label class="switch" style="transform: scale(0.85);">
-                <input type="checkbox" id="dropdown-filter-toggle" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <button class="dropdown-logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit Workspace</button>
-    </div>
-</div>
-        </header>
 
         <div class="main-grid">
             
