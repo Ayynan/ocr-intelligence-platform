@@ -372,26 +372,27 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
 <body class="logged-out">
 
     <header class="global-navbar">
-        <div class="nav-brand">
-            <i class="fa-solid fa-layer-group"></i>
-            <span>AYYNAN CODES</span>
-        </div>
-        
-        <nav class="nav-links">
-            <button class="nav-btn active" onclick="switchToolView('home-view')">
-                <i class="fa-solid fa-house"></i> Home
-            </button>
-            <button class="nav-btn" onclick="switchToolView('ocr-view')">
-                <i class="fa-solid fa-file-contract"></i> OCR Tool
-            </button>
-            <button class="nav-btn" onclick="switchToolView('editor-view')">
-                <i class="fa-solid fa-image"></i> Image Editor
-            </button>
-            <button class="nav-btn" onclick="switchToolView('ai-view')">
-                <i class="fa-solid fa-robot"></i> Ask AI
-            </button>
-        </nav>
-    </header>
+    <div class="nav-brand">
+        <!-- Icon & Brand Title updated to match DocuScan AI -->
+        <i class="fa-solid fa-file-invoice"></i>
+        <span>DocuScan AI</span>
+    </div>
+    
+    <nav class="nav-links">
+        <button class="nav-btn active" onclick="switchToolView('home-view')">
+            <i class="fa-solid fa-house"></i> Home
+        </button>
+        <button class="nav-btn" onclick="switchToolView('ocr-view')">
+            <i class="fa-solid fa-file-contract"></i> OCR Tool
+        </button>
+        <button class="nav-btn" onclick="switchToolView('editor-view')">
+            <i class="fa-solid fa-image"></i> Image Editor
+        </button>
+        <button class="nav-btn" onclick="switchToolView('ai-view')">
+            <i class="fa-solid fa-robot"></i> Ask AI
+        </button>
+    </nav>
+</header>
 
     <div class="auth-overlay" id="auth-shield-gateway">
         <div class="auth-card">
