@@ -347,10 +347,12 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
 }
 
 /* Universal Button Styling Across All Views */
+/* Universal Button Styling (Fixes default white button look) */
+.nav-btn,
 .global-navbar .nav-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary, #94a3b8);
+    background: rgba(255, 255, 255, 0.05) !important; /* Forces dark button bg */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #94a3b8 !important;
     padding: 8px 16px;
     border-radius: 8px;
     font-size: 0.85rem;
@@ -360,21 +362,25 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    white-space: nowrap; /* Keeps icon and text side-by-side */
+    white-space: nowrap;
     transition: all 0.2s ease;
 }
 
+/* Hover State */
+.nav-btn:hover,
 .global-navbar .nav-btn:hover {
-    color: var(--text-primary, #ffffff);
-    background: var(--bg-surface-elevated, rgba(255, 255, 255, 0.05));
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
+/* Active Highlighted State (Solid Blue) */
+.nav-btn.active,
 .global-navbar .nav-btn.active {
-    color: #ffffff;
-    background: var(--primary, #3b82f6);
-    font-weight: 600;
+    color: #ffffff !important;
+    background: #3b82f6 !important; /* Solid blue active tab */
+    border-color: #3b82f6 !important;
 }
-
 /* User Profile Badge (Supports both class names) */
 .nav-user-profile,
 .user-profile-badge,
