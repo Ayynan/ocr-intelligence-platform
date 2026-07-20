@@ -307,10 +307,91 @@ body.light-mode textarea::placeholder {
 body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     color: #475569 !important;
 }
+/* GLOBAL NAVIGATION BAR STYLES */
+.global-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 30px;
+    margin: -30px -30px 24px -30px; /* Aligns flush to screen edges */
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.nav-brand i {
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-surface-elevated);
+}
+
+.nav-btn.active {
+    color: white;
+    background: var(--primary);
+}
+
+/* APP VIEW CONTAINER WRAPPERS */
+.app-tool-view {
+    width: 100%;
+}
     </style>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body class="logged-out">
+
+    <header class="global-navbar">
+        <div class="nav-brand">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>AYYNAN CODES</span>
+        </div>
+        
+        <nav class="nav-links">
+            <button class="nav-btn active" onclick="switchToolView('home-view')">
+                <i class="fa-solid fa-house"></i> Home
+            </button>
+            <button class="nav-btn" onclick="switchToolView('ocr-view')">
+                <i class="fa-solid fa-file-contract"></i> OCR Tool
+            </button>
+            <button class="nav-btn" onclick="switchToolView('editor-view')">
+                <i class="fa-solid fa-image"></i> Image Editor
+            </button>
+            <button class="nav-btn" onclick="switchToolView('ai-view')">
+                <i class="fa-solid fa-robot"></i> Ask AI
+            </button>
+        </nav>
+    </header>
 
     <div class="auth-overlay" id="auth-shield-gateway">
         <div class="auth-card">
@@ -339,7 +420,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
             </div>
         </div>
     </div>
-
+<main id="ocr-view" class="app-tool-view">
     <div class="app-layout">
         <header>
             <div class="logo-area">
@@ -515,6 +596,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
                     <textarea id="output" placeholder="Raw editable text extraction layer will populate inside this viewport framework..." readonly></textarea>
                 </div>
             </div>
+</main>
 <div id="feedback-toggle-btn" onclick="toggleFeedbackWidget()" style="position: fixed; bottom: 20px; right: 20px; width: 48px; height: 48px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); z-index: 10000; transition: transform 0.2s, background 0.2s;">
     <i class="fa-solid fa-comment-dots" style="color: #ffffff; font-size: 1.3rem;"></i>
 </div>
