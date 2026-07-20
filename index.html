@@ -2033,6 +2033,21 @@ function switchToolView(targetViewId) {
         }
     });
 }
+// Example inside your existing Update Settings button event listener:
+document.getElementById('btn-save-settings').addEventListener('click', function () {
+    const newUsername = document.getElementById('settings-username-field').value.trim();
+    
+    if (newUsername !== "") {
+        // Updates the profile badge in the OCR view header
+        document.getElementById('lbl-display-username').innerText = newUsername;
+        
+        // Updates the top global navbar profile tag (if present)
+        const navUserDisplay = document.getElementById('nav-username-display');
+        if (navUserDisplay) {
+            navUserDisplay.innerText = newUsername;
+        }
+    }
+});
 // Ensure the page always starts cleanly on the Home View when reloaded
 document.addEventListener('DOMContentLoaded', function () {
     switchToolView('home-view');
