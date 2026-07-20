@@ -597,7 +597,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     </section>
 </main>
 
-<main id="ocr-view" class="app-tool-view">
+<main id="ocr-view" class="app-tool-view" style="display: none;">
     <div class="app-layout">
         <header>
             <div class="logo-area">
@@ -2033,6 +2033,10 @@ function switchToolView(targetViewId) {
         }
     });
 }
+// Ensure the page always starts cleanly on the Home View when reloaded
+document.addEventListener('DOMContentLoaded', function () {
+    switchToolView('home-view');
+});
     </script>
 </body>
 </html>
