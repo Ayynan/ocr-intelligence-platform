@@ -307,16 +307,21 @@ body.light-mode textarea::placeholder {
 body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     color: #475569 !important;
 }
-/* GLOBAL NAVIGATION BAR STYLES */
+/* ==========================================================================
+   GLOBAL NAVIGATION BAR
+   ========================================================================== */
+
 .global-navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface, #0f172a);
+    border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
     padding: 14px 30px;
     margin: -30px -30px 24px -30px; /* Aligns flush to screen edges */
     gap: 16px;
+    min-height: 70px;
+    box-sizing: border-box;
 }
 
 .nav-brand {
@@ -325,59 +330,55 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     gap: 10px;
     font-weight: 700;
     font-size: 1.1rem;
-    color: var(--text-primary);
+    color: var(--text-primary, #ffffff);
+    flex-shrink: 0;
 }
 
 .nav-brand i {
-    color: var(--primary);
+    color: var(--primary, #3b82f6);
     font-size: 1.2rem;
 }
 
 .nav-links {
     display: flex;
+    align-items: center;
     gap: 8px;
+    flex-wrap: nowrap; /* Prevents icons and text from stacking vertically */
 }
 
-.nav-btn {
+/* Universal Button Styling Across All Views */
+.global-navbar .nav-btn {
     background: transparent;
     border: none;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #94a3b8);
     padding: 8px 16px;
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
+    white-space: nowrap; /* Keeps icon and text side-by-side */
     transition: all 0.2s ease;
 }
 
-.nav-btn:hover {
-    color: var(--text-primary);
-    background: var(--bg-surface-elevated);
+.global-navbar .nav-btn:hover {
+    color: var(--text-primary, #ffffff);
+    background: var(--bg-surface-elevated, rgba(255, 255, 255, 0.05));
 }
 
-.nav-btn.active {
-    color: white;
-    background: var(--primary);
+.global-navbar .nav-btn.active {
+    color: #ffffff;
+    background: var(--primary, #3b82f6);
+    font-weight: 600;
 }
 
-/* APP VIEW CONTAINER WRAPPERS */
-.app-tool-view {
-    width: 100%;
-}
-/* Global Navbar Adjustments */
-.global-navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 24px;
-    background: #0f172a;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.nav-user-profile {
+/* User Profile Badge (Supports both class names) */
+.nav-user-profile,
+.user-profile-badge,
+#profile-container-node {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -385,13 +386,23 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     font-size: 0.85rem;
     font-weight: 500;
     background: rgba(255, 255, 255, 0.05);
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    margin-left: 16px;
+    margin-left: auto;
+    white-space: nowrap;
+    cursor: pointer;
 }
 
-/* Hero Section / Landing */
+
+/* ==========================================================================
+   APP TOOL VIEWS & HERO LANDING SECTION
+   ========================================================================== */
+
+.app-tool-view {
+    width: 100%;
+}
+
 .hero-section {
     max-width: 1100px;
     margin: 40px auto;
@@ -417,7 +428,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
 }
 
 .accent-text {
-    color: #3b82f6;
+    color: var(--primary, #3b82f6);
 }
 
 .hero-content p {
@@ -446,8 +457,16 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
     transition: transform 0.2s;
 }
 
-.hero-btn.primary { background: #3b82f6; color: #fff; }
-.hero-btn.secondary { background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid rgba(255, 255, 255, 0.15); }
+.hero-btn.primary { 
+    background: var(--primary, #3b82f6); 
+    color: #fff; 
+}
+
+.hero-btn.secondary { 
+    background: rgba(255, 255, 255, 0.08); 
+    color: #fff; 
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+}
 
 .feature-cards-grid {
     display: grid;
@@ -466,36 +485,8 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
 
 .card-icon {
     font-size: 1.5rem;
-    color: #3b82f6;
+    color: var(--primary, #3b82f6);
     margin-bottom: 12px;
-}
-/* Top Navbar Button Base Style */
-.global-navbar .nav-btn {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* Hover State */
-.global-navbar .nav-btn:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-/* Active Highlighted Tab */
-.global-navbar .nav-btn.active {
-    color: #3b82f6;
-    background: rgba(59, 130, 246, 0.15);
-    font-weight: 600;
 }
     </style>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -507,7 +498,7 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
                 <div class="logo-icon"><i class="fa-solid fa-file-invoice" style="color: white;"></i></div>
                 <div>
                     <h1>DocuScan AI <span class="badge">v3.5 Max</span></h1>
-                    <p>All-in-One Multi-Page Preserver & Raw Text Extraction Terminal</p>
+                    <p>Intelligent Document Processing & AI Analysis Suite</p>
                 </div>
             </div>
             
