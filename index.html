@@ -2119,13 +2119,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Sync state across header UI
   onAuthStateChanged(auth, (user) => {
-    if (user) {
-      if (authShield) authShield.style.display = 'none';
-      if (displayUserLabel) displayUserLabel.textContent = user.email.split('@')[0];
-    } else {
-      if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
-    }
+  if (user) {
+    // Add logged-in class to body to unblur the UI
+    document.body.classList.add('logged-in');
+    document.body.classList.remove('logged-out');
+
+    if (authShield) authShield.style.display = 'none';
+    if (displayUserLabel) displayUserLabel.textContent = user.email ? user.email.split('@')[0] : "User";
+  } else {
+    // Revert classes if signed out
+    document.body.classList.remove('logged-in');
+    document.body.classList.add('logged-out');
+
+    if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
+    if (authShield) authShield.style.display = 'flex';
+  }
+});
+if (guestBtn) {
+  guestBtn.addEventListener('click', () => {
+    document.body.classList.add('logged-in');
+    document.body.classList.remove('logged-out');
+    if (authShield) authShield.style.display = 'none';
+    if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
   });
+}
 </script>
 </body>
 </html>
