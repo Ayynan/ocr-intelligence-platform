@@ -527,6 +527,18 @@ body.logged-in #auth-shield-gateway {
   border-radius: 12px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
 }
+/* Fix hidden/invisible password text on Sign In Modal */
+#auth-pass-field, 
+#auth-user-field {
+    color: #ffffff !important;           /* Makes typed text/dots white */
+    background-color: #1e293b !important; /* Dark slate input background */
+    caret-color: #ffffff !important;     /* Visible white typing cursor */
+}
+
+#auth-pass-field::placeholder,
+#auth-user-field::placeholder {
+    color: #94a3b8 !important;          /* Light grey placeholder text */
+}
     </style>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
@@ -920,11 +932,34 @@ togglePassViewBtn.addEventListener('click', () => {
         const settingsDropdown = document.getElementById('dropdown-settings-panel');
         const settingsUserField = document.getElementById('settings-username-field');
         const settingsPassField = document.getElementById('settings-password-field');
-        const btnSaveSettings = document.getElementById('btn-save-settings');
-        const dropdownFilterToggle = document.getElementById('dropdown-filter-toggle');
-        const btnToggleSettingsPass = document.getElementById('btn-toggle-settings-pass');
-        const settingsPassEye = document.getElementById('settings-pass-eye');
+        // Sign In Modal - Password Eye Toggle
+        const toggleAuthPassBtn = document.getElementById('btn-toggle-pass-view');
+        const authPassInput = document.getElementById('auth-pass-field');
+        const authPassEyeIcon = document.getElementById('pass-eye-icon');
 
+if (toggleAuthPassBtn && authPassInput) {
+    toggleAuthPassBtn.addEventListener('click', () => {
+        const isPassword = authPassInput.getAttribute('type') === 'password';
+        authPassInput.setAttribute('type', isPassword ? 'text' : 'password');
+        
+        if (authPassEyeIcon) {
+            authPassEyeIcon.classList.toggle('fa-eye');
+            authPassEyeIcon.classList.toggle('fa-eye-slash');
+        }
+    });
+}
+// Dropdown Panel - Password Eye Toggle
+if (btnToggleSettingsPass && settingsPassField) {
+    btnToggleSettingsPass.addEventListener('click', () => {
+        const isPassword = settingsPassField.getAttribute('type') === 'password';
+        settingsPassField.setAttribute('type', isPassword ? 'text' : 'password');
+        
+        if (settingsPassEye) {
+            settingsPassEye.classList.toggle('fa-eye');
+            settingsPassEye.classList.toggle('fa-eye-slash');
+        }
+    });
+}
 // Safe Dropdown Toggle Listener
 if (profileTrigger && settingsDropdown) {
     profileTrigger.addEventListener('click', (e) => {
