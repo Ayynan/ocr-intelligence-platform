@@ -1785,14 +1785,32 @@ function cleanExtractedText(rawText) {
         .replace(/\n\s*\n/g, '\n')
         .trim();
 }
+// 1. Updated Toggle Function
 function toggleFeedbackWidget() {
     const card = document.getElementById('app-feedback-card');
+    if (!card) return;
+
+    // Toggle between inline 'block' and 'none'
     if (card.style.display === 'none' || card.style.display === '') {
         card.style.display = 'block';
     } else {
         card.style.display = 'none';
     }
 }
+
+// 2. Click Outside Event Listener
+document.addEventListener('click', function(event) {
+    const card = document.getElementById('app-feedback-card');
+    const toggleBtn = document.getElementById('feedback-toggle-btn');
+
+    // Proceed only if the card exists and is currently visible
+    if (card && card.style.display === 'block') {
+        // If the click is NOT inside the card AND NOT on the floating button
+        if (!card.contains(event.target) && !toggleBtn.contains(event.target)) {
+            card.style.display = 'none';
+        }
+    }
+});
 // Keep theme state persistent on refresh
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('docuscan-theme');
