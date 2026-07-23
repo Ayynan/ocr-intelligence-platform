@@ -695,6 +695,17 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
                         </label>
                     </div>
                 </div>
+                <select id="ocr-language-selector" style="background: rgba(15, 23, 42, 0.8); color: #fff; border: 1px solid rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; outline: none;">
+    <option value="eng">English</option>
+    <option value="eng+spa+fra+deu">Western Languages (Eng/Span/French/German)</option>
+    <option value="ara">Arabic (العربية)</option>
+    <option value="urd">Urdu (اردو)</option>
+    <option value="zho">Chinese Simplified (中文)</option>
+    <option value="hin">Hindi (हिन्दी)</option>
+    <option value="rus">Russian (Русский)</option>
+    <option value="jpn">Japanese (日本語)</option>
+    <option value="eng+spa+fra+deu+ara+urd+zho+hin+rus">Auto Detect (Multi-Language)</option>
+</select>
 <div style="margin-top: 14px; margin-bottom: 14px; background: rgba(30, 41, 59, 0.25); padding: 14px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
         <label style="color: #ffffff; font-size: 0.85rem; font-weight: 500;">Page Range Config</label>
@@ -1219,7 +1230,12 @@ togglePassViewBtn.addEventListener('click', () => {
     let comprehensiveTextCompilation = "";
     
     try {
-        const worker = await Tesseract.createWorker('eng', 1, {
+        // NEW SNIPPET:
+const langSelectElem = document.getElementById('ocr-language-selector');
+const selectedLanguage = langSelectElem ? langSelectElem.value : 'eng';
+const isLatinScript = selectedLanguage.includes('eng') || selectedLanguage.includes('spa') || selectedLanguage.includes('fra') || selectedLanguage.includes('deu');
+
+const worker = await Tesseract.createWorker(selectedLanguage, 1, {
             logger: m => {
                 if (m.status === 'recognizing text' && activeFileType !== "application/pdf") {
                     const pct = Math.round(m.progress * 100);
@@ -1346,11 +1362,17 @@ togglePassViewBtn.addEventListener('click', () => {
                     // FILTER LOGIC: 
                     // - A real sentence line must have real word clusters (more words than isolated single letters).
                     // - It shouldn't be dominated by random capital blocks (caps shouldn't outnumber lowercase lines significantly in prose).
-                    if (realWordCount >= singleCharCount && (upperCaseCount <= lowerCaseCount || lowerCaseCount > 5)) {
-                        cleanedPageText += line + "\n";
-                    } else {
-                        console.log(`Scrubbed diagram noise: "${trimmedLine}"`);
-                    }
+                    // NEW SAFE FILTER BLOCK:
+if (isLatinScript) {
+    if (realWordCount >= singleCharCount && (upperCaseCount <= lowerCaseCount || lowerCaseCount > 5)) {
+        cleanedPageText += line + "\n";
+    } else {
+        console.log(`Scrubbed diagram noise: "${trimmedLine}"`);
+    }
+} else {
+    // For Non-Latin languages (Arabic, Urdu, Chinese, Hindi, etc.), keep the text line directly
+    cleanedPageText += line + "\n";
+}
                 });
 
                 // If the page ended up containing content, append it cleanly
