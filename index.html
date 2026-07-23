@@ -925,18 +925,18 @@ togglePassViewBtn.addEventListener('click', () => {
         const btnToggleSettingsPass = document.getElementById('btn-toggle-settings-pass');
         const settingsPassEye = document.getElementById('settings-pass-eye');
 
-        // Open/Close user profile dropdown frame
-if (profileTrigger) {
+// Safe Dropdown Toggle Listener
+if (profileTrigger && settingsDropdown) {
     profileTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (settingsDropdown) settingsDropdown.classList.toggle('active');
-        
-        const currentUser = auth ? auth.currentUser : null;
+        settingsDropdown.classList.toggle('active');
+
+        const currentUser = (typeof auth !== 'undefined' && auth) ? auth.currentUser : null;
         const btnSaveSettings = document.getElementById('btn-save-settings');
         const btnDropdownLogin = document.getElementById('btn-dropdown-login');
 
         if (currentUser) {
-            // Logged-In User View
+            // Logged-In User
             if (settingsUserField) {
                 settingsUserField.value = currentUser.displayName || currentUser.email || "User";
                 settingsUserField.disabled = false;
@@ -945,11 +945,10 @@ if (profileTrigger) {
                 settingsPassField.value = "••••••••";
                 settingsPassField.disabled = false;
             }
-
             if (btnSaveSettings) btnSaveSettings.style.display = 'block';
             if (btnDropdownLogin) btnDropdownLogin.style.display = 'none';
         } else {
-            // Guest View
+            // Guest Workspace
             if (settingsUserField) {
                 settingsUserField.value = "Guest Workspace";
                 settingsUserField.disabled = true;
@@ -958,44 +957,42 @@ if (profileTrigger) {
                 settingsPassField.value = "";
                 settingsPassField.disabled = true;
             }
-
             if (btnSaveSettings) btnSaveSettings.style.display = 'none';
             if (btnDropdownLogin) btnDropdownLogin.style.display = 'block';
         }
     });
 }
-// Handle Guest clicking "Sign In / Create Account" from the dropdown
+
+// Guest "Sign In / Create Account" Action Handler
 const btnDropdownLogin = document.getElementById('btn-dropdown-login');
 if (btnDropdownLogin) {
     btnDropdownLogin.addEventListener('click', () => {
-        // Close dropdown
         if (settingsDropdown) settingsDropdown.classList.remove('active');
-        
-        // Show main sign in overlay
         document.body.classList.remove('logged-in');
         document.body.classList.add('logged-out');
+
+        const authShield = document.getElementById('auth-shield-gateway');
         if (authShield) authShield.style.display = 'flex';
     });
 }
-    // Auto-populate from Firebase or Guest state
-    const currentUser = auth?.currentUser;
-    if (currentUser) {
-        settingsUserField.value = currentUser.displayName || currentUser.email || "User";
-        settingsPassField.value = "••••••••";
-    } else {
-        settingsUserField.value = "Guest";
-        settingsPassField.value = "";
+
+// Auto-close settings drop panel on outside click
+document.addEventListener('click', (e) => {
+    if (settingsDropdown && profileTrigger) {
+        if (!settingsDropdown.contains(e.target) && !profileTrigger.contains(e.target)) {
+            settingsDropdown.classList.remove('active');
+        }
     }
 });
-        });
 
-        // Auto-close settings drop panel if user clicks off-bounds
-        document.addEventListener('click', (e) => {
-            if (!settingsDropdown.contains(e.target) && !profileTrigger.contains(e.target)) {
-                settingsDropdown.classList.remove('active');
-            }
-        });
-
+// Feedback Button Handler
+const feedbackBtn = document.getElementById('feedback-trigger-btn') || document.querySelector('.floating-feedback-btn');
+if (feedbackBtn) {
+    feedbackBtn.addEventListener('click', () => {
+        // Trigger your feedback modal or widget here
+        console.log("Feedback button clicked");
+    });
+}
         // Synchronize drop-panel enhancer switches with the layout core toggle seamlessly
         dropdownFilterToggle.addEventListener('change', (e) => {
             document.getElementById('filter-toggle').checked = e.target.checked;
