@@ -587,7 +587,14 @@ body.logged-in #auth-shield-gateway {
         </div>
 
         <button class="dropdown-save-btn" id="btn-save-settings">Update Configuration</button>
+        <!-- Action Buttons (Shown conditionally in JS) -->
+<button type="button" class="auth-submit-btn" id="btn-save-settings">
+    <i class="fa-solid fa-floppy-disk"></i> Update Configuration
+</button>
 
+<button type="button" class="auth-submit-btn" id="btn-dropdown-login" style="display: none; background: #2563eb; color: white;">
+    <i class="fa-solid fa-right-to-bracket"></i> Sign In / Create Account
+</button>
         <div class="dropdown-section-title">Ecosystem Controls</div>
         
         <div class="toggle-row" style="padding: 6px 0; background: transparent; border: none;">
@@ -597,7 +604,7 @@ body.logged-in #auth-shield-gateway {
                 <span class="slider"></span>
             </label>
         </div>
-
+        
         <button class="dropdown-logout-btn" id="btn-action-logout"><i class="fa-solid fa-power-off"></i> Exit Workspace</button>
     </div>
 </div>
@@ -919,14 +926,57 @@ togglePassViewBtn.addEventListener('click', () => {
         const settingsPassEye = document.getElementById('settings-pass-eye');
 
         // Open/Close user profile dropdown frame
-        profileTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            settingsDropdown.classList.toggle('active');
-            
-            profileTrigger.addEventListener('click', (e) => {
-    e.stopPropagation();
-    settingsDropdown.classList.toggle('active');
-    
+if (profileTrigger) {
+    profileTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (settingsDropdown) settingsDropdown.classList.toggle('active');
+        
+        const currentUser = auth ? auth.currentUser : null;
+        const btnSaveSettings = document.getElementById('btn-save-settings');
+        const btnDropdownLogin = document.getElementById('btn-dropdown-login');
+
+        if (currentUser) {
+            // Logged-In User View
+            if (settingsUserField) {
+                settingsUserField.value = currentUser.displayName || currentUser.email || "User";
+                settingsUserField.disabled = false;
+            }
+            if (settingsPassField) {
+                settingsPassField.value = "••••••••";
+                settingsPassField.disabled = false;
+            }
+
+            if (btnSaveSettings) btnSaveSettings.style.display = 'block';
+            if (btnDropdownLogin) btnDropdownLogin.style.display = 'none';
+        } else {
+            // Guest View
+            if (settingsUserField) {
+                settingsUserField.value = "Guest Workspace";
+                settingsUserField.disabled = true;
+            }
+            if (settingsPassField) {
+                settingsPassField.value = "";
+                settingsPassField.disabled = true;
+            }
+
+            if (btnSaveSettings) btnSaveSettings.style.display = 'none';
+            if (btnDropdownLogin) btnDropdownLogin.style.display = 'block';
+        }
+    });
+}
+// Handle Guest clicking "Sign In / Create Account" from the dropdown
+const btnDropdownLogin = document.getElementById('btn-dropdown-login');
+if (btnDropdownLogin) {
+    btnDropdownLogin.addEventListener('click', () => {
+        // Close dropdown
+        if (settingsDropdown) settingsDropdown.classList.remove('active');
+        
+        // Show main sign in overlay
+        document.body.classList.remove('logged-in');
+        document.body.classList.add('logged-out');
+        if (authShield) authShield.style.display = 'flex';
+    });
+}
     // Auto-populate from Firebase or Guest state
     const currentUser = auth?.currentUser;
     if (currentUser) {
@@ -2051,7 +2101,26 @@ document.addEventListener('DOMContentLoaded', function () {
   const toggleTrigger = document.getElementById('auth-toggle-trigger');
   const authTitle = document.getElementById('auth-title');
   const displayUserLabel = document.getElementById('lbl-display-username');
-  const logoutBtn = document.getElementById('btn-action-logout');
+ const logoutBtn = document.getElementById('btn-action-logout');
+
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    // 1. If signed into a real Firebase account, trigger sign-out
+    if (auth.currentUser) {
+      await auth.signOut();
+    }
+
+    // 2. Force reset the UI state so Guest mode exits cleanly
+    document.body.classList.remove('logged-in');
+    document.body.classList.add('logged-out');
+
+    if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
+    if (authShield) authShield.style.display = 'flex';
+    
+    // Close the user profile dropdown matrix
+    if (settingsDropdown) settingsDropdown.classList.remove('active');
+  });
+}
 
   // Toggle Sign In vs Sign Up
   if (toggleTrigger) {
