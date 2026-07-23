@@ -578,20 +578,36 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
         </header>
 
     <div class="auth-overlay" id="auth-shield-gateway">
-        <div class="auth-card">
-            <div class="auth-logo"><i class="fa-solid fa-shield-halved" style="color: white;"></i></div>
-            <h2 id="auth-title">Account Sign In</h2>
-            <p id="auth-desc">Access enterprise document extraction nodes safely</p>
-            
-            <div class="auth-input-group">
-                <label>Account Username</label>
-                <input type="text" id="auth-user-field" class="auth-field" placeholder="Username">
-                <label>Secure Password</label>
-<div class="password-wrapper">
-    <input type="password" id="auth-pass-field" class="auth-field" placeholder="••••••••">
-    <button type="button" class="toggle-password-visibility" id="btn-toggle-pass-view" title="Toggle Password Visibility">
-        <i class="fa-regular fa-eye" id="pass-eye-icon"></i>
-    </button>
+    <div class="auth-card">
+        <div class="auth-logo"><i class="fa-solid fa-shield-halved" style="color: white;"></i></div>
+        <h2 id="auth-title">Account Sign In</h2>
+        <p id="auth-desc">Access enterprise document extraction nodes safely</p>
+        
+        <!-- Google Sign-In Button -->
+        <button type="button" id="google-login-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; background: white; color: #0f172a; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 12px;">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            Continue with Google
+        </button>
+
+        <div class="auth-input-group">
+            <label>Email Address</label>
+            <input type="email" id="auth-user-field" class="auth-field" placeholder="you@example.com">
+            <label>Secure Password</label>
+            <div class="password-wrapper">
+                <input type="password" id="auth-pass-field" class="auth-field" placeholder="••••••••">
+                <button type="button" class="toggle-password-visibility" id="btn-toggle-pass-view" title="Toggle Password Visibility">
+                    <i class="fa-regular fa-eye" id="pass-eye-icon"></i>
+                </button>
+            </div>
+        </div>
+
+        <button class="auth-submit-btn" id="btn-action-auth-submit"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+        <button class="guest-trigger-btn" id="btn-action-guest"><i class="fa-solid fa-user-secret"></i> Continue as Guest</button>
+        
+        <div class="auth-toggle-link" id="auth-switcher-msg">
+            Don't have an account? <span id="auth-toggle-trigger">Create Account</span>
+        </div>
+    </div>
 </div>
                 
             </div>
@@ -858,29 +874,6 @@ body.light-mode i:not([style*="color: #3b82f6"]):not([style*="color:#3b82f6"]) {
         const { jsPDF } = window.jspdf;
         let isOcrCancelled = false;
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        // --- AUTHENTICATION FLOW CONTEXT SWITCHER ENGINE ---
-        const bodyNode = document.body;
-        const btnAuthSubmit = document.getElementById('btn-action-auth-submit');
-        const btnGuest = document.getElementById('btn-action-guest');
-        const btnLogout = document.getElementById('btn-action-logout');
-        const userField = document.getElementById('auth-user-field');
-        const passField = document.getElementById('auth-pass-field');
-        const usernameDisplayLabel = document.getElementById('lbl-display-username');
-        const authTitle = document.getElementById('auth-title');
-        const authDesc = document.getElementById('auth-desc');
-        const authToggleTrigger = document.getElementById('auth-toggle-trigger');
-        const authSwitcherMsg = document.getElementById('auth-switcher-msg');
-
-        let isSignUpMode = false;
-
-        // Load fake server accounts array map from device local registry
-        let localRegisteredAccounts = JSON.parse(localStorage.getItem('docuscan_vault_users') || '[]');
-
-        const activeCachedUser = localStorage.getItem('docuscan_logged_session');
-        if (activeCachedUser) { 
-            activateAuthenticatedSessionEcosystem(activeCachedUser); 
-        }
 const togglePassViewBtn = document.getElementById('btn-toggle-pass-view');
 const passEyeIcon = document.getElementById('pass-eye-icon');
 
@@ -894,113 +887,6 @@ togglePassViewBtn.addEventListener('click', () => {
         passEyeIcon.className = "fa-regular fa-eye";
     }
 });
-        authToggleTrigger.addEventListener('click', function toggleModeHandler() {
-            isSignUpMode = !isSignUpMode;
-            if (isSignUpMode) {
-                authTitle.textContent = "Create New Account";
-                authDesc.textContent = "Register global device access encryption tokens";
-                btnAuthSubmit.innerHTML = `<i class="fa-solid fa-user-plus"></i> Register & Log In`;
-                authSwitcherMsg.innerHTML = `Already have an account? <span id="auth-toggle-trigger">Sign In Instead</span>`;
-            } else {
-                authTitle.textContent = "Account Sign In";
-                authDesc.textContent = "Access enterprise document extraction nodes safely";
-                btnAuthSubmit.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Sign In`;
-                authSwitcherMsg.innerHTML = `Don't have an account? <span id="auth-toggle-trigger">Create Account</span>`;
-            }
-            // Rebind the dynamically replaced element anchor target
-            document.getElementById('auth-toggle-trigger').addEventListener('click', toggleModeHandler);
-        });
-
-        // --- SECURE SIGN-UP / LIVE VERIFICATION CORE ROUTINE ---
-        // Setup state variables for live registration security tokens
-        let generatedVerificationToken = null;
-        let temporaryPendingUser = null;
-        let temporaryPendingPass = null;
-
-        btnAuthSubmit.addEventListener('click', () => {
-            const u = userField.value.trim();
-            const p = passField.value.trim();
-            const emailValidationRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            
-            if (!u || !p) { 
-                alert("Complete all profile credential fields."); 
-                return; 
-            }
-            if (!emailValidationRegex.test(u)) {
-                alert("Please register using a valid, structural email address (e.g., user@domain.com). Fake phrases are rejected.");
-                return;
-            }
-
-            if (isSignUpMode) {
-                if (localRegisteredAccounts.some(acc => acc.username === u)) { 
-                    alert("This email profile registry is already locked. Try Signing In."); 
-                    return; 
-                }
-
-                // Generate a random 6-digit verification code
-                generatedVerificationToken = Math.floor(100000 + Math.random() * 900000).toString();
-                temporaryPendingUser = u;
-                temporaryPendingPass = p;
-
-                // 1. Check if EmailJS is active and loaded in the HTML head
-                if (typeof emailjs !== 'undefined') {
-                    alert("Verification dispatch sequence running! Sending unique access tokens directly to: " + u);
-                    
-                    // Dispatches the live email code directly from your web client side
-                    emailjs.send("default_service", "YOUR_TEMPLATE_ID", {
-                        to_email: u,
-                        verification_code: generatedVerificationToken
-                    }).then(() => {
-                        const validationAttempt = prompt("A verification security code was sent to your inbox. Please type the 6-digit code here to finalize registration:");
-                        
-                        if (validationAttempt === generatedVerificationToken) {
-                            localRegisteredAccounts.push({ username: temporaryPendingUser, password: temporaryPendingPass });
-                            localStorage.setItem('docuscan_vault_users', JSON.stringify(localRegisteredAccounts));
-                            localStorage.setItem('docuscan_logged_session', temporaryPendingUser);
-                            activateAuthenticatedSessionEcosystem(temporaryPendingUser);
-                            alert("Account verified and registered successfully!");
-                        } else {
-                            alert("Invalid security token code match. Registration rejected.");
-                        }
-                    }).catch((err) => {
-                        console.error("EmailJS failed:", err);
-                        handleDevSimulationFallback(u, p);
-                    });
-                } else {
-                    // 2. Safe Fallback if you haven't linked the emailjs script tag yet
-                    handleDevSimulationFallback(u, p);
-                }
-
-            } else {
-                // Regular Sign In Route
-                const matchFound = localRegisteredAccounts.find(acc => acc.username === u && acc.password === p);
-                if (matchFound || (u === "admin@domain.com" && p === "12345")) {
-                    localStorage.setItem('docuscan_logged_session', u);
-                    activateAuthenticatedSessionEcosystem(u);
-                } else {
-                    alert("Invalid credential signature match found inside local profile tables.");
-                }
-            }
-        });
-
-        // Helper function to keep app working during development testing
-        function handleDevSimulationFallback(user, pass) {
-            const codeOverride = prompt("[Verification Mode Simulator]\nTo test the verification block without live email API configurations, enter '123456' to safely confirm: " + user);
-            if (codeOverride === "123456") {
-                localRegisteredAccounts.push({ username: user, password: pass });
-                localStorage.setItem('docuscan_vault_users', JSON.stringify(localRegisteredAccounts));
-                localStorage.setItem('docuscan_logged_session', user);
-                activateAuthenticatedSessionEcosystem(user);
-                alert("Account created successfully via simulator bypass pass!");
-            } else {
-                alert("Verification process cancelled.");
-            }
-        }
-
-        btnGuest.addEventListener('click', () => { 
-            activateAuthenticatedSessionEcosystem("Guest Workspace"); 
-        });
-        
         // --- USER CONTROL PANEL SETTINGS & DROPDOWN MATRIX ---
         const profileTrigger = document.getElementById('profile-trigger-btn');
         const settingsDropdown = document.getElementById('dropdown-settings-panel');
@@ -1016,18 +902,20 @@ togglePassViewBtn.addEventListener('click', () => {
             e.stopPropagation();
             settingsDropdown.classList.toggle('active');
             
-            // Auto-populate fields based on the currently logged-in account status
-            const currentActiveUser = localStorage.getItem('docuscan_logged_session') || "Guest Workspace";
-            settingsUserField.value = currentActiveUser === "Guest Workspace" ? "Guest" : currentActiveUser;
-            
-            let accountsDb = JSON.parse(localStorage.getItem('docuscan_vault_users') || '[]');
-            let currentAccount = accountsDb.find(acc => acc.username === currentActiveUser);
-            
-            if (currentActiveUser === "admin") {
-                settingsPassField.value = "12345";
-            } else {
-                settingsPassField.value = currentAccount ? currentAccount.password : "";
-            }
+            profileTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    settingsDropdown.classList.toggle('active');
+    
+    // Auto-populate from Firebase or Guest state
+    const currentUser = auth?.currentUser;
+    if (currentUser) {
+        settingsUserField.value = currentUser.displayName || currentUser.email || "User";
+        settingsPassField.value = "••••••••";
+    } else {
+        settingsUserField.value = "Guest";
+        settingsPassField.value = "";
+    }
+});
         });
 
         // Auto-close settings drop panel if user clicks off-bounds
@@ -1056,57 +944,6 @@ togglePassViewBtn.addEventListener('click', () => {
                 settingsPassEye.className = "fa-regular fa-eye";
             }
         });
-
-        // Update profile parameter registries and database rows
-        btnSaveSettings.addEventListener('click', () => {
-            const newUserValue = settingsUserField.value.trim();
-            const newPassValue = settingsPassField.value.trim();
-            const oldSessionUser = localStorage.getItem('docuscan_logged_session');
-            
-            if (!newUserValue || !newPassValue) {
-                alert("Account values cannot be left empty.");
-                return;
-            }
-            
-            if (oldSessionUser && oldSessionUser !== "Guest Workspace") {
-                let databaseArray = JSON.parse(localStorage.getItem('docuscan_vault_users') || '[]');
-                let userMatchIndex = databaseArray.findIndex(acc => acc.username === oldSessionUser);
-                
-                if (userMatchIndex !== -1) {
-                    databaseArray[userMatchIndex].username = newUserValue;
-                    databaseArray[userMatchIndex].password = newPassValue;
-                    localStorage.setItem('docuscan_vault_users', JSON.stringify(databaseArray));
-                } else if (oldSessionUser === "admin") {
-                    // Seed newly customized admin variants directly into the database structure array
-                    databaseArray.push({ username: newUserValue, password: newPassValue });
-                    localStorage.setItem('docuscan_vault_users', JSON.stringify(databaseArray));
-                }
-                
-                localStorage.setItem('docuscan_logged_session', newUserValue);
-                activateAuthenticatedSessionEcosystem(newUserValue);
-                alert("Account settings saved successfully!");
-                settingsDropdown.classList.remove('active');
-            } else {
-                alert("Guest workspace preferences temporarily cached.");
-                activateAuthenticatedSessionEcosystem(newUserValue);
-                settingsDropdown.classList.remove('active');
-            }
-        });
-
-        // Consolidated exit execution block listener targeting drop element links
-        document.getElementById('btn-action-logout').addEventListener('click', () => { 
-            localStorage.removeItem('docuscan_logged_session'); 
-            bodyNode.className = "logged-out"; 
-            clearActiveStreamEcosystemState(); 
-            outputTextarea.value = ""; 
-            calculateTelemetryAnalysisMetrics(""); 
-            settingsDropdown.classList.remove('active');
-        });
-
-        function activateAuthenticatedSessionEcosystem(usernamePayloadString) { 
-            usernameDisplayLabel.textContent = usernamePayloadString; 
-            bodyNode.className = "logged-in"; 
-        }
 
 
         // --- MAIN MULTI-PAGE PROCESSING LOOPS SYSTEM ARCHITECTURE ---
@@ -2110,5 +1947,164 @@ document.addEventListener('DOMContentLoaded', function () {
     switchToolView('home-view');
 });
     </script>
+<!-- Auth Modal -->
+<div id="auth-modal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem;">
+  <div style="background: #1e293b; border: 1px solid #334155; width: 100%; max-width: 400px; border-radius: 12px; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); position: relative; font-family: sans-serif; color: #f8fafc;">
+    
+    <!-- Close Button -->
+    <button id="close-auth-btn" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+    
+    <!-- Modal Header -->
+    <h2 id="auth-modal-title" style="margin-top: 0; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 700; color: #ffffff;">Sign In to DocuScan</h2>
+    <p style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 1.5rem;">Access your saved OCR documents anywhere.</p>
+    
+    <!-- Google Sign-In Button -->
+    <button id="google-login-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.75rem; background: #ffffff; color: #0f172a; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-bottom: 1rem; transition: background 0.2s;">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+      Continue with Google
+    </button>
+    
+    <!-- Divider -->
+    <div style="display: flex; align-items: center; margin: 1.25rem 0; color: #64748b; font-size: 0.8rem;">
+      <div style="flex: 1; border-bottom: 1px solid #334155;"></div>
+      <span style="padding: 0 0.5rem;">OR</span>
+      <div style="flex: 1; border-bottom: 1px solid #334155;"></div>
+    </div>
+    
+    <!-- Email/Password Form -->
+    <form id="auth-form" onsubmit="event.preventDefault();" style="display: flex; flex-direction: column; gap: 1rem;">
+      <div>
+        <label style="display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.25rem;">Email Address</label>
+        <input type="email" id="auth-email" required placeholder="you@example.com" style="width: 100%; padding: 0.65rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #ffffff; outline: none; box-sizing: border-box;">
+      </div>
+      <div>
+        <label style="display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.25rem;">Password</label>
+        <input type="password" id="auth-password" required placeholder="••••••••" style="width: 100%; padding: 0.65rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #ffffff; outline: none; box-sizing: border-box;">
+      </div>
+      <button type="submit" id="auth-submit-btn" style="width: 100%; padding: 0.75rem; background: #2563eb; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s;">Sign In</button>
+    </form>
+    
+    <!-- Switch between Sign In / Sign Up -->
+    <p style="text-align: center; font-size: 0.85rem; color: #94a3b8; margin-top: 1.25rem; margin-bottom: 0;">
+      <span id="toggle-auth-mode-text">Don't have an account?</span> 
+      <a href="#" id="toggle-auth-mode-btn" style="color: #60a5fa; font-weight: 600; text-decoration: none; margin-left: 0.25rem;">Sign Up</a>
+    </p>
+  </div>
+</div>
+
+<!-- Single Clean Firebase Script -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    signInWithPopup, 
+    GoogleAuthProvider, 
+    signOut, 
+    onAuthStateChanged 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDKSx_yrcd-3qdYyVaJuK-qzAYehC7kxc0",
+    authDomain: "docuscan-ai-e546b.firebaseapp.com",
+    projectId: "docuscan-ai-e546b",
+    storageBucket: "docuscan-ai-e546b.firebasestorage.app",
+    messagingSenderId: "943362476721",
+    appId: "1:943362476721:web:00100fddfc3df99eecf090"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  let isFirebaseSignUp = false;
+
+  // Select existing UI Elements
+  const authShield = document.getElementById('auth-shield-gateway');
+  const emailInput = document.getElementById('auth-user-field');
+  const passInput = document.getElementById('auth-pass-field');
+  const submitBtn = document.getElementById('btn-action-auth-submit');
+  const guestBtn = document.getElementById('btn-action-guest');
+  const googleBtn = document.getElementById('google-login-btn');
+  const toggleTrigger = document.getElementById('auth-toggle-trigger');
+  const authTitle = document.getElementById('auth-title');
+  const displayUserLabel = document.getElementById('lbl-display-username');
+  const logoutBtn = document.getElementById('btn-action-logout');
+
+  // Toggle Sign In vs Sign Up
+  if (toggleTrigger) {
+    toggleTrigger.addEventListener('click', () => {
+      isFirebaseSignUp = !isFirebaseSignUp;
+      if (authTitle) authTitle.textContent = isFirebaseSignUp ? "Create Account" : "Account Sign In";
+      if (submitBtn) submitBtn.innerHTML = isFirebaseSignUp ? '<i class="fa-solid fa-user-plus"></i> Sign Up' : '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+      toggleTrigger.textContent = isFirebaseSignUp ? "Sign In" : "Create Account";
+    });
+  }
+
+  // Handle Email/Password Login & Registration
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = emailInput?.value.trim();
+      const password = passInput?.value.trim();
+
+      if (!email || !password) {
+        alert("Please fill in both email and password.");
+        return;
+      }
+
+      try {
+        if (isFirebaseSignUp) {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+        if (authShield) authShield.style.display = 'none';
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
+  // Handle Google Login
+  if (googleBtn) {
+    googleBtn.addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, googleProvider);
+        if (authShield) authShield.style.display = 'none';
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
+  // Guest Mode
+  if (guestBtn) {
+    guestBtn.addEventListener('click', () => {
+      if (authShield) authShield.style.display = 'none';
+      if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
+    });
+  }
+
+  // Logout
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      signOut(auth).then(() => {
+        if (authShield) authShield.style.display = 'flex';
+      });
+    });
+  }
+
+  // Sync state across header UI
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      if (authShield) authShield.style.display = 'none';
+      if (displayUserLabel) displayUserLabel.textContent = user.email.split('@')[0];
+    } else {
+      if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
+    }
+  });
+</script>
 </body>
 </html>
