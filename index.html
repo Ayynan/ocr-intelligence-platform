@@ -1228,21 +1228,25 @@ togglePassViewBtn.addEventListener('click', () => {
     let comprehensiveTextCompilation = "";
     
     try {
-        // NEW SNIPPET:
+// 1. Language & Script Detection
 const langSelectElem = document.getElementById('ocr-language-selector');
 const selectedLanguage = langSelectElem ? langSelectElem.value : 'eng';
+
+// Check if selected language relies on non-Latin scripts (Urdu, Arabic, Hindi, Chinese)
 const hasNonLatin = selectedLanguage.includes('urd') || selectedLanguage.includes('ara') || selectedLanguage.includes('zho') || selectedLanguage.includes('hin');
 const isLatinScript = !hasNonLatin;
+
+// 2. Initialize Tesseract Worker
 const worker = await Tesseract.createWorker(selectedLanguage, 1, {
-            logger: m => {
-                if (m.status === 'recognizing text' && activeFileType !== "application/pdf") {
-                    const pct = Math.round(m.progress * 100);
-                    progressBar.style.width = `${pct}%`;
-                    progressPercent.textContent = `${pct}%`;
-                    statusText.textContent = `Status: Processing matrix segments (${pct}%)`;
-                }
-            }
-        });
+    logger: m => {
+        if (m.status === 'recognizing text' && activeFileType !== "application/pdf") {
+            const pct = Math.round(m.progress * 100);
+            progressBar.style.width = `${pct}%`;
+            progressPercent.textContent = `${pct}%`;
+            statusText.textContent = `Status: Processing matrix segments (${pct}%)`;
+        }
+    }
+});
 
         if (activeFileType === "application/pdf") {
             const arrayBuffer = await activeFileStream.arrayBuffer();
