@@ -586,7 +586,6 @@ body.logged-in #auth-shield-gateway {
             </div>
         </div>
 
-        <button class="dropdown-save-btn" id="btn-save-settings">Update Configuration</button>
         <!-- Action Buttons (Shown conditionally in JS) -->
 <button type="button" class="auth-submit-btn" id="btn-save-settings">
     <i class="fa-solid fa-floppy-disk"></i> Update Configuration
@@ -939,7 +938,7 @@ if (profileTrigger && settingsDropdown) {
             // Logged-In User
             if (settingsUserField) {
                 settingsUserField.value = currentUser.displayName || currentUser.email || "User";
-                settingsUserField.disabled = true;
+                settingsUserField.disabled = false;
             }
             if (settingsPassField) {
                 settingsPassField.value = "••••••••";
