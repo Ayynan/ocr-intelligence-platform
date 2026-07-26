@@ -939,7 +939,7 @@ if (profileTrigger && settingsDropdown) {
             // Logged-In User
             if (settingsUserField) {
                 settingsUserField.value = currentUser.displayName || currentUser.email || "User";
-                settingsUserField.disabled = false;
+                settingsUserField.disabled = true;
             }
             if (settingsPassField) {
                 settingsPassField.value = "••••••••";
