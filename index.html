@@ -1596,10 +1596,16 @@ async function executePdfDownloadAction() {
                 fileBlobPayload = new Blob([outputTextPayload], { type: 'text/plain;charset=utf-8' }); 
                 fileExtensionName = 'extracted-text.txt';
             } else if (formatType === 'doc') {
-                const htmlWrappedDocumentPayload = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><title>DocuScan AI Export</title><style>body { font-family: Arial; line-height: 1.6; }</style></head><body>${outputTextPayload.replace(/\n/g, '<br>')}</body></html>`;
-                fileBlobPayload = new Blob(['\ufeff' + htmlWrappedDocumentPayload], { type: 'application/msword' }); 
-                fileExtensionName = 'extracted-text.doc';
-            }
+    const safeContent = (outputTextPayload || '').replace(/\n/g, '<br>');
+
+    const htmlWrappedDocumentPayload = 
+        "\x3Chtml xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>" +
+        "\x3Chead>\x3Ctitle>DocuScan AI Export\x3C/title>\x3Cstyle>body { font-family: Arial; line-height: 1.6; }\x3C/style>\x3C/head>" +
+        "\x3Cbody>" + safeContent + "\x3C/body>\x3C/html>";
+
+    fileBlobPayload = new Blob(['\ufeff' + htmlWrappedDocumentPayload], { type: 'application/msword' }); 
+    fileExtensionName = 'extracted-text.doc';
+}
             
             const downloadLinkAnchor = document.createElement('a'); 
             downloadLinkAnchor.href = URL.createObjectURL(fileBlobPayload);
@@ -1642,11 +1648,6 @@ async function executePdfDownloadAction() {
                 alert("Redirecting to your mail provider to compile transmission to ayynanwaheed2021@gmail.com.");
             });
         }
-        // --- SECURE USER SYSTEM FEEDBACK ROUTING CHANNEL ---
-        // Listens for the form submission and reliably fires up the local mail application
-        // --- BACKGROUND FEEDBACK TRANSMISSION ENGINE ---
-        // --- BULLETPROOF BACKGROUND FEEDBACK DISPATCH MATRIX ---
-        // --- ABSOLUTE BACKGROUND FEEDBACK DISPATCH MATRIX ---
         // --- FIXED BACKGROUND FEEDBACK DISPATCH ENGINE ---
         const fbButton = document.getElementById('feedback-submit-btn');
         if (fbButton) {
