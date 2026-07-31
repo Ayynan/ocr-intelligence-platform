@@ -2064,144 +2064,105 @@ document.addEventListener('DOMContentLoaded', function () {
 <!-- Single Clean Firebase Script -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword, 
-    signInWithPopup, 
-    GoogleAuthProvider, 
-    signOut, 
-    onAuthStateChanged 
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInWithRedirect, 
+  getRedirectResult, 
+  GoogleAuthProvider, 
+  signOut, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDKSx_yrcd-3qdYyVaJuK-qzAYehC7kxc0",
-    authDomain: "docuscan-ai-e546b.firebaseapp.com",
-    projectId: "docuscan-ai-e546b",
-    storageBucket: "docuscan-ai-e546b.firebasestorage.app",
-    messagingSenderId: "943362476721",
-    appId: "1:943362476721:web:00100fddfc3df99eecf090"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyDKSx_yrcd-3qdYyVaJuK-qzAYehC7kxc0",
+  authDomain: "docuscan-ai-e546b.firebaseapp.com",
+  projectId: "docuscan-ai-e546b",
+  storageBucket: "docuscan-ai-e546b.firebasestorage.app",
+  messagingSenderId: "943362476721",
+  appId: "1:943362476721:web:00100fddfc3df99eecf090"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const googleProvider = new GoogleAuthProvider();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
-  let isFirebaseSignUp = false;
+let isFirebaseSignUp = false;
 
-  // Select existing UI Elements
-  const authShield = document.getElementById('auth-shield-gateway');
-  const emailInput = document.getElementById('auth-user-field');
-  const passInput = document.getElementById('auth-pass-field');
-  const submitBtn = document.getElementById('btn-action-auth-submit');
-  const guestBtn = document.getElementById('btn-action-guest');
-  const googleBtn = document.getElementById('google-login-btn');
-  const toggleTrigger = document.getElementById('auth-toggle-trigger');
-  const authTitle = document.getElementById('auth-title');
-  const displayUserLabel = document.getElementById('lbl-display-username');
- const logoutBtn = document.getElementById('btn-action-logout');
+// Select UI Elements
+const authShield = document.getElementById('auth-shield-gateway');
+const emailInput = document.getElementById('auth-user-field');
+const passInput = document.getElementById('auth-pass-field');
+const submitBtn = document.getElementById('btn-action-auth-submit');
+const guestBtn = document.getElementById('btn-action-guest');
+const googleBtn = document.getElementById('google-login-btn');
+const toggleTrigger = document.getElementById('auth-toggle-trigger');
+const authTitle = document.getElementById('auth-title');
+const displayUserLabel = document.getElementById('lbl-display-username');
+const logoutBtn = document.getElementById('btn-action-logout');
+const settingsDropdown = document.getElementById('settings-dropdown'); // Added safe reference check
 
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', async () => {
-    // 1. If signed into a real Firebase account, trigger sign-out
-    if (auth.currentUser) {
-      await auth.signOut();
+// 1. Handle Redirect Result when returning from Google Sign-In
+getRedirectResult(auth)
+  .then((result) => {
+    if (result && result.user) {
+      document.body.classList.add('logged-in');
+      document.body.classList.remove('logged-out');
+      if (authShield) authShield.style.display = 'none';
     }
+  })
+  .catch((err) => {
+    console.warn("Auth Redirect Error:", err.message);
+  });
 
-    // 2. Force reset the UI state so Guest mode exits cleanly
-    document.body.classList.remove('logged-in');
-    document.body.classList.add('logged-out');
-
-    if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
-    if (authShield) authShield.style.display = 'flex';
-    
-    // Close the user profile dropdown matrix
-    if (settingsDropdown) settingsDropdown.classList.remove('active');
+// 2. Toggle Sign In vs Sign Up
+if (toggleTrigger) {
+  toggleTrigger.addEventListener('click', () => {
+    isFirebaseSignUp = !isFirebaseSignUp;
+    if (authTitle) authTitle.textContent = isFirebaseSignUp ? "Create Account" : "Account Sign In";
+    if (submitBtn) submitBtn.innerHTML = isFirebaseSignUp ? '<i class="fa-solid fa-user-plus"></i> Sign Up' : '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+    toggleTrigger.textContent = isFirebaseSignUp ? "Sign In" : "Create Account";
   });
 }
 
-  // Toggle Sign In vs Sign Up
-  if (toggleTrigger) {
-    toggleTrigger.addEventListener('click', () => {
-      isFirebaseSignUp = !isFirebaseSignUp;
-      if (authTitle) authTitle.textContent = isFirebaseSignUp ? "Create Account" : "Account Sign In";
-      if (submitBtn) submitBtn.innerHTML = isFirebaseSignUp ? '<i class="fa-solid fa-user-plus"></i> Sign Up' : '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
-      toggleTrigger.textContent = isFirebaseSignUp ? "Sign In" : "Create Account";
-    });
-  }
+// 3. Handle Email/Password Login & Registration
+if (submitBtn) {
+  submitBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = emailInput?.value.trim();
+    const password = passInput?.value.trim();
 
-  // Handle Email/Password Login & Registration
-  if (submitBtn) {
-    submitBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const email = emailInput?.value.trim();
-      const password = passInput?.value.trim();
+    if (!email || !password) {
+      alert("Please fill in both email and password.");
+      return;
+    }
 
-      if (!email || !password) {
-        alert("Please fill in both email and password.");
-        return;
+    try {
+      if (isFirebaseSignUp) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
       }
-
-      try {
-        if (isFirebaseSignUp) {
-          await createUserWithEmailAndPassword(auth, email, password);
-        } else {
-          await signInWithEmailAndPassword(auth, email, password);
-        }
-        if (authShield) authShield.style.display = 'none';
-      } catch (err) {
-        alert(err.message);
-      }
-    });
-  }
-
-  // Handle Google Login
-  if (googleBtn) {
-    googleBtn.addEventListener('click', async () => {
-      try {
-        await signInWithPopup(auth, googleProvider);
-        if (authShield) authShield.style.display = 'none';
-      } catch (err) {
-        alert(err.message);
-      }
-    });
-  }
-
-  // Guest Mode
-  if (guestBtn) {
-    guestBtn.addEventListener('click', () => {
       if (authShield) authShield.style.display = 'none';
-      if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
-    });
-  }
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+}
 
-  // Logout
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      signOut(auth).then(() => {
-        if (authShield) authShield.style.display = 'flex';
-      });
-    });
-  }
+// 4. Handle Google Login (Redirect Mode - prevents COOP popup errors)
+if (googleBtn) {
+  googleBtn.addEventListener('click', async () => {
+    try {
+      await signInWithRedirect(auth, googleProvider);
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+}
 
-  // Sync state across header UI
-  onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // Add logged-in class to body to unblur the UI
-    document.body.classList.add('logged-in');
-    document.body.classList.remove('logged-out');
-
-    if (authShield) authShield.style.display = 'none';
-    if (displayUserLabel) displayUserLabel.textContent = user.email ? user.email.split('@')[0] : "User";
-  } else {
-    // Revert classes if signed out
-    document.body.classList.remove('logged-in');
-    document.body.classList.add('logged-out');
-
-    if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
-    if (authShield) authShield.style.display = 'flex';
-  }
-});
+// 5. Guest Mode Handler
 if (guestBtn) {
   guestBtn.addEventListener('click', () => {
     document.body.classList.add('logged-in');
@@ -2210,6 +2171,43 @@ if (guestBtn) {
     if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
   });
 }
+
+// 6. Logout Handler
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
+    } catch (err) {
+      console.error("Signout Error:", err);
+    }
+
+    document.body.classList.remove('logged-in');
+    document.body.classList.add('logged-out');
+
+    if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
+    if (authShield) authShield.style.display = 'flex';
+    if (settingsDropdown) settingsDropdown.classList.remove('active');
+  });
+}
+
+// 7. Sync state across UI on Auth State Change
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.body.classList.add('logged-in');
+    document.body.classList.remove('logged-out');
+
+    if (authShield) authShield.style.display = 'none';
+    if (displayUserLabel) displayUserLabel.textContent = user.email ? user.email.split('@')[0] : "User";
+  } else {
+    document.body.classList.remove('logged-in');
+    document.body.classList.add('logged-out');
+
+    if (displayUserLabel) displayUserLabel.textContent = "Guest Account";
+    if (authShield) authShield.style.display = 'flex';
+  }
+});
 </script>
 </body>
 </html>
