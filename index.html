@@ -588,9 +588,6 @@ body.logged-in #auth-shield-gateway {
 
         <button class="dropdown-save-btn" id="btn-save-settings">Update Configuration</button>
         <!-- Action Buttons (Shown conditionally in JS) -->
-<button type="button" class="auth-submit-btn" id="btn-save-settings">
-    <i class="fa-solid fa-floppy-disk"></i> Update Configuration
-</button>
 
 <button type="button" class="auth-submit-btn" id="btn-dropdown-login" style="display: none; background: #2563eb; color: white;">
     <i class="fa-solid fa-right-to-bracket"></i> Sign In / Create Account
@@ -883,7 +880,7 @@ body.logged-in #auth-shield-gateway {
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
             <label style="font-size: 0.75rem; font-weight: 500; color: #cbd5e1;">Your Email Address</label>
-            <input type="email" name="email" id="feedback-user-email" required placeholder="yourname@domain.com" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; outline: none; transition: border 0.2s; width: 100%; box-sizing: border-box;">
+            <input type="email" name="email" id="feedback-user-email" required placeholder="yourname@domain.com" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; border-radius: 8px; padding: 10px 1
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -904,17 +901,20 @@ body.logged-in #auth-shield-gateway {
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const togglePassViewBtn = document.getElementById('btn-toggle-pass-view');
 const passEyeIcon = document.getElementById('pass-eye-icon');
+// ADDED: safe lookup for the auth modal password input
+const passField = document.getElementById('auth-pass-field');
 
-// Interactive Password Visibility Toggle Trigger Routine
-togglePassViewBtn.addEventListener('click', () => {
-    if (passField.type === "password") {
-        passField.type = "text";
-        passEyeIcon.className = "fa-regular fa-eye-slash";
-    } else {
-        passField.type = "password";
-        passEyeIcon.className = "fa-regular fa-eye";
-    }
-});
+if (togglePassViewBtn && passField) {
+    togglePassViewBtn.addEventListener('click', () => {
+        if (passField.type === "password") {
+            passField.type = "text";
+            passEyeIcon.className = "fa-regular fa-eye-slash";
+        } else {
+            passField.type = "password";
+            passEyeIcon.className = "fa-regular fa-eye";
+        }
+    });
+}
         // --- USER CONTROL PANEL SETTINGS & DROPDOWN MATRIX ---
         const profileTrigger = document.getElementById('profile-trigger-btn');
         const settingsDropdown = document.getElementById('dropdown-settings-panel');
@@ -1142,17 +1142,19 @@ const hasNonLatin = selectedLanguage.includes('urd') || selectedLanguage.include
 const isLatinScript = !hasNonLatin;
 
 // 2. Initialize Tesseract Worker
-const worker = await Tesseract.createWorker(selectedLanguage, 1, {
-    logger: m => {
-        if (m.status === 'recognizing text' && activeFileType !== "application/pdf") {
-            const pct = Math.round(m.progress * 100);
-            progressBar.style.width = `${pct}%`;
-            progressPercent.textContent = `${pct}%`;
-            statusText.textContent = `Status: Processing matrix segments (${pct}%)`;
-        }
+const workerLogger = m => {
+    if (m.status === 'recognizing text' && activeFileType !== "application/pdf") {
+        const pct = Math.round((m.progress || 0) * 100);
+        progressBar.style.width = `${pct}%`;
+        progressPercent.textContent = `${pct}%`;
+        statusText.textContent = `Status: Processing matrix segments (${pct}%)`;
     }
-});
+};
 
+const worker = Tesseract.createWorker({ logger: workerLogger });
+await worker.load();
+await worker.loadLanguage(selectedLanguage);
+await worker.initialize(selectedLanguage);
         if (activeFileType === "application/pdf") {
             const arrayBuffer = await activeFileStream.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -1230,14 +1232,7 @@ const worker = await Tesseract.createWorker(selectedLanguage, 1, {
                 
                 let processingSource = canvas;
                 // PDF Flow Fix:
-if (filterToggle.checked && isLatinScript) {
-    processingSource = await applyContrastEnhancementFilterMatrix(canvas, true);
-}
 
-// Single Image Flow Fix:
-if (filterToggle.checked && isLatinScript) { 
-    sourceAsset = await applyContrastEnhancementFilterMatrix(activeFileStream); 
-}
                 
                 // Save this page's visual canvas into memory for the background PDF layer
                 window.processedCanvasesArray.push(processingSource);
@@ -2050,7 +2045,9 @@ document.addEventListener('DOMContentLoaded', function () {
         <label style="display: block; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.25rem;">Password</label>
         <input type="password" id="auth-password" required placeholder="••••••••" style="width: 100%; padding: 0.65rem; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #ffffff; outline: none; box-sizing: border-box;">
       </div>
-      <button type="submit" id="auth-submit-btn" style="width: 100%; padding: 0.75rem; background: #2563eb; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s;">Sign In</button>
+      <button type="submit" id="auth-submit-btn" style="width: 100%; padding: 0.75rem; background: #2563eb; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s; margin-bottom: 12px;">
+        Sign In
+      </button>
     </form>
     
     <!-- Switch between Sign In / Sign Up -->
